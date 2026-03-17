@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Port Extractor</title>
+    <title>Network Device Extractor</title>
     
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☠️</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍌</text></svg>">
 
     <style>
         /* --- Dark Mode Theme Updates --- */
         body { 
             font-family: Arial, sans-serif; 
             margin: 20px auto; 
-            max-width: 1000px; 
+            max-width: 1200px; /* Widened to fit 4 columns beautifully */
             line-height: 1.6;
-            background-color: #121212; /* Dark background */
-            color: #e0e0e0; /* Light grey text */
-            color-scheme: dark; /* Makes default scrollbars dark */
+            background-color: #121212; 
+            color: #e0e0e0; 
+            color-scheme: dark; 
         }
         textarea.input-box { 
             width: 100%; 
@@ -25,27 +25,103 @@
             font-family: monospace; 
             padding: 10px;
             box-sizing: border-box;
-            border: 1px solid #444; /* Darker borders */
+            border: 1px solid #444; 
             border-radius: 4px;
-            background-color: #1e1e1e; /* Dark inner background */
+            background-color: #1e1e1e; 
             color: #e0e0e0;
         }
+
+        /* --- Action Buttons Container --- */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* --- Techy Extract Data Button --- */
         .btn-primary { 
-            padding: 10px 20px; 
-            font-size: 16px; 
+            position: relative;
+            overflow: hidden; 
+            padding: 8px 16px; 
+            font-size: 14px; 
             cursor: pointer; 
-            background-color: #0d6efd; /* Slightly brighter blue for contrast */
+            background-color: #0d6efd; 
             color: white; 
-            border: none; 
+            border: 1px solid #0d6efd; 
             border-radius: 4px; 
-            transition: background 0.2s;
-            margin-right: 10px;
+            transition: all 0.3s ease;
+            font-family: monospace; 
+            font-weight: bold;
+            letter-spacing: 1px;
+            z-index: 1;
+        }
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg);
+            animation: scanLine 2.5s infinite linear;
+            z-index: -1;
+        }
+        @keyframes scanLine {
+            0% { left: -100%; }
+            50% { left: 200%; }
+            100% { left: 200%; }
         }
         .btn-primary:hover { 
             background-color: #0b5ed7; 
+            box-shadow: 0 0 15px rgba(13, 110, 253, 0.8), inset 0 0 10px rgba(255,255,255,0.2);
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
         }
+        .btn-primary:active { transform: scale(0.95); }
+
+        /* --- Techy Clear Button --- */
+        .btn-clear {
+            padding: 8px 16px; 
+            font-size: 14px; 
+            cursor: pointer;
+            background-color: transparent;
+            color: #dc3545; 
+            border: 1px solid #dc3545;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-family: monospace;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .btn-clear:hover {
+            background-color: #dc3545;
+            color: white;
+            box-shadow: 0 0 15px rgba(220, 53, 69, 0.6);
+        }
+        .btn-clear:active { transform: scale(0.95); }
+
+        /* --- Filter Search Bar --- */
+        #filterInput {
+            width: 100%;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #1a1a1a;
+            color: #66b2ff;
+            outline: none;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+        #filterInput:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 10px rgba(13, 110, 253, 0.3);
+        }
+
         #output { 
-            background: #1e1e1e; /* Dark background for results */
+            background: #1e1e1e; 
             padding: 15px; 
             border: 1px solid #444; 
             border-radius: 4px;
@@ -56,18 +132,14 @@
         h4 {
             margin-top: 0;
             margin-bottom: 10px;
-            color: #66b2ff; /* Light blue so it's readable on dark grey */
+            color: #66b2ff; 
             border-bottom: 1px solid #444;
             padding-bottom: 5px;
         }
-        h2 {
-            color: #ffffff;
-        }
-        .section {
-            margin-bottom: 20px;
-        }
+        h2 { color: #ffffff; }
+        .section { margin-bottom: 20px; }
 
-        /* --- CSS for the Side-by-Side Layout & Copy Buttons --- */
+        /* --- Results Layout --- */
         .results-container {
             display: flex;
             gap: 15px; 
@@ -77,8 +149,8 @@
             flex: 1; 
             display: flex;
             flex-direction: column;
+            overflow: hidden; 
         }
-        
         .header-row {
             display: flex;
             justify-content: space-between;
@@ -87,13 +159,12 @@
         }
         .header-row h5 {
             margin: 0;
-            color: #e0e0e0; /* Lighter text for headers */
+            color: #e0e0e0; 
         }
-        
         .btn-copy {
             font-size: 12px;
             padding: 4px 10px;
-            background-color: #b100cd; /* Custom purple color */
+            background-color: #b100cd; 
             color: white;
             border: none;
             border-radius: 3px;
@@ -101,10 +172,11 @@
             transition: background-color 0.2s;
         }
         .btn-copy:hover {
-            background-color: #8e00a4; /* Slightly darker purple on hover */
+            background-color: #8e00a4; 
         }
 
-        .result-column textarea {
+        /* --- Editor Style Output Boxes (With Line Numbers) --- */
+        .output-box {
             width: 100%;
             height: 400px; 
             font-family: monospace;
@@ -112,38 +184,118 @@
             border: 1px solid #444;
             border-radius: 4px;
             box-sizing: border-box;
-            padding: 10px;
-            resize: vertical;
-            background-color: #1a1a1a; /* Even darker text area so text pops */
-            color: #a5d6ff; /* Light blue tinted text for the raw commands */
-            white-space: pre; 
+            padding: 10px 0; 
+            overflow-y: auto; 
+            background-color: #1a1a1a; 
+            color: #a5d6ff; 
+            cursor: text;
+            counter-reset: linenumber; 
         }
+
+        .line-item {
+            display: block;
+            padding-left: 45px; 
+            padding-right: 10px;
+            position: relative;
+            line-height: 1.6;
+            white-space: nowrap;
+        }
+
+        .line-item::before {
+            counter-increment: linenumber;
+            content: counter(linenumber);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 30px;
+            text-align: right;
+            color: #5c636a; 
+            background-color: #121212; 
+            border-right: 1px solid #444;
+            padding-right: 5px;
+            height: 100%;
+            user-select: none; 
+            -webkit-user-select: none;
+        }
+        
+        .highlight-dup {
+            background-color: rgba(220, 53, 69, 0.25); 
+            color: #ff8c8c; 
+        }
+
+        .highlight-dup::before {
+            background-color: rgba(220, 53, 69, 0.1); 
+            color: #ff8c8c;
+            border-right-color: #dc3545;
+        }
+
+        .warning-msg {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #ff6b6b;
+            border: 1px solid #dc3545;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-family: monospace;
+        }
+
+        .hidden-copy-area { display: none; }
     </style>
 </head>
 <body>
 
-    <h2>Port Extractor</h2>
+    <h2>Network Log Extractor</h2>
     <p>Paste your raw device logs (CDP/LLDP outputs, etc.) or Inventory Tables below to extract Switches and Interfaces:</p>
     
     <textarea id="inputText" class="input-box" placeholder="Paste your log output or table here..."></textarea>
-    <br>
-    <button class="btn-primary" onclick="processText()">Extract Data</button>
+    
+    <div class="action-buttons">
+        <button class="btn-primary" onclick="processText()">> Extract_Data</button>
+        <button class="btn-clear" onclick="clearText()">[ Clear_Output ]</button>
+    </div>
+
+    <div id="filterWrapper" style="display: none;">
+        <input type="text" id="filterInput" placeholder="🔍 Filter interfaces (e.g., GigabitEthernet1/0/1) or switch names..." onkeyup="renderOutput()">
+    </div>
 
     <h3>Result:</h3>
     <div id="output"><em>Awaiting input...</em></div>
 
     <script>
-        function copyContent(elementId, btnElement) {
-            const textToCopy = document.getElementById(elementId).value;
+        // Global variables to store relational data
+        let globalSwitches = [];
+        let globalInterfaces = []; // Stores objects: { sw: 'SwitchName', iface: 'Gi1/0/1', count: 1 }
+
+        function clearText() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('output').innerHTML = '<em>Awaiting input...</em>';
+            document.getElementById('filterWrapper').style.display = 'none';
+            document.getElementById('filterInput').value = '';
+            
+            // Wipe memory
+            globalSwitches = [];
+            globalInterfaces = [];
+        }
+
+        function selectAllText(el) {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+
+        function copyContent(hiddenElementId, btnElement) {
+            const textToCopy = document.getElementById(hiddenElementId).value;
             
             navigator.clipboard.writeText(textToCopy).then(() => {
                 const originalText = btnElement.innerText;
                 btnElement.innerText = "Copied!";
-                btnElement.style.backgroundColor = "#198754"; // Green for success feedback
+                btnElement.style.backgroundColor = "#198754"; 
                 
                 setTimeout(() => {
                     btnElement.innerText = originalText;
-                    btnElement.style.backgroundColor = ""; // Reverts to your custom purple
+                    btnElement.style.backgroundColor = ""; 
                 }, 2000);
             }).catch(err => {
                 console.error('Failed to copy text: ', err);
@@ -153,107 +305,219 @@
 
         function processText() {
             const text = document.getElementById('inputText').value;
+            if (!text.trim()) return; 
             
-            // --- 1. Switch Extraction ---
+            // --- 1. Tokenize Data to Understand Relationships ---
+            const tokens = [];
+            
+            // Format A: Switches
             const switchRegex = /[a-zA-Z0-9\-]*(?:ACC|CAS)\d+/gi;
-            let switchMatch;
-            const switches = new Set();
-            while ((switchMatch = switchRegex.exec(text)) !== null) { 
-                switches.add(switchMatch[0].toUpperCase()); 
+            let match;
+            while ((match = switchRegex.exec(text)) !== null) { 
+                tokens.push({ type: 'switch', value: match[0].toUpperCase(), index: match.index }); 
             }
-            const sortedSwitches = Array.from(switches).sort();
 
-            // --- 2. Interface Extraction ---
-            const interfaces = new Set(); 
-            
-            // Format A: Standard CDP/LLDP (e.g., GigabitEthernet1/0/23 or Gi1/0/23)
+            // Format A: Standard Interfaces
             const ifaceRegex = /(?:gigabitethernet|gi)[^\d]*(\d+\/\d+\/\d+)/gi;
-            let ifaceMatch;
-            while ((ifaceMatch = ifaceRegex.exec(text)) !== null) { 
-                interfaces.add("Gi" + ifaceMatch[1]); 
+            while ((match = ifaceRegex.exec(text)) !== null) { 
+                tokens.push({ type: 'iface', value: "Gi" + match[1], index: match.index }); 
             }
 
-            // Format B: Table/Inventory Format (e.g., PH-LSP-ACC0803 SW1    23)
-            const tableRegex = /(?:ACC|CAS)\d+[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
-            let tableMatch;
-            while ((tableMatch = tableRegex.exec(text)) !== null) {
-                interfaces.add(`Gi${tableMatch[1]}/0/${tableMatch[2]}`);
+            // Format B: Table Format (Switch and Port combined)
+            const tableRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
+            while ((match = tableRegex.exec(text)) !== null) {
+                tokens.push({ type: 'inline', switch: match[1].toUpperCase(), iface: `Gi${match[2]}/0/${match[3]}`, index: match.index });
             }
 
-            // Format C: Hyphenated Stack Format (e.g., PH-LSP-ACC0803-1 26)
-            const hyphenRegex = /(?:ACC|CAS)\d+-(\d+)[\s\t]+(\d+)/gi;
-            let hyphenMatch;
-            while ((hyphenMatch = hyphenRegex.exec(text)) !== null) {
-                interfaces.add(`Gi${hyphenMatch[1]}/0/${hyphenMatch[2]}`);
+            // Format C: Hyphenated Format (Switch and Port combined)
+            const hyphenRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)-(\d+)[\s\t]+(\d+)/gi;
+            while ((match = hyphenRegex.exec(text)) !== null) {
+                tokens.push({ type: 'inline', switch: match[1].toUpperCase(), iface: `Gi${match[2]}/0/${match[3]}`, index: match.index });
             }
 
-            // Convert to Array and sort numerically
-            const sortedInterfaces = Array.from(interfaces).sort((a, b) => {
-                const partsA = a.substring(2).split('/').map(Number);
-                const partsB = b.substring(2).split('/').map(Number);
+            // Sort tokens by their position in the text to track context top-to-bottom
+            tokens.sort((a, b) => a.index - b.index);
+
+            // --- 2. Build the Relational Database (Grouped by Switch) ---
+            const switchesSet = new Set();
+            const interfaceCounts = new Map(); // Composite key tracker: "SwitchName|InterfaceName"
+            let currentSwitch = "UNKNOWN";
+
+            tokens.forEach(token => {
+                if (token.type === 'switch') {
+                    currentSwitch = token.value;
+                    switchesSet.add(currentSwitch);
+                    
+                } else if (token.type === 'iface') {
+                    const iface = token.value;
+                    const compositeKey = `${currentSwitch}|${iface}`;
+                    interfaceCounts.set(compositeKey, (interfaceCounts.get(compositeKey) || 0) + 1);
+                    
+                } else if (token.type === 'inline') {
+                    const sw = token.switch;
+                    const iface = token.iface;
+                    
+                    currentSwitch = sw; // Update context
+                    switchesSet.add(sw);
+                    
+                    const compositeKey = `${sw}|${iface}`;
+                    interfaceCounts.set(compositeKey, (interfaceCounts.get(compositeKey) || 0) + 1);
+                }
+            });
+
+            // Convert map to array of structured objects
+            globalSwitches = Array.from(switchesSet).sort();
+            globalInterfaces = [];
+
+            for (let [key, count] of interfaceCounts.entries()) {
+                const [sw, iface] = key.split('|');
+                globalInterfaces.push({ sw: sw, iface: iface, count: count });
+            }
+
+            // Sort interfaces: First by interface number, then fallback to switch name
+            globalInterfaces.sort((a, b) => {
+                const partsA = a.iface.substring(2).split('/').map(Number);
+                const partsB = b.iface.substring(2).split('/').map(Number);
                 for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
                     const numA = partsA[i] || 0;
                     const numB = partsB[i] || 0;
                     if (numA !== numB) { return numA - numB; }
                 }
-                return 0;
+                return a.sw.localeCompare(b.sw);
             });
 
-            // --- 3. Output Generation ---
-            let htmlOutput = "";
-            const outputDiv = document.getElementById('output');
+            // Show the filter box and wipe any old filter text
+            document.getElementById('filterWrapper').style.display = 'block';
+            document.getElementById('filterInput').value = '';
+            
+            // Draw the screen
+            renderOutput();
+        }
 
-            // Switch Output Section
+        // --- Core Render & Filter Logic ---
+        function renderOutput() {
+            const rawFilterStr = document.getElementById('filterInput').value.trim().toLowerCase();
+            const filterStr = rawFilterStr.replace(/gigabitethernet/g, 'gi');
+
+            const outputDiv = document.getElementById('output');
+            let htmlOutput = "";
+
+            const filteredSwitches = globalSwitches.filter(sw => sw.toLowerCase().includes(filterStr));
+
+            const filteredInterfaces = globalInterfaces.filter(item => {
+                const matchesIface = item.iface.toLowerCase().includes(filterStr);
+                const matchesSwitch = item.sw.toLowerCase().includes(filterStr);
+                return matchesIface || matchesSwitch;
+            });
+
+            let duplicateCount = 0;
+            for (let item of filteredInterfaces) {
+                if (item.count > 1) duplicateCount++;
+            }
+
+            // --- Draw Switches Section (Global List) ---
             htmlOutput += `<div class="section">`;
-            htmlOutput += `<h4>Switches Found (Total: ${sortedSwitches.length})</h4>`;
-            if (sortedSwitches.length > 0) {
-                htmlOutput += sortedSwitches.join('<br>');
+            if (filterStr && filteredSwitches.length !== globalSwitches.length) {
+                htmlOutput += `<h4>Switches Found (Showing: ${filteredSwitches.length} / Total: ${globalSwitches.length})</h4>`;
             } else {
-                htmlOutput += `<em>No switches found containing 'ACC' or 'CAS'.</em>`;
+                htmlOutput += `<h4>Switches Found (Total: ${globalSwitches.length})</h4>`;
+            }
+
+            if (filteredSwitches.length > 0) {
+                htmlOutput += filteredSwitches.join('<br>');
+            } else {
+                htmlOutput += `<em>No switches match your filter.</em>`;
             }
             htmlOutput += `</div>`;
 
-            // Interface Output Section
+            // --- Draw 4-Column Interfaces Section ---
             htmlOutput += `<div class="section">`;
-            htmlOutput += `<h4>Interfaces Found (Total: ${sortedInterfaces.length})</h4>`;
+            if (filterStr && filteredInterfaces.length !== globalInterfaces.length) {
+                htmlOutput += `<h4>Interfaces Extracted (Showing: ${filteredInterfaces.length} / Total Unique: ${globalInterfaces.length})</h4>`;
+            } else {
+                htmlOutput += `<h4>Interfaces Extracted (Unique: ${globalInterfaces.length})</h4>`;
+            }
 
-            if (sortedInterfaces.length > 0) {
-                const rawInterfacesText = sortedInterfaces.join('\n');
-                const shRunText = sortedInterfaces.map(iface => `sh run int ${iface}`).join('\n');
-                const shIntStatusText = sortedInterfaces.map(iface => `sh int ${iface} status`).join('\n');
+            if (duplicateCount > 0) {
+                htmlOutput += `<div class="warning-msg">⚠️ Found ${duplicateCount} interface(s) in this view that appeared multiple times on the SAME switch. They are highlighted in red below.</div>`;
+            }
+
+            if (filteredInterfaces.length > 0) {
+                let switchesHtml = "";
+                let rawInterfacesHtml = "";
+                let shRunHtml = "";
+                let shIntStatusHtml = "";
+
+                let switchesText = "";
+                let rawInterfacesText = "";
+                let shRunText = "";
+                let shIntStatusText = "";
+
+                filteredInterfaces.forEach((item, index) => {
+                    const isDup = item.count > 1;
+                    const tooltipText = isDup ? `Duplicate: Found ${item.count} times` : ``;
+                    const spanOpen = isDup ? `<span class="highlight-dup line-item" title="${tooltipText}">` : `<span class="line-item" title="${tooltipText}">`;
+                    const spanClose = `</span>`;
+
+                    // Visual HTML elements for the 4 separate columns
+                    switchesHtml += `${spanOpen}${item.sw}${spanClose}`;
+                    rawInterfacesHtml += `${spanOpen}${item.iface}${spanClose}`;
+                    shRunHtml += `${spanOpen}sh run int ${item.iface}${spanClose}`;
+                    shIntStatusHtml += `${spanOpen}sh int ${item.iface} status${spanClose}`;
+
+                    // Pure text for the background copying system
+                    const newline = (index < filteredInterfaces.length - 1) ? '\n' : '';
+                    switchesText += `${item.sw}${newline}`;
+                    rawInterfacesText += `${item.iface}${newline}`;
+                    shRunText += `sh run int ${item.iface}${newline}`;
+                    shIntStatusText += `sh int ${item.iface} status${newline}`;
+                });
 
                 htmlOutput += `<div class="results-container">`;
                 
-                // Column 1
+                // Column 1: Switch Hostname
                 htmlOutput += `<div class="result-column">`;
                 htmlOutput += `  <div class="header-row">`;
-                htmlOutput += `    <h5>Interfaces</h5>`;
-                htmlOutput += `    <button class="btn-copy" onclick="copyContent('ta-interfaces', this)">Copy All</button>`;
+                htmlOutput += `    <h5>Hostname</h5>`;
+                htmlOutput += `    <button class="btn-copy" onclick="copyContent('hidden-switches', this)">Copy All</button>`;
                 htmlOutput += `  </div>`;
-                htmlOutput += `  <textarea id="ta-interfaces" readonly onclick="this.select()">${rawInterfacesText}</textarea>`;
+                htmlOutput += `  <div class="output-box" onclick="selectAllText(this)">${switchesHtml}</div>`;
+                htmlOutput += `  <textarea id="hidden-switches" class="hidden-copy-area">${switchesText}</textarea>`;
                 htmlOutput += `</div>`;
 
-                // Column 2
+                // Column 2: Interfaces
+                htmlOutput += `<div class="result-column">`;
+                htmlOutput += `  <div class="header-row">`;
+                htmlOutput += `    <h5>Interface</h5>`;
+                htmlOutput += `    <button class="btn-copy" onclick="copyContent('hidden-interfaces', this)">Copy All</button>`;
+                htmlOutput += `  </div>`;
+                htmlOutput += `  <div class="output-box" onclick="selectAllText(this)">${rawInterfacesHtml}</div>`;
+                htmlOutput += `  <textarea id="hidden-interfaces" class="hidden-copy-area">${rawInterfacesText}</textarea>`;
+                htmlOutput += `</div>`;
+
+                // Column 3: sh run int
                 htmlOutput += `<div class="result-column">`;
                 htmlOutput += `  <div class="header-row">`;
                 htmlOutput += `    <h5>sh run int Gx/x/x</h5>`;
-                htmlOutput += `    <button class="btn-copy" onclick="copyContent('ta-shrun', this)">Copy All</button>`;
+                htmlOutput += `    <button class="btn-copy" onclick="copyContent('hidden-shrun', this)">Copy All</button>`;
                 htmlOutput += `  </div>`;
-                htmlOutput += `  <textarea id="ta-shrun" readonly onclick="this.select()">${shRunText}</textarea>`;
+                htmlOutput += `  <div class="output-box" onclick="selectAllText(this)">${shRunHtml}</div>`;
+                htmlOutput += `  <textarea id="hidden-shrun" class="hidden-copy-area">${shRunText}</textarea>`;
                 htmlOutput += `</div>`;
 
-                // Column 3
+                // Column 4: sh int status
                 htmlOutput += `<div class="result-column">`;
                 htmlOutput += `  <div class="header-row">`;
                 htmlOutput += `    <h5>sh int Gix/x/x status</h5>`;
-                htmlOutput += `    <button class="btn-copy" onclick="copyContent('ta-shint', this)">Copy All</button>`;
+                htmlOutput += `    <button class="btn-copy" onclick="copyContent('hidden-shint', this)">Copy All</button>`;
                 htmlOutput += `  </div>`;
-                htmlOutput += `  <textarea id="ta-shint" readonly onclick="this.select()">${shIntStatusText}</textarea>`;
+                htmlOutput += `  <div class="output-box" onclick="selectAllText(this)">${shIntStatusHtml}</div>`;
+                htmlOutput += `  <textarea id="hidden-shint" class="hidden-copy-area">${shIntStatusText}</textarea>`;
                 htmlOutput += `</div>`;
 
                 htmlOutput += `</div>`; 
             } else {
-                htmlOutput += `<em>No interfaces found. Make sure the text contains standard formats or valid table data.</em>`;
+                htmlOutput += `<em>No interfaces match your filter.</em>`;
             }
             htmlOutput += `</div>`;
 
