@@ -31,6 +31,7 @@
             border: none; 
             border-radius: 4px; 
             transition: background 0.2s;
+            margin-right: 10px;
         }
         .btn-primary:hover { 
             background-color: #004494; 
@@ -67,7 +68,6 @@
             flex-direction: column;
         }
         
-        /* Flexbox for the header area to align title left and button right */
         .header-row {
             display: flex;
             justify-content: space-between;
@@ -82,7 +82,7 @@
         .btn-copy {
             font-size: 12px;
             padding: 4px 10px;
-            background-color: #28a745; /* Green */
+            background-color: #6c757d; 
             color: white;
             border: none;
             border-radius: 3px;
@@ -90,7 +90,7 @@
             transition: background-color 0.2s;
         }
         .btn-copy:hover {
-            background-color: #218838;
+            background-color: #5a6268;
         }
 
         .result-column textarea {
@@ -111,9 +111,9 @@
 <body>
 
     <h2>Network Log Extractor</h2>
-    <p>Paste your raw device logs (CDP/LLDP outputs, etc.) below to extract Switches and Interfaces:</p>
+    <p>Paste your raw device logs (CDP/LLDP outputs, etc.) or Inventory Tables below to extract Switches and Interfaces:</p>
     
-    <textarea id="inputText" class="input-box" placeholder="Paste your log output here..."></textarea>
+    <textarea id="inputText" class="input-box" placeholder="Paste your log output or table here..."></textarea>
     <br>
     <button class="btn-primary" onclick="processText()">Extract Data</button>
 
@@ -121,19 +121,17 @@
     <div id="output"><em>Awaiting input...</em></div>
 
     <script>
-        // Copy function for the little buttons
         function copyContent(elementId, btnElement) {
             const textToCopy = document.getElementById(elementId).value;
             
             navigator.clipboard.writeText(textToCopy).then(() => {
-                // Visual feedback: change button text and color temporarily
                 const originalText = btnElement.innerText;
                 btnElement.innerText = "Copied!";
-                btnElement.style.backgroundColor = "#17a2b8"; // Change to teal
+                btnElement.style.backgroundColor = "#17a2b8"; 
                 
                 setTimeout(() => {
                     btnElement.innerText = originalText;
-                    btnElement.style.backgroundColor = ""; // Revert to CSS default
+                    btnElement.style.backgroundColor = ""; 
                 }, 2000);
             }).catch(err => {
                 console.error('Failed to copy text: ', err);
@@ -148,14 +146,36 @@
             const switchRegex = /[a-zA-Z0-9\-]*(?:ACC|CAS)\d+/gi;
             let switchMatch;
             const switches = new Set();
-            while ((switchMatch = switchRegex.exec(text)) !== null) { switches.add(switchMatch[0].toUpperCase()); }
+            while ((switchMatch = switchRegex.exec(text)) !== null) { 
+                switches.add(switchMatch[0].toUpperCase()); 
+            }
             const sortedSwitches = Array.from(switches).sort();
 
             // --- 2. Interface Extraction ---
+            const interfaces = new Set(); 
+            
+            // Format A: Standard CDP/LLDP (e.g., GigabitEthernet1/0/23 or Gi1/0/23)
             const ifaceRegex = /(?:gigabitethernet|gi)[^\d]*(\d+\/\d+\/\d+)/gi;
             let ifaceMatch;
-            const interfaces = new Set(); 
-            while ((ifaceMatch = ifaceRegex.exec(text)) !== null) { interfaces.add("Gi" + ifaceMatch[1]); }
+            while ((ifaceMatch = ifaceRegex.exec(text)) !== null) { 
+                interfaces.add("Gi" + ifaceMatch[1]); 
+            }
+
+            // Format B: Table/Inventory Format (e.g., PH-LSP-ACC0803 SW1    23)
+            const tableRegex = /(?:ACC|CAS)\d+[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
+            let tableMatch;
+            while ((tableMatch = tableRegex.exec(text)) !== null) {
+                interfaces.add(`Gi${tableMatch[1]}/0/${tableMatch[2]}`);
+            }
+
+            // Format C: Hyphenated Stack Format (e.g., PH-LSP-ACC0803-1 26)
+            const hyphenRegex = /(?:ACC|CAS)\d+-(\d+)[\s\t]+(\d+)/gi;
+            let hyphenMatch;
+            while ((hyphenMatch = hyphenRegex.exec(text)) !== null) {
+                interfaces.add(`Gi${hyphenMatch[1]}/0/${hyphenMatch[2]}`);
+            }
+
+            // Convert to Array and sort numerically
             const sortedInterfaces = Array.from(interfaces).sort((a, b) => {
                 const partsA = a.substring(2).split('/').map(Number);
                 const partsB = b.substring(2).split('/').map(Number);
@@ -186,14 +206,13 @@
             htmlOutput += `<h4>Interfaces Found (Total: ${sortedInterfaces.length})</h4>`;
 
             if (sortedInterfaces.length > 0) {
-                // Prepare the bulk text blocks
                 const rawInterfacesText = sortedInterfaces.join('\n');
                 const shRunText = sortedInterfaces.map(iface => `sh run int ${iface}`).join('\n');
                 const shIntStatusText = sortedInterfaces.map(iface => `sh int ${iface} status`).join('\n');
 
                 htmlOutput += `<div class="results-container">`;
                 
-                // Column 1: Just Interfaces
+                // Column 1
                 htmlOutput += `<div class="result-column">`;
                 htmlOutput += `  <div class="header-row">`;
                 htmlOutput += `    <h5>Interfaces</h5>`;
@@ -202,7 +221,7 @@
                 htmlOutput += `  <textarea id="ta-interfaces" readonly onclick="this.select()">${rawInterfacesText}</textarea>`;
                 htmlOutput += `</div>`;
 
-                // Column 2: sh run int commands
+                // Column 2
                 htmlOutput += `<div class="result-column">`;
                 htmlOutput += `  <div class="header-row">`;
                 htmlOutput += `    <h5>sh run int Gx/x/x</h5>`;
@@ -211,7 +230,7 @@
                 htmlOutput += `  <textarea id="ta-shrun" readonly onclick="this.select()">${shRunText}</textarea>`;
                 htmlOutput += `</div>`;
 
-                // Column 3: sh int status commands
+                // Column 3
                 htmlOutput += `<div class="result-column">`;
                 htmlOutput += `  <div class="header-row">`;
                 htmlOutput += `    <h5>sh int Gix/x/x status</h5>`;
@@ -220,13 +239,12 @@
                 htmlOutput += `  <textarea id="ta-shint" readonly onclick="this.select()">${shIntStatusText}</textarea>`;
                 htmlOutput += `</div>`;
 
-                htmlOutput += `</div>`; // End results-container
+                htmlOutput += `</div>`; 
             } else {
-                htmlOutput += `<em>No interfaces found. Make sure the text contains formats like GigabitEthernet5/0/1 or gi5/0/1.</em>`;
+                htmlOutput += `<em>No interfaces found. Make sure the text contains standard formats or valid table data.</em>`;
             }
             htmlOutput += `</div>`;
 
-            // Render to DOM
             outputDiv.innerHTML = htmlOutput;
         }
     </script>
