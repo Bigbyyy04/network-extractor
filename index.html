@@ -4,13 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Network Device Extractor</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☠️</text></svg>">
+
     <style>
+        /* --- Dark Mode Theme Updates --- */
         body { 
             font-family: Arial, sans-serif; 
             margin: 20px auto; 
             max-width: 1000px; 
             line-height: 1.6;
-            color: #333;
+            background-color: #121212; /* Dark background */
+            color: #e0e0e0; /* Light grey text */
+            color-scheme: dark; /* Makes default scrollbars dark */
         }
         textarea.input-box { 
             width: 100%; 
@@ -19,14 +25,16 @@
             font-family: monospace; 
             padding: 10px;
             box-sizing: border-box;
-            border: 1px solid #ccc;
+            border: 1px solid #444; /* Darker borders */
             border-radius: 4px;
+            background-color: #1e1e1e; /* Dark inner background */
+            color: #e0e0e0;
         }
         .btn-primary { 
             padding: 10px 20px; 
             font-size: 16px; 
             cursor: pointer; 
-            background-color: #0056b3; 
+            background-color: #0d6efd; /* Slightly brighter blue for contrast */
             color: white; 
             border: none; 
             border-radius: 4px; 
@@ -34,12 +42,12 @@
             margin-right: 10px;
         }
         .btn-primary:hover { 
-            background-color: #004494; 
+            background-color: #0b5ed7; 
         }
         #output { 
-            background: #f8f9fa; 
+            background: #1e1e1e; /* Dark background for results */
             padding: 15px; 
-            border: 1px solid #ddd; 
+            border: 1px solid #444; 
             border-radius: 4px;
             min-height: 50px; 
             font-family: monospace; 
@@ -48,9 +56,12 @@
         h4 {
             margin-top: 0;
             margin-bottom: 10px;
-            color: #0056b3;
-            border-bottom: 1px solid #ccc;
+            color: #66b2ff; /* Light blue so it's readable on dark grey */
+            border-bottom: 1px solid #444;
             padding-bottom: 5px;
+        }
+        h2 {
+            color: #ffffff;
         }
         .section {
             margin-bottom: 20px;
@@ -76,13 +87,13 @@
         }
         .header-row h5 {
             margin: 0;
-            color: #333;
+            color: #e0e0e0; /* Lighter text for headers */
         }
         
         .btn-copy {
             font-size: 12px;
             padding: 4px 10px;
-            background-color: #6c757d; 
+            background-color: #b100cd; /* Custom purple color */
             color: white;
             border: none;
             border-radius: 3px;
@@ -90,7 +101,7 @@
             transition: background-color 0.2s;
         }
         .btn-copy:hover {
-            background-color: #5a6268;
+            background-color: #8e00a4; /* Slightly darker purple on hover */
         }
 
         .result-column textarea {
@@ -98,12 +109,13 @@
             height: 400px; 
             font-family: monospace;
             font-size: 13px;
-            border: 1px solid #ccc;
+            border: 1px solid #444;
             border-radius: 4px;
             box-sizing: border-box;
             padding: 10px;
             resize: vertical;
-            background-color: #fff;
+            background-color: #1a1a1a; /* Even darker text area so text pops */
+            color: #a5d6ff; /* Light blue tinted text for the raw commands */
             white-space: pre; 
         }
     </style>
@@ -127,11 +139,11 @@
             navigator.clipboard.writeText(textToCopy).then(() => {
                 const originalText = btnElement.innerText;
                 btnElement.innerText = "Copied!";
-                btnElement.style.backgroundColor = "#17a2b8"; 
+                btnElement.style.backgroundColor = "#198754"; // Green for success feedback
                 
                 setTimeout(() => {
                     btnElement.innerText = originalText;
-                    btnElement.style.backgroundColor = ""; 
+                    btnElement.style.backgroundColor = ""; // Reverts to your custom purple
                 }, 2000);
             }).catch(err => {
                 console.error('Failed to copy text: ', err);
