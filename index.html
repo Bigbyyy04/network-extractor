@@ -277,14 +277,6 @@
             globalInterfaces = [];
         }
 
-        function selectAllText(el) {
-            const selection = window.getSelection();
-            const range = document.createRange();
-            range.selectNodeContents(el);
-            selection.removeAllRanges();
-            selection.addRange(range);
-        }
-
         function copyContent(hiddenElementId, btnElement) {
             const textToCopy = document.getElementById(hiddenElementId).value;
             
@@ -481,7 +473,7 @@
                 htmlOutput += `    <h5>Hostname</h5>`;
                 htmlOutput += `    <button class="btn-copy" onclick="copyContent('hidden-switches', this)">Copy All</button>`;
                 htmlOutput += `  </div>`;
-                htmlOutput += `  <div class="output-box" onclick="selectAllText(this)">${switchesHtml}</div>`;
+                htmlOutput += `  <div class="output-box">${switchesHtml}</div>`;
                 htmlOutput += `  <textarea id="hidden-switches" class="hidden-copy-area">${switchesText}</textarea>`;
                 htmlOutput += `</div>`;
 
@@ -491,7 +483,7 @@
                 htmlOutput += `    <h5>Interface</h5>`;
                 htmlOutput += `    <button class="btn-copy" onclick="copyContent('hidden-interfaces', this)">Copy All</button>`;
                 htmlOutput += `  </div>`;
-                htmlOutput += `  <div class="output-box" onclick="selectAllText(this)">${rawInterfacesHtml}</div>`;
+                htmlOutput += `  <div class="output-box">${rawInterfacesHtml}</div>`;
                 htmlOutput += `  <textarea id="hidden-interfaces" class="hidden-copy-area">${rawInterfacesText}</textarea>`;
                 htmlOutput += `</div>`;
 
@@ -501,7 +493,7 @@
                 htmlOutput += `    <h5>sh run int Gx/x/x</h5>`;
                 htmlOutput += `    <button class="btn-copy" onclick="copyContent('hidden-shrun', this)">Copy All</button>`;
                 htmlOutput += `  </div>`;
-                htmlOutput += `  <div class="output-box" onclick="selectAllText(this)">${shRunHtml}</div>`;
+                htmlOutput += `  <div class="output-box">${shRunHtml}</div>`;
                 htmlOutput += `  <textarea id="hidden-shrun" class="hidden-copy-area">${shRunText}</textarea>`;
                 htmlOutput += `</div>`;
 
@@ -511,7 +503,7 @@
                 htmlOutput += `    <h5>sh int Gix/x/x status</h5>`;
                 htmlOutput += `    <button class="btn-copy" onclick="copyContent('hidden-shint', this)">Copy All</button>`;
                 htmlOutput += `  </div>`;
-                htmlOutput += `  <div class="output-box" onclick="selectAllText(this)">${shIntStatusHtml}</div>`;
+                htmlOutput += `  <div class="output-box">${shIntStatusHtml}</div>`;
                 htmlOutput += `  <textarea id="hidden-shint" class="hidden-copy-area">${shIntStatusText}</textarea>`;
                 htmlOutput += `</div>`;
 
