@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N0C<AT - Config Automation Tool</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --text-main: #c9d1d9;
+            --accent-blue: #58a6ff;
+            --accent-green: #238636;
+            --neon-green: #39ff14;
+            --accent-purple: #bc8cff;
+            --accent-red: #f85149;
+            --code-bg: #010409;
+        }
+
+        body {
+            font-family: "Segoe UI", Roboto, monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+        }
+
+        .container { max-width: 900px; width: 100%; }
+
+        /* --- PURE CSS TEXT LOGO WITH TERMINAL CURSOR --- */
+        h2 {
+            color: #ffffff;
+            font-size: 1.7rem; /* Scaled down from 2.2rem for a sleeker look */
+            margin-bottom: 20px;
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            font-family: "Courier New", Courier, monospace;
+            font-weight: bold;
+        }
+
+        .logo-text {
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-accent {
+            background-color: var(--neon-green);
+            color: var(--code-bg); /* Dark text on neon background */
+            padding: 0px 6px;
+            margin: 0 6px; /* Perfect spacing to detach from C and A */
+            box-shadow: 0 0 12px rgba(57, 255, 20, 0.4); /* Glow effect on the box */
+            display: inline-block;
+            font-weight: 900;
+        }
+
+        .version-tag {
+            font-size: 0.8rem;
+            color: var(--accent-blue);
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: normal;
+            font-family: "Segoe UI", Roboto, monospace;
+        }
+
+        .form-group {
+            background: var(--card-bg);
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .input-section { margin-bottom: 15px; }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+            color: var(--accent-blue);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+        
+        .header-row label { margin-bottom: 0; }
+
+        .expand-btn {
+            background: transparent;
+            color: var(--accent-purple);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            font-size: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.3s ease;
+            font-family: "Courier New", Courier, monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .expand-btn:hover {
+            border-color: var(--accent-purple);
+            background: rgba(188, 140, 255, 0.1);
+            box-shadow: 0 0 8px rgba(188, 140, 255, 0.3);
+            color: #fff;
+        }
+
+        /* --- README / SYSTEM MANUAL STYLES --- */
+        .readme-wrapper {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.3s, margin 0.3s, border 0.3s;
+        }
+
+        .readme-wrapper.expanded {
+            max-height: 800px;
+            padding-top: 15px;
+            margin-top: 10px;
+            border-top: 1px dashed rgba(188, 140, 255, 0.4);
+        }
+
+        .readme-content {
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--text-main);
+            opacity: 0.9;
+        }
+
+        .readme-content h3 {
+            color: var(--accent-purple);
+            font-size: 12px;
+            margin: 12px 0 6px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .readme-content p { margin: 0 0 10px 0; }
+
+        .sample-code {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            color: #79c0ff;
+            white-space: pre-wrap;
+            margin-bottom: 15px;
+            font-size: 11.5px;
+            line-height: 1.4;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* --- CLEAN NATIVE TEXTAREA --- */
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: var(--code-bg);
+            color: #79c0ff;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 12px;
+            font-family: "Courier New", Courier, monospace;
+            box-sizing: border-box;
+            outline: none;
+            font-size: 13px;
+            line-height: 1.5;
+            resize: none;
+            transition: height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color) var(--code-bg);
+        }
+
+        textarea:focus { border-color: var(--accent-blue); }
+        textarea.expanded { height: 400px; }
+        
+        textarea::-webkit-scrollbar { width: 10px; }
+        textarea::-webkit-scrollbar-track { background: var(--code-bg); }
+        textarea::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        textarea::selection { background: rgba(88, 166, 255, 0.3); }
+
+        /* --- UI CONTROLS --- */
+        .controls-row { display: flex; gap: 15px; margin-bottom: 20px; margin-top: 15px; align-items: flex-end;}
+
+        .radio-group, .checkbox-group { display: flex; gap: 8px; }
+        .radio-group label, .checkbox-group label {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-bottom: 0;
+            transition: 0.2s;
+            display: inline-block;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .radio-group input, .checkbox-group input { display: none; }
+        .radio-group label:has(input:checked), .checkbox-group label:has(input:checked) { 
+            border-color: var(--neon-green); 
+            color: var(--neon-green);
+            box-shadow: 0 0 8px rgba(57, 255, 20, 0.2);
+        }
+
+        input[type="number"] {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            color: #d29922;
+            padding: 7px;
+            border-radius: 4px;
+            width: 80px;
+            outline: none;
+            font-family: "Courier New", Courier, monospace;
+            text-align: center;
+        }
+
+        /* --- TOOLTIP CSS --- */
+        .tooltip-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-blue);
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid var(--accent-blue);
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            font-size: 10px;
+            font-family: monospace;
+            cursor: help;
+            position: relative;
+        }
+
+        .tooltip-icon::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 160%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-bg);
+            border: 1px solid var(--accent-blue);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            width: 220px;
+            white-space: normal;
+            text-transform: none;
+            box-shadow: 0 0 15px rgba(88, 166, 255, 0.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.2s;
+            z-index: 10;
+            pointer-events: none;
+            font-family: "Segoe UI", Roboto, monospace;
+            text-align: center;
+            line-height: 1.4;
+            font-weight: normal;
+        }
+
+        .tooltip-icon:hover::after { opacity: 1; visibility: visible; }
+
+        .btn-column { display: flex; flex-direction: column; gap: 8px; justify-content: flex-end; }
+
+        .cyber-btn {
+            background: var(--accent-green);
+            color: #fff;
+            padding: 8px 25px;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid var(--neon-green);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 10px rgba(35, 134, 54, 0.3);
+            white-space: nowrap;
+        }
+
+        .cyber-btn:hover { background: #2ea043; box-shadow: 0 0 20px rgba(57, 255, 20, 0.5); }
+
+        .clear-btn {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 6px 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.2s;
+            opacity: 0.7;
+        }
+
+        .clear-btn:hover {
+            opacity: 1;
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+            background: rgba(188, 140, 255, 0.05);
+        }
+
+        /* --- WARNING BOX --- */
+        .warning-box {
+            background: rgba(248, 81, 73, 0.15);
+            border: 1px dashed var(--accent-red);
+            color: var(--accent-red);
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 11.5px;
+            text-align: center;
+            line-height: 1.4;
+            text-shadow: 0 0 5px rgba(248, 81, 73, 0.4);
+            display: none; 
+        }
+
+        .warning-box strong { font-size: 12.5px; letter-spacing: 1px; }
+
+        /* SCRIPT BOXES */
+        .script-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+
+        .copy-btn {
+            background: #8957e5;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .code-window {
+            display: flex;
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .line-numbers {
+            padding: 10px 8px;
+            background: #0d1117;
+            border-right: 1px solid var(--border-color);
+            color: #484f58;
+            text-align: right;
+            user-select: none;
+            min-width: 25px;
+        }
+
+        .code-content { padding: 10px; color: #79c0ff; white-space: pre; overflow-x: auto; flex-grow: 1; }
+        
+        #statusMsg { font-size: 11px; color: var(--accent-blue); margin-top: 5px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <h2>
+        <span class="logo-text">N0C<span class="logo-accent">&lt;</span>AT</span>
+        <span class="version-tag">// v1.8 [Config Automation Tool]</span>
+    </h2>
+
+    <div class="form-group input-section" style="border-color: rgba(188, 140, 255, 0.3);">
+        <div class="header-row">
+            <label style="color: var(--accent-purple); text-shadow: 0 0 8px rgba(188, 140, 255, 0.4);">00 // SYSTEM_MANUAL [READ_ME]</label>
+            <button class="expand-btn" id="readmeBtn" onclick="toggleReadme()">[ EXPAND ]</button>
+        </div>
+        <div id="readmeWrapper" class="readme-wrapper">
+            <div class="readme-content">
+                <p>Welcome to <strong>N0&lt;AT</strong>. This utility dynamically compiles bulk configuration and rollback scripts for Cisco access switches. It features an <strong>idempotent logic engine</strong>, meaning it will cross-reference your targets and only generate commands for ports that actually require state changes.</p>
+                
+                <h3>> Config Input (01)</h3>
+                <p>To provide the engine with the current interface states, you must paste the raw terminal output of the <code>show running-config interface</code> command from your access switch.</p>
+                
+                <p><strong>REQUIRED SAMPLE FORMAT:</strong></p>
+                <div class="sample-code"><span style="color: #ff9d00;">PH-PH-ACC000#</span>sh running-config interface Gi1/0/1
+Building configuration...
+
+Current configuration : 157 bytes
+!
+interface GigabitEthernet1/0/1
+description : Sample
+switchport access vlan <span style="color: #00ffff; font-weight: bold;">100</span>
+<span style="color: #ffff00;">switchport mode access</span>
+<span style="color: #ff00ff;">spanning-tree bpduguard enable</span>
+end</div>
+
+                <h3>> Safety Failsafe</h3>
+                <p>If the engine detects a Trunk port or a port missing the explicit <code>switchport mode access</code> command, it will generate a warning to prevent accidental network outages.</p>
+
+                <h3>> Target Parameters (02 - 04)</h3>
+                <p>Set your desired Global VLAN, Protocol Mode, and Spanning-Tree requirements. The engine will evaluate the pasted logs and output the exact CLI commands needed to reach your target state.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group input-section">
+        <div class="header-row">
+            <label>01 // Config Input</label>
+            <button class="expand-btn" id="expandBtn" onclick="toggleExpand()">[ EXPAND ]</button>
+        </div>
+        <textarea id="configInput" placeholder="Waiting for logs..." spellcheck="false"></textarea>
+    </div>
+
+    <div class="controls-row">
+        <div class="form-group" style="width: 120px; margin-bottom: 0;">
+            <label>02 // VLAN</label>
+            <input type="number" id="vlanInput" placeholder="VID" min="1" max="4094" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+        </div>
+        
+        <div class="form-group" style="flex-grow: 1; margin-bottom: 0;">
+            <label>03 // Protocol Mode</label>
+            <div class="radio-group">
+                <label><input type="radio" name="securityMode" value="leave" checked><span>NONE</span></label>
+                <label><input type="radio" name="securityMode" value="dot1x"><span>DOT1X</span></label>
+                <label><input type="radio" name="securityMode" value="sticky"><span>STICKY</span></label>
+                <label><input type="radio" name="securityMode" value="resetSticky"><span>RESET</span></label>
+            </div>
+        </div>
+
+        <div class="form-group" style="width: 110px; margin-bottom: 0;">
+            <label style="display: flex; align-items: center; gap: 6px;">
+                04 // EDGE
+                <div class="tooltip-icon" data-tooltip="Applies 'spanning-tree portfast' and 'bpduguard enable'. PortFast bypasses listening/learning states. BPDUGuard disables the port if a switch loop is detected. Use only for end-user devices.">i</div>
+            </label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" id="stpCheckbox"><span>ENABLE</span></label>
+            </div>
+        </div>
+
+        <div class="btn-column">
+            <button class="cyber-btn" onclick="generateScript()">Execute_Run</button>
+            <button class="clear-btn" onclick="clearAll()">Clear</button>
+        </div>
+    </div>
+    
+    <div id="statusMsg"></div>
+
+    <div id="warningBox" class="warning-box"></div>
+
+    <div class="script-header">
+        <label style="margin:0;">> Implementation_Output</label>
+        <button class="copy-btn" onclick="copyCode('primaryCode')">Copy</button>
+    </div>
+    <div class="code-window">
+        <div id="primaryLines" class="line-numbers"></div>
+        <div id="primaryCode" class="code-content">-- system_idle --</div>
+    </div>
+
+    <div class="script-header">
+        <label style="margin:0; color:var(--accent-red);">> Rollback_Protocol</label>
+        <button class="copy-btn" onclick="copyCode('rollbackCode')" style="background:var(--accent-red)">Copy</button>
+    </div>
+    <div class="code-window" style="border-color: #442d30;">
+        <div id="rollbackLines" class="line-numbers" style="color:#6e3636"></div>
+        <div id="rollbackCode" class="code-content" style="color: #ffa198;">-- system_idle --</div>
+    </div>
+</div>
+
+<script>
+    // --- UI LOGIC ---
+    function toggleReadme() {
+        const wrapper = document.getElementById('readmeWrapper');
+        const btn = document.getElementById('readmeBtn');
+        wrapper.classList.toggle('expanded');
+        btn.innerText = wrapper.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
+    }
+
+    function toggleExpand() {
+        const textarea = document.getElementById('configInput');
+        const btn = document.getElementById('expandBtn');
+        textarea.classList.toggle('expanded');
+        btn.innerText = textarea.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
+    }
+
+    function clearAll() {
+        document.getElementById('configInput').value = "";
+        document.getElementById('vlanInput').value = "";
+        document.querySelector('input[value="leave"]').checked = true;
+        document.getElementById('stpCheckbox').checked = false;
+        
+        document.getElementById('primaryCode').innerText = "-- system_idle --";
+        document.getElementById('primaryLines').innerText = "";
+        document.getElementById('rollbackCode').innerText = "-- system_idle --";
+        document.getElementById('rollbackLines').innerText = "";
+        
+        document.getElementById('statusMsg').style.display = 'none';
+        document.getElementById('warningBox').style.display = 'none';
+        
+        const textarea = document.getElementById('configInput');
+        if (textarea.classList.contains('expanded')) toggleExpand();
+    }
+
+    function copyCode(id) {
+        const text = document.getElementById(id).innerText;
+        if(text.includes("-- system_idle --")) return;
+        navigator.clipboard.writeText(text);
+        const btn = event.target;
+        btn.innerText = "DONE";
+        setTimeout(() => btn.innerText = "COPY", 1000);
+    }
+
+    function updateCodeDisplay(id, linesId, content) {
+        const codeElem = document.getElementById(id);
+        const linesElem = document.getElementById(linesId);
+        codeElem.innerText = content;
+        const lineCount = content.split('\n').length;
+        let lineNumbers = "";
+        for (let i = 1; i <= lineCount; i++) lineNumbers += i + "\n";
+        linesElem.innerText = lineNumbers;
+    }
+
+    // --- GENERATOR LOGIC ---
+    function generateScript() {
+        const configText = document.getElementById('configInput').value;
+        const targetVlan = document.getElementById('vlanInput').value;
+        const securityMode = document.querySelector('input[name="securityMode"]:checked').value;
+        const applyStp = document.getElementById('stpCheckbox').checked;
+        const warningBox = document.getElementById('warningBox');
+
+        if (!configText.trim()) return;
+
+        let textBlocks = configText.split(/(?=^[ \t]*interface\s|^[ \t]*int\s)/im);
+        if (textBlocks.length > 0 && !/^[ \t]*(?:interface|int)\s/im.test(textBlocks[0])) textBlocks.shift();
+
+        const interfacesDataMap = {}; 
+        let unsafePorts = [];
+
+        textBlocks.forEach(block => {
+            const ifMatch = block.match(/(?:interface|int)\s+([A-Za-z0-9\/\.\-]+)/i);
+            if (ifMatch) {
+                let rawIf = ifMatch[1];
+                let normalizedIf = rawIf.replace(/^gigabitethernet/i, 'Gi').replace(/^fastethernet/i, 'Fa').replace(/^tengigabitethernet/i, 'Te');
+                
+                let isAccessMode = /switchport mode access/i.test(block);
+                if (!isAccessMode) {
+                    if (!unsafePorts.includes(normalizedIf)) unsafePorts.push(normalizedIf);
+                }
+
+                let vlanMatch = block.match(/switchport access vlan (\d+)/i);
+                let origSecurity = /switchport port-security/i.test(block) ? 'sticky' : (/(?:dot1x|authentication)/i.test(block) ? 'dot1x' : 'none');
+                
+                let hasPortfast = /spanning-tree portfast/i.test(block);
+                let hasBpduguard = /spanning-tree bpduguard/i.test(block);
+
+                if (!interfacesDataMap[normalizedIf]) {
+                    interfacesDataMap[normalizedIf] = { 
+                        name: normalizedIf, 
+                        origVlan: vlanMatch ? vlanMatch[1] : null, 
+                        origSecurity,
+                        hasPortfast,
+                        hasBpduguard
+                    };
+                } else {
+                    if (vlanMatch) interfacesDataMap[normalizedIf].origVlan = vlanMatch[1];
+                    if (origSecurity !== 'none') interfacesDataMap[normalizedIf].origSecurity = origSecurity;
+                    if (hasPortfast) interfacesDataMap[normalizedIf].hasPortfast = true;
+                    if (hasBpduguard) interfacesDataMap[normalizedIf].hasBpduguard = true;
+                }
+            }
+        });
+
+        if (unsafePorts.length > 0) {
+            warningBox.style.display = 'block';
+            warningBox.innerHTML = `<strong>////// WARNING: NON-ACCESS PORTS DETECTED //////</strong><br>Missing <code>switchport mode access</code>: <span style="color: #fff; font-weight: bold;">${unsafePorts.join(', ')}</span><br><em>Applying edge configs to trunk/uplink ports can cause outages. They are included below—proceed with caution!</em>`;
+        } else {
+            warningBox.style.display = 'none';
+        }
+
+        const interfacesData = Object.values(interfacesDataMap);
+        if (interfacesData.length === 0) {
+            updateCodeDisplay('primaryCode', 'primaryLines', "-- system_idle --");
+            updateCodeDisplay('rollbackCode', 'rollbackLines', "-- system_idle --");
+            document.getElementById('statusMsg').innerText = `STATUS: 0 ELIGIBLE PORTS_PARSED`;
+            return;
+        }
+        
+        const chunkSize = 5;
+
+        function getPrimary(iface) {
+            let cmds = [];
+            let vlanChanged = targetVlan && targetVlan !== iface.origVlan;
+            let secChanged = false;
+            let stpChanged = applyStp && (!iface.hasPortfast || !iface.hasBpduguard);
+            
+            if (securityMode === 'dot1x' && iface.origSecurity !== 'dot1x') secChanged = true;
+            if (securityMode === 'sticky' && iface.origSecurity !== 'sticky') secChanged = true;
+            if (securityMode === 'resetSticky' && iface.origSecurity === 'sticky') secChanged = true;
+
+            if (!vlanChanged && !secChanged && !stpChanged) return null;
+
+            if (vlanChanged) cmds.push(`switchport access vlan ${targetVlan}`);
+            if (applyStp) {
+                if (!iface.hasPortfast) cmds.push("spanning-tree portfast");
+                if (!iface.hasBpduguard) cmds.push("spanning-tree bpduguard enable");
+            }
+
+            if (securityMode === 'dot1x' && secChanged) {
+                if (iface.origSecurity === 'sticky') cmds.push("no switchport port-security mac-address sticky", "no switchport port-security");
+                cmds.push("shut", "dot1x pae authenticator", "authentication port-control auto", "no shut");
+            } else if (securityMode === 'sticky' && secChanged) {
+                if (iface.origSecurity === 'dot1x') cmds.push("no dot1x pae authenticator", "no authentication port-control auto");
+                cmds.push("shut", "switchport port-security mac-address sticky", "switchport port-security", "no shut");
+            } else if (securityMode === 'resetSticky' && secChanged) {
+                cmds.push("no switchport port-security mac-address sticky", "no switchport port-security", "shut", "switchport port-security mac-address sticky", "switchport port-security", "no shut");
+            } else if (vlanChanged || stpChanged) {
+                cmds.push("shut", "no shut");
+            }
+            return cmds;
+        }
+
+        function getRollback(iface) {
+            let cmds = [];
+            let vlanChanged = targetVlan && targetVlan !== iface.origVlan;
+            let secChanged = false;
+            let stpChanged = applyStp && (!iface.hasPortfast || !iface.hasBpduguard);
+            
+            if (securityMode === 'dot1x' && iface.origSecurity !== 'dot1x') secChanged = true;
+            if (securityMode === 'sticky' && iface.origSecurity !== 'sticky') secChanged = true;
+            if (securityMode === 'resetSticky' && iface.origSecurity === 'sticky') secChanged = true;
+
+            if (!vlanChanged && !secChanged && !stpChanged) return null;
+
+            if (vlanChanged) cmds.push(iface.origVlan ? `switchport access vlan ${iface.origVlan}` : "no switchport access vlan");
+            if (applyStp) {
+                if (!iface.hasPortfast) cmds.push("no spanning-tree portfast");
+                if (!iface.hasBpduguard) cmds.push("no spanning-tree bpduguard enable");
+            }
+            
+            if (securityMode === 'dot1x' && secChanged) {
+                if (iface.origSecurity === 'sticky') cmds.push("no dot1x pae authenticator", "no authentication port-control auto", "shut", "switchport port-security mac-address sticky", "switchport port-security", "no shut");
+                else if (iface.origSecurity === 'none') cmds.push("no dot1x pae authenticator", "no authentication port-control auto", "shut", "no shut");
+                else if (vlanChanged || stpChanged) cmds.push("shut", "no shut");
+            } else if (securityMode === 'sticky' && secChanged) {
+                if (iface.origSecurity === 'dot1x') cmds.push("no switchport port-security mac-address sticky", "no switchport port-security", "shut", "dot1x pae authenticator", "authentication port-control auto", "no shut");
+                else if (iface.origSecurity === 'none') cmds.push("no switchport port-security mac-address sticky", "no switchport port-security", "shut", "no shut");
+                else if (vlanChanged || stpChanged) cmds.push("shut", "no shut");
+            } else if (vlanChanged || stpChanged) {
+                cmds.push("shut", "no shut");
+            }
+            return cmds.length ? cmds : null;
+        }
+
+        function build(fn) {
+            let lines = ["conf t"];
+            let groups = {};
+            let skippedPorts = [];
+            interfacesData.forEach(d => { 
+                let c = fn(d); 
+                if (c) { 
+                    let k = c.join('\n'); 
+                    if (!groups[k]) groups[k] = []; 
+                    groups[k].push(d.name); 
+                } else {
+                    skippedPorts.push(d.name);
+                }
+            });
+            let keys = Object.keys(groups);
+            
+            if (!keys.length) return "! NO_CHANGES_REQUIRED\n! All valid pasted ports already match the targeted configuration.";
+            if (skippedPorts.length > 0) lines.unshift(`! NOTE: Skipped ${skippedPorts.length} valid port(s) that already match the target config.`);
+            
+            keys.forEach((k, idx) => {
+                let ifaces = groups[k];
+                for (let i = 0; i < ifaces.length; i += chunkSize) {
+                    let chunk = ifaces.slice(i, i + chunkSize);
+                    lines.push(chunk.length > 1 ? `int range ${chunk.join(', ')}` : `int ${chunk[0]}`);
+                    lines.push(k);
+                    if (idx < keys.length - 1 || i + chunkSize < ifaces.length) lines.push("exit");
+                }
+            });
+            lines.push("end", "wr", "!");
+            return lines.join('\n');
+        }
+
+        updateCodeDisplay('primaryCode', 'primaryLines', build(getPrimary));
+        updateCodeDisplay('rollbackCode', 'rollbackLines', build(getRollback));
+        document.getElementById('statusMsg').style.display = 'block';
+        document.getElementById('statusMsg').innerText = `STATUS: ${interfacesData.length} PORTS_PARSED_AND_COMPILED`;
+    }
+</script>
+</body>
+</html>
