@@ -3,147 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Network Device Extractor</title>
-    
+    <title>N0CAPE - Automated Port Extractor</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍌</text></svg>">
-
     <style>
-        /* --- Dark Mode Theme Updates --- */
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px auto; 
-            max-width: 1200px; /* Widened to fit 4 columns beautifully */
-            line-height: 1.6;
-            background-color: #121212; 
-            color: #e0e0e0; 
-            color-scheme: dark; 
-        }
-        textarea.input-box { 
-            width: 100%; 
-            height: 200px; 
-            margin-bottom: 10px; 
-            font-family: monospace; 
-            padding: 10px;
-            box-sizing: border-box;
-            border: 1px solid #444; 
-            border-radius: 4px;
-            background-color: #1e1e1e; 
-            color: #e0e0e0;
+        /* --- N0<AT COLOR PALETTE --- */
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --text-main: #c9d1d9;
+            --accent-blue: #58a6ff;
+            --accent-green: #238636;
+            --neon-green: #39ff14;
+            --accent-purple: #bc8cff;
+            --accent-red: #f85149;
+            --hl-orange: #ff9d00;
+            --code-bg: #010409;
         }
 
-        /* --- Action Buttons Container --- */
-        .action-buttons {
+        body {
+            font-family: "Segoe UI", Roboto, monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             display: flex;
-            gap: 10px;
+            justify-content: center;
+        }
+
+        /* Widened to 1200px to support the 4-column output */
+        .container { max-width: 1200px; width: 100%; }
+
+        /* --- PURE CSS TEXT LOGO WITH TERMINAL CURSOR --- */
+        h2 {
+            color: #ffffff;
+            font-size: 1.7rem;
             margin-bottom: 20px;
-        }
-
-        /* --- Techy Extract Data Button --- */
-        .btn-primary { 
-            position: relative;
-            overflow: hidden; 
-            padding: 8px 16px; 
-            font-size: 14px; 
-            cursor: pointer; 
-            background-color: #0d6efd; 
-            color: white; 
-            border: 1px solid #0d6efd; 
-            border-radius: 4px; 
-            transition: all 0.3s ease;
-            font-family: monospace; 
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            font-family: "Courier New", Courier, monospace;
             font-weight: bold;
-            letter-spacing: 1px;
-            z-index: 1;
         }
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
-            transform: skewX(-25deg);
-            animation: scanLine 2.5s infinite linear;
-            z-index: -1;
-        }
-        @keyframes scanLine {
-            0% { left: -100%; }
-            50% { left: 200%; }
-            100% { left: 200%; }
-        }
-        .btn-primary:hover { 
-            background-color: #0b5ed7; 
-            box-shadow: 0 0 15px rgba(13, 110, 253, 0.8), inset 0 0 10px rgba(255,255,255,0.2);
-            text-shadow: 0 0 5px rgba(255,255,255,0.5);
-        }
-        .btn-primary:active { transform: scale(0.95); }
 
-        /* --- Techy Clear Button --- */
-        .btn-clear {
-            padding: 8px 16px; 
-            font-size: 14px; 
-            cursor: pointer;
-            background-color: transparent;
-            color: #dc3545; 
-            border: 1px solid #dc3545;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-            font-family: monospace;
-            font-weight: bold;
+        .logo-text {
             letter-spacing: 1px;
+            display: flex;
+            align-items: center;
         }
-        .btn-clear:hover {
-            background-color: #dc3545;
-            color: white;
-            box-shadow: 0 0 15px rgba(220, 53, 69, 0.6);
-        }
-        .btn-clear:active { transform: scale(0.95); }
 
-        /* --- Filter Search Bar --- */
-        #filterInput {
-            width: 100%;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 14px;
-            border: 1px solid #444;
-            border-radius: 4px;
-            background-color: #1a1a1a;
-            color: #66b2ff;
-            outline: none;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
+        .logo-accent {
+            background-color: var(--neon-green);
+            color: var(--code-bg);
+            padding: 0px 6px;
+            margin: 0 6px;
+            box-shadow: 0 0 12px rgba(57, 255, 20, 0.4);
+            display: inline-block;
+            font-weight: 900;
+        }
+
+        .version-tag {
+            font-size: 0.8rem;
+            color: var(--accent-blue);
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: normal;
+            font-family: "Segoe UI", Roboto, monospace;
+        }
+
+        /* --- FORM & PANEL STYLES --- */
+        .form-group {
+            background: var(--card-bg);
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             margin-bottom: 15px;
         }
-        #filterInput:focus {
-            border-color: #0d6efd;
-            box-shadow: 0 0 10px rgba(13, 110, 253, 0.3);
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
         }
 
-        #output { 
-            background: #1e1e1e; 
-            padding: 15px; 
-            border: 1px solid #444; 
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+            color: var(--accent-blue);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+        .header-row label { margin-bottom: 0; }
+
+        .expand-btn {
+            background: transparent;
+            color: var(--accent-purple);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            font-size: 10px;
+            cursor: pointer;
             border-radius: 4px;
-            min-height: 50px; 
-            font-family: monospace; 
-            font-size: 14px;
+            transition: 0.3s ease;
+            font-family: "Courier New", Courier, monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        h4 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #66b2ff; 
-            border-bottom: 1px solid #444;
-            padding-bottom: 5px;
+        .expand-btn:hover {
+            border-color: var(--accent-purple);
+            background: rgba(188, 140, 255, 0.1);
+            box-shadow: 0 0 8px rgba(188, 140, 255, 0.3);
+            color: #fff;
         }
-        h2 { color: #ffffff; }
-        .section { margin-bottom: 20px; }
 
-        /* --- Results Layout --- */
+        /* --- README / SYSTEM MANUAL STYLES --- */
+        .readme-wrapper {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.3s, margin 0.3s, border 0.3s;
+        }
+        .readme-wrapper.expanded {
+            max-height: 800px;
+            padding-top: 15px;
+            margin-top: 10px;
+            border-top: 1px dashed rgba(188, 140, 255, 0.4);
+        }
+        .readme-content {
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--text-main);
+            opacity: 0.9;
+        }
+        .readme-content h3 {
+            color: var(--accent-purple);
+            font-size: 12px;
+            margin: 12px 0 6px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .readme-content p { margin: 0 0 10px 0; }
+        .sample-code {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            color: #79c0ff;
+            white-space: pre-wrap;
+            margin-bottom: 15px;
+            font-size: 11.5px;
+            line-height: 1.4;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* --- CLEAN NATIVE TEXTAREA & INPUTS --- */
+        textarea, input[type="text"] {
+            width: 100%;
+            background: var(--code-bg);
+            color: #79c0ff;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 12px;
+            font-family: "Courier New", Courier, monospace;
+            box-sizing: border-box;
+            outline: none;
+            font-size: 13px;
+            line-height: 1.5;
+            transition: height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color) var(--code-bg);
+        }
+        textarea { height: 120px; resize: none; }
+        textarea:focus, input[type="text"]:focus { border-color: var(--accent-blue); }
+        textarea.expanded { height: 400px; }
+        
+        textarea::-webkit-scrollbar, .output-box::-webkit-scrollbar { width: 10px; }
+        textarea::-webkit-scrollbar-track, .output-box::-webkit-scrollbar-track { background: var(--code-bg); }
+        textarea::-webkit-scrollbar-thumb, .output-box::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        textarea::selection, .output-box::selection { background: rgba(88, 166, 255, 0.3); }
+
+        input[type="text"] { margin-bottom: 15px; color: var(--hl-orange); }
+        input[type="text"]::placeholder { color: #484f58; }
+
+        /* --- UI CONTROLS --- */
+        .controls-row { display: flex; gap: 12px; margin-top: 15px; margin-bottom: 15px; align-items: flex-end;}
+        
+        .cyber-btn {
+            background: var(--accent-green);
+            color: #fff;
+            padding: 8px 20px;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid var(--neon-green);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 10px rgba(35, 134, 54, 0.3);
+            white-space: nowrap;
+        }
+        .cyber-btn:hover { background: #2ea043; box-shadow: 0 0 20px rgba(57, 255, 20, 0.5); }
+
+        .clear-btn {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 6px 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.2s;
+            opacity: 0.7;
+        }
+        .clear-btn:hover {
+            opacity: 1;
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+            background: rgba(188, 140, 255, 0.05);
+        }
+
+        /* --- 4-COLUMN OUTPUT STYLES --- */
         .results-container {
             display: flex;
-            gap: 15px; 
-            margin-top: 10px;
+            gap: 12px; 
         }
         .result-column {
             flex: 1; 
@@ -151,53 +238,47 @@
             flex-direction: column;
             overflow: hidden; 
         }
-        .header-row {
+        .script-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 5px;
         }
-        .header-row h5 {
-            margin: 0;
-            color: #e0e0e0; 
-        }
-        .btn-copy {
-            font-size: 12px;
-            padding: 4px 10px;
-            background-color: #b100cd; 
+        .copy-btn {
+            background: #8957e5;
             color: white;
             border: none;
-            border-radius: 3px;
+            padding: 4px 10px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .btn-copy:hover {
-            background-color: #8e00a4; 
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-family: "Courier New", Courier, monospace;
         }
 
-        /* --- Editor Style Output Boxes (With Line Numbers) --- */
         .output-box {
             width: 100%;
             height: 400px; 
-            font-family: monospace;
-            font-size: 13px;
-            border: 1px solid #444;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             box-sizing: border-box;
             padding: 10px 0; 
             overflow-y: auto; 
-            background-color: #1a1a1a; 
-            color: #a5d6ff; 
+            background-color: var(--code-bg); 
+            color: #79c0ff; 
             cursor: text;
             counter-reset: linenumber; 
+            line-height: 1.5;
         }
 
         .line-item {
             display: block;
-            padding-left: 45px; 
+            padding-left: 35px; 
             padding-right: 10px;
             position: relative;
-            line-height: 1.6;
             white-space: nowrap;
         }
 
@@ -207,315 +288,312 @@
             position: absolute;
             left: 0;
             top: 0;
-            width: 30px;
+            width: 20px;
             text-align: right;
-            color: #5c636a; 
-            background-color: #121212; 
-            border-right: 1px solid #444;
-            padding-right: 5px;
+            color: #484f58; 
+            background-color: #0d1117; 
+            border-right: 1px solid var(--border-color);
+            padding-right: 6px;
             height: 100%;
             user-select: none; 
             -webkit-user-select: none;
         }
-        
+
+        /* Duplicate Warning Styles */
         .highlight-dup {
-            background-color: rgba(220, 53, 69, 0.25); 
-            color: #ff8c8c; 
+            background-color: rgba(248, 81, 73, 0.15); 
+            color: #ff7b72; 
         }
-
         .highlight-dup::before {
-            background-color: rgba(220, 53, 69, 0.1); 
-            color: #ff8c8c;
-            border-right-color: #dc3545;
+            background-color: rgba(248, 81, 73, 0.05); 
+            color: #ff7b72;
+            border-right-color: var(--accent-red);
         }
 
-        .warning-msg {
-            background-color: rgba(220, 53, 69, 0.1);
-            color: #ff6b6b;
-            border: 1px solid #dc3545;
-            padding: 10px;
+        .warning-box {
+            background: rgba(248, 81, 73, 0.08);
+            border: 1px dashed var(--accent-red);
+            color: var(--accent-red);
+            padding: 10px 15px;
             border-radius: 4px;
             margin-bottom: 15px;
-            font-family: monospace;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 11.5px;
+            text-align: center;
+            line-height: 1.4;
         }
+        .warning-box strong { font-size: 12.5px; letter-spacing: 1px; }
 
         .hidden-copy-area { display: none; }
+        #statusMsg { font-size: 11px; color: var(--accent-blue); margin-top: 15px; font-family: "Courier New", Courier, monospace;}
     </style>
 </head>
 <body>
 
-    <h2>NOC Port Extractor 2.0</h2>
-    <p>Paste your raw device logs (CDP/LLDP outputs, etc.) or Inventory Tables below to extract Switches and Interfaces:</p>
+<div class="container">
     
-    <textarea id="inputText" class="input-box" placeholder="Paste your log output or table here..."></textarea>
-    
-    <div class="action-buttons">
-        <button class="btn-primary" onclick="processText()">> Extract_Data</button>
-        <button class="btn-clear" onclick="clearText()">[ Clear_Output ]</button>
+    <h2>
+        <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
+        <span class="version-tag">// v2.0 [Automated Port Extractor]</span>
+    </h2>
+
+    <div class="form-group" style="border-color: rgba(188, 140, 255, 0.3);">
+        <div class="header-row">
+            <label style="color: var(--accent-purple); text-shadow: 0 0 8px rgba(188, 140, 255, 0.4);">00 // SYSTEM_MANUAL [READ_ME]</label>
+            <button class="expand-btn" id="readmeBtn" onclick="toggleReadme()">[ COLLAPSE ]</button>
+        </div>
+        <div id="readmeWrapper" class="readme-wrapper expanded">
+            <div class="readme-content">
+                <p>Welcome to <strong>N0CAPE</strong>. This utility dynamically extracts and pairs network interfaces with their respective switch hostnames from raw data.</p>
+                
+                <h3>> Instructions (01)</h3>
+                <p>Provide the engine with raw data (Ticket descriptions, CDP/LLDP outputs, or Inventory tables). As long as the text contains a Switch Hostname (e.g., <code>PH-CISCO-CAS0101</code>) and Port Numbers (e.g., <code>gi1/0/3</code>), the tool will map them.</p>
+            </div>
+        </div>
     </div>
 
-    <div id="filterWrapper" style="display: none;">
-        <input type="text" id="filterInput" placeholder="🔍 Filter interfaces (e.g., GigabitEthernet1/0/1) or switch names..." onkeyup="renderOutput()">
+    <div class="form-group">
+        <div class="header-row">
+            <label>01 // Config Input</label>
+            <button class="expand-btn" id="expandBtn" onclick="toggleExpand()">[ EXPAND ]</button>
+        </div>
+        <textarea id="configInput" placeholder="Waiting for logs..." spellcheck="false"></textarea>
+        
+        <div class="controls-row">
+            <button class="cyber-btn" onclick="processText()">Execute_Run</button>
+            <button class="clear-btn" onclick="clearText()">Clear</button>
+        </div>
     </div>
 
-    <h3>Result:</h3>
-    <div id="output"><em>Awaiting input...</em></div>
+    <div class="form-group">
+        <div class="header-row" style="margin-bottom: 15px;">
+            <label>02 // Extracted Data</label>
+        </div>
+        
+        <input type="text" id="filterInput" placeholder="> Filter by interface (Gi1/0/1) or hostname..." onkeyup="renderOutput()" style="display: none;">
+        
+        <div id="output">
+            <div style="font-family: 'Courier New', Courier, monospace; color: #484f58; font-size: 13px;">-- system_idle --</div>
+        </div>
+        
+        <div id="statusMsg" style="display: none;"></div>
+    </div>
 
-    <script>
-        // Global variables to store relational data
-        let globalSwitches = [];
-        let globalInterfaces = []; // Stores objects: { sw: 'SwitchName', iface: 'Gi1/0/1', count: 1 }
+</div>
 
-        function clearText() {
-            document.getElementById('inputText').value = '';
-            document.getElementById('output').innerHTML = '<em>Awaiting input...</em>';
-            document.getElementById('filterWrapper').style.display = 'none';
-            document.getElementById('filterInput').value = '';
-            
-            // Wipe memory
-            globalSwitches = [];
-            globalInterfaces = [];
+<script>
+    // --- UI TOGGLES ---
+    function toggleReadme() {
+        const wrapper = document.getElementById('readmeWrapper');
+        const btn = document.getElementById('readmeBtn');
+        wrapper.classList.toggle('expanded');
+        btn.innerText = wrapper.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
+    }
+
+    function toggleExpand() {
+        const textarea = document.getElementById('configInput');
+        const btn = document.getElementById('expandBtn');
+        textarea.classList.toggle('expanded');
+        btn.innerText = textarea.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
+    }
+
+    // --- CORE LOGIC ---
+    let globalSwitches = [];
+    let globalInterfaces = [];
+
+    function clearText() {
+        document.getElementById('configInput').value = '';
+        document.getElementById('output').innerHTML = '<div style="font-family: \'Courier New\', Courier, monospace; color: #484f58; font-size: 13px;">-- system_idle --</div>';
+        document.getElementById('filterInput').style.display = 'none';
+        document.getElementById('filterInput').value = '';
+        document.getElementById('statusMsg').style.display = 'none';
+        
+        globalSwitches = [];
+        globalInterfaces = [];
+    }
+
+    function selectAllText(el) {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+
+    function copyContent(hiddenElementId, btnElement) {
+        const textToCopy = document.getElementById(hiddenElementId).value;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const originalText = btnElement.innerText;
+            btnElement.innerText = "COPIED";
+            btnElement.style.background = "var(--accent-green)"; 
+            setTimeout(() => {
+                btnElement.innerText = originalText;
+                btnElement.style.background = ""; 
+            }, 2000);
+        }).catch(err => alert("Failed to copy text."));
+    }
+
+    function processText() {
+        const text = document.getElementById('configInput').value;
+        if (!text.trim()) return; 
+        
+        const tokens = [];
+        
+        const switchRegex = /[a-zA-Z0-9\-]*(?:ACC|CAS)\d+/gi;
+        let match;
+        while ((match = switchRegex.exec(text)) !== null) { 
+            tokens.push({ type: 'switch', value: match[0].toUpperCase(), index: match.index }); 
         }
 
-        function copyContent(hiddenElementId, btnElement) {
-            const textToCopy = document.getElementById(hiddenElementId).value;
-            
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                const originalText = btnElement.innerText;
-                btnElement.innerText = "Copied!";
-                btnElement.style.backgroundColor = "#198754"; 
-                
-                setTimeout(() => {
-                    btnElement.innerText = originalText;
-                    btnElement.style.backgroundColor = ""; 
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy text: ', err);
-                alert("Failed to copy text to clipboard.");
-            });
+        const ifaceRegex = /(?:gigabitethernet|gi)[^\d]*(\d+\/\d+\/\d+)/gi;
+        while ((match = ifaceRegex.exec(text)) !== null) { 
+            tokens.push({ type: 'iface', value: "Gi" + match[1], index: match.index }); 
         }
 
-        function processText() {
-            const text = document.getElementById('inputText').value;
-            if (!text.trim()) return; 
-            
-            // --- 1. Tokenize Data to Understand Relationships ---
-            const tokens = [];
-            
-            // Format A: Switches
-            const switchRegex = /[a-zA-Z0-9\-]*(?:ACC|CAS)\d+/gi;
-            let match;
-            while ((match = switchRegex.exec(text)) !== null) { 
-                tokens.push({ type: 'switch', value: match[0].toUpperCase(), index: match.index }); 
-            }
-
-            // Format A: Standard Interfaces
-            const ifaceRegex = /(?:gigabitethernet|gi)[^\d]*(\d+\/\d+\/\d+)/gi;
-            while ((match = ifaceRegex.exec(text)) !== null) { 
-                tokens.push({ type: 'iface', value: "Gi" + match[1], index: match.index }); 
-            }
-
-            // Format B: Table Format (Switch and Port combined)
-            const tableRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
-            while ((match = tableRegex.exec(text)) !== null) {
-                tokens.push({ type: 'inline', switch: match[1].toUpperCase(), iface: `Gi${match[2]}/0/${match[3]}`, index: match.index });
-            }
-
-            // Format C: Hyphenated Format (Switch and Port combined)
-            const hyphenRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)-(\d+)[\s\t]+(\d+)/gi;
-            while ((match = hyphenRegex.exec(text)) !== null) {
-                tokens.push({ type: 'inline', switch: match[1].toUpperCase(), iface: `Gi${match[2]}/0/${match[3]}`, index: match.index });
-            }
-
-            // Sort tokens by their position in the text to track context top-to-bottom
-            tokens.sort((a, b) => a.index - b.index);
-
-            // --- 2. Build the Relational Database (Grouped by Switch) ---
-            const switchesSet = new Set();
-            const interfaceCounts = new Map(); // Composite key tracker: "SwitchName|InterfaceName"
-            let currentSwitch = "UNKNOWN";
-
-            tokens.forEach(token => {
-                if (token.type === 'switch') {
-                    currentSwitch = token.value;
-                    switchesSet.add(currentSwitch);
-                    
-                } else if (token.type === 'iface') {
-                    const iface = token.value;
-                    const compositeKey = `${currentSwitch}|${iface}`;
-                    interfaceCounts.set(compositeKey, (interfaceCounts.get(compositeKey) || 0) + 1);
-                    
-                } else if (token.type === 'inline') {
-                    const sw = token.switch;
-                    const iface = token.iface;
-                    
-                    currentSwitch = sw; // Update context
-                    switchesSet.add(sw);
-                    
-                    const compositeKey = `${sw}|${iface}`;
-                    interfaceCounts.set(compositeKey, (interfaceCounts.get(compositeKey) || 0) + 1);
-                }
-            });
-
-            // Convert map to array of structured objects
-            globalSwitches = Array.from(switchesSet).sort();
-            globalInterfaces = [];
-
-            for (let [key, count] of interfaceCounts.entries()) {
-                const [sw, iface] = key.split('|');
-                globalInterfaces.push({ sw: sw, iface: iface, count: count });
-            }
-
-            // Sort interfaces: First by interface number, then fallback to switch name
-            globalInterfaces.sort((a, b) => {
-                const partsA = a.iface.substring(2).split('/').map(Number);
-                const partsB = b.iface.substring(2).split('/').map(Number);
-                for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
-                    const numA = partsA[i] || 0;
-                    const numB = partsB[i] || 0;
-                    if (numA !== numB) { return numA - numB; }
-                }
-                return a.sw.localeCompare(b.sw);
-            });
-
-            // Show the filter box and wipe any old filter text
-            document.getElementById('filterWrapper').style.display = 'block';
-            document.getElementById('filterInput').value = '';
-            
-            // Draw the screen
-            renderOutput();
+        const tableRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
+        while ((match = tableRegex.exec(text)) !== null) {
+            tokens.push({ type: 'inline', switch: match[1].toUpperCase(), iface: `Gi${match[2]}/0/${match[3]}`, index: match.index });
         }
 
-        // --- Core Render & Filter Logic ---
-        function renderOutput() {
-            const rawFilterStr = document.getElementById('filterInput').value.trim().toLowerCase();
-            const filterStr = rawFilterStr.replace(/gigabitethernet/g, 'gi');
+        const hyphenRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)-(\d+)[\s\t]+(\d+)/gi;
+        while ((match = hyphenRegex.exec(text)) !== null) {
+            tokens.push({ type: 'inline', switch: match[1].toUpperCase(), iface: `Gi${match[2]}/0/${match[3]}`, index: match.index });
+        }
 
-            const outputDiv = document.getElementById('output');
-            let htmlOutput = "";
+        tokens.sort((a, b) => a.index - b.index);
 
-            const filteredSwitches = globalSwitches.filter(sw => sw.toLowerCase().includes(filterStr));
+        const switchesSet = new Set();
+        const interfaceCounts = new Map(); 
+        let currentSwitch = "UNKNOWN";
 
-            const filteredInterfaces = globalInterfaces.filter(item => {
-                const matchesIface = item.iface.toLowerCase().includes(filterStr);
-                const matchesSwitch = item.sw.toLowerCase().includes(filterStr);
-                return matchesIface || matchesSwitch;
+        tokens.forEach(token => {
+            if (token.type === 'switch') {
+                currentSwitch = token.value;
+                switchesSet.add(currentSwitch);
+            } else if (token.type === 'iface') {
+                const iface = token.value;
+                const compositeKey = `${currentSwitch}|${iface}`;
+                interfaceCounts.set(compositeKey, (interfaceCounts.get(compositeKey) || 0) + 1);
+            } else if (token.type === 'inline') {
+                const sw = token.switch;
+                const iface = token.iface;
+                currentSwitch = sw; 
+                switchesSet.add(sw);
+                const compositeKey = `${sw}|${iface}`;
+                interfaceCounts.set(compositeKey, (interfaceCounts.get(compositeKey) || 0) + 1);
+            }
+        });
+
+        globalSwitches = Array.from(switchesSet).sort();
+        globalInterfaces = [];
+
+        for (let [key, count] of interfaceCounts.entries()) {
+            const [sw, iface] = key.split('|');
+            globalInterfaces.push({ sw: sw, iface: iface, count: count });
+        }
+
+        globalInterfaces.sort((a, b) => {
+            const partsA = a.iface.substring(2).split('/').map(Number);
+            const partsB = b.iface.substring(2).split('/').map(Number);
+            for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+                const numA = partsA[i] || 0;
+                const numB = partsB[i] || 0;
+                if (numA !== numB) { return numA - numB; }
+            }
+            return a.sw.localeCompare(b.sw);
+        });
+
+        document.getElementById('filterInput').style.display = 'block';
+        document.getElementById('filterInput').value = '';
+        
+        renderOutput();
+    }
+
+    function renderOutput() {
+        const rawFilterStr = document.getElementById('filterInput').value.trim().toLowerCase();
+        const filterStr = rawFilterStr.replace(/gigabitethernet/g, 'gi');
+
+        const outputDiv = document.getElementById('output');
+        let htmlOutput = "";
+
+        const filteredSwitches = globalSwitches.filter(sw => sw.toLowerCase().includes(filterStr));
+        const filteredInterfaces = globalInterfaces.filter(item => {
+            return item.iface.toLowerCase().includes(filterStr) || item.sw.toLowerCase().includes(filterStr);
+        });
+
+        let duplicateCount = 0;
+        for (let item of filteredInterfaces) {
+            if (item.count > 1) duplicateCount++;
+        }
+
+        if (duplicateCount > 0) {
+            htmlOutput += `<div class="warning-box"><strong>////// WARNING: DUPLICATES DETECTED //////</strong><br>Found ${duplicateCount} interface(s) that appeared multiple times on the SAME switch.<br><em>They are highlighted in red below.</em></div>`;
+        }
+
+        if (filteredInterfaces.length > 0) {
+            let switchesHtml = ""; let rawInterfacesHtml = ""; let shRunHtml = ""; let shIntStatusHtml = "";
+            let switchesText = ""; let rawInterfacesText = ""; let shRunText = ""; let shIntStatusText = "";
+
+            filteredInterfaces.forEach((item, index) => {
+                const isDup = item.count > 1;
+                const tooltipText = isDup ? `Duplicate: Found ${item.count} times` : ``;
+                const spanOpen = isDup ? `<span class="highlight-dup line-item" title="${tooltipText}">` : `<span class="line-item" title="${tooltipText}">`;
+                const spanClose = `</span>`;
+
+                switchesHtml += `${spanOpen}${item.sw}${spanClose}`;
+                rawInterfacesHtml += `${spanOpen}${item.iface}${spanClose}`;
+                shRunHtml += `${spanOpen}sh run int ${item.iface}${spanClose}`;
+                shIntStatusHtml += `${spanOpen}sh int ${item.iface} status${spanClose}`;
+
+                const newline = (index < filteredInterfaces.length - 1) ? '\n' : '';
+                switchesText += `${item.sw}${newline}`;
+                rawInterfacesText += `${item.iface}${newline}`;
+                shRunText += `sh run int ${item.iface}${newline}`;
+                shIntStatusText += `sh int ${item.iface} status${newline}`;
             });
 
-            let duplicateCount = 0;
-            for (let item of filteredInterfaces) {
-                if (item.count > 1) duplicateCount++;
-            }
+            htmlOutput += `<div class="results-container">`;
+            
+            // Col 1
+            htmlOutput += `<div class="result-column">
+                <div class="script-header"><label>> TARGET_SW</label><button class="copy-btn" onclick="copyContent('hidden-switches', this)">COPY</button></div>
+                <div class="output-box" onclick="selectAllText(this)">${switchesHtml}</div>
+                <textarea id="hidden-switches" class="hidden-copy-area">${switchesText}</textarea>
+            </div>`;
 
-            // --- Draw Switches Section (Global List) ---
-            htmlOutput += `<div class="section">`;
-            if (filterStr && filteredSwitches.length !== globalSwitches.length) {
-                htmlOutput += `<h4>Switches Found (Showing: ${filteredSwitches.length} / Total: ${globalSwitches.length})</h4>`;
-            } else {
-                htmlOutput += `<h4>Switches Found (Total: ${globalSwitches.length})</h4>`;
-            }
+            // Col 2
+            htmlOutput += `<div class="result-column">
+                <div class="script-header"><label>> PORT_ID</label><button class="copy-btn" onclick="copyContent('hidden-interfaces', this)">COPY</button></div>
+                <div class="output-box" onclick="selectAllText(this)">${rawInterfacesHtml}</div>
+                <textarea id="hidden-interfaces" class="hidden-copy-area">${rawInterfacesText}</textarea>
+            </div>`;
 
-            if (filteredSwitches.length > 0) {
-                htmlOutput += filteredSwitches.join('<br>');
-            } else {
-                htmlOutput += `<em>No switches match your filter.</em>`;
-            }
-            htmlOutput += `</div>`;
+            // Col 3
+            htmlOutput += `<div class="result-column">
+                <div class="script-header"><label>> SH_RUN_CMD</label><button class="copy-btn" onclick="copyContent('hidden-shrun', this)">COPY</button></div>
+                <div class="output-box" onclick="selectAllText(this)">${shRunHtml}</div>
+                <textarea id="hidden-shrun" class="hidden-copy-area">${shRunText}</textarea>
+            </div>`;
 
-            // --- Draw 4-Column Interfaces Section ---
-            htmlOutput += `<div class="section">`;
-            if (filterStr && filteredInterfaces.length !== globalInterfaces.length) {
-                htmlOutput += `<h4>Interfaces Extracted (Showing: ${filteredInterfaces.length} / Total Unique: ${globalInterfaces.length})</h4>`;
-            } else {
-                htmlOutput += `<h4>Interfaces Extracted (Unique: ${globalInterfaces.length})</h4>`;
-            }
+            // Col 4
+            htmlOutput += `<div class="result-column">
+                <div class="script-header"><label>> SH_STATUS_CMD</label><button class="copy-btn" onclick="copyContent('hidden-shint', this)">COPY</button></div>
+                <div class="output-box" onclick="selectAllText(this)">${shIntStatusHtml}</div>
+                <textarea id="hidden-shint" class="hidden-copy-area">${shIntStatusText}</textarea>
+            </div>`;
 
-            if (duplicateCount > 0) {
-                htmlOutput += `<div class="warning-msg">⚠️ Found ${duplicateCount} interface(s) in this view that appeared multiple times on the SAME switch. They are highlighted in red below.</div>`;
-            }
-
-            if (filteredInterfaces.length > 0) {
-                let switchesHtml = "";
-                let rawInterfacesHtml = "";
-                let shRunHtml = "";
-                let shIntStatusHtml = "";
-
-                let switchesText = "";
-                let rawInterfacesText = "";
-                let shRunText = "";
-                let shIntStatusText = "";
-
-                filteredInterfaces.forEach((item, index) => {
-                    const isDup = item.count > 1;
-                    const tooltipText = isDup ? `Duplicate: Found ${item.count} times` : ``;
-                    const spanOpen = isDup ? `<span class="highlight-dup line-item" title="${tooltipText}">` : `<span class="line-item" title="${tooltipText}">`;
-                    const spanClose = `</span>`;
-
-                    // Visual HTML elements for the 4 separate columns
-                    switchesHtml += `${spanOpen}${item.sw}${spanClose}`;
-                    rawInterfacesHtml += `${spanOpen}${item.iface}${spanClose}`;
-                    shRunHtml += `${spanOpen}sh run int ${item.iface}${spanClose}`;
-                    shIntStatusHtml += `${spanOpen}sh int ${item.iface} status${spanClose}`;
-
-                    // Pure text for the background copying system
-                    const newline = (index < filteredInterfaces.length - 1) ? '\n' : '';
-                    switchesText += `${item.sw}${newline}`;
-                    rawInterfacesText += `${item.iface}${newline}`;
-                    shRunText += `sh run int ${item.iface}${newline}`;
-                    shIntStatusText += `sh int ${item.iface} status${newline}`;
-                });
-
-                htmlOutput += `<div class="results-container">`;
-                
-                // Column 1: Switch Hostname
-                htmlOutput += `<div class="result-column">`;
-                htmlOutput += `  <div class="header-row">`;
-                htmlOutput += `    <h5>Hostname</h5>`;
-                htmlOutput += `    <button class="btn-copy" onclick="copyContent('hidden-switches', this)">Copy All</button>`;
-                htmlOutput += `  </div>`;
-                htmlOutput += `  <div class="output-box">${switchesHtml}</div>`;
-                htmlOutput += `  <textarea id="hidden-switches" class="hidden-copy-area">${switchesText}</textarea>`;
-                htmlOutput += `</div>`;
-
-                // Column 2: Interfaces
-                htmlOutput += `<div class="result-column">`;
-                htmlOutput += `  <div class="header-row">`;
-                htmlOutput += `    <h5>Interface</h5>`;
-                htmlOutput += `    <button class="btn-copy" onclick="copyContent('hidden-interfaces', this)">Copy All</button>`;
-                htmlOutput += `  </div>`;
-                htmlOutput += `  <div class="output-box">${rawInterfacesHtml}</div>`;
-                htmlOutput += `  <textarea id="hidden-interfaces" class="hidden-copy-area">${rawInterfacesText}</textarea>`;
-                htmlOutput += `</div>`;
-
-                // Column 3: sh run int
-                htmlOutput += `<div class="result-column">`;
-                htmlOutput += `  <div class="header-row">`;
-                htmlOutput += `    <h5>sh run int Gx/x/x</h5>`;
-                htmlOutput += `    <button class="btn-copy" onclick="copyContent('hidden-shrun', this)">Copy All</button>`;
-                htmlOutput += `  </div>`;
-                htmlOutput += `  <div class="output-box">${shRunHtml}</div>`;
-                htmlOutput += `  <textarea id="hidden-shrun" class="hidden-copy-area">${shRunText}</textarea>`;
-                htmlOutput += `</div>`;
-
-                // Column 4: sh int status
-                htmlOutput += `<div class="result-column">`;
-                htmlOutput += `  <div class="header-row">`;
-                htmlOutput += `    <h5>sh int Gix/x/x status</h5>`;
-                htmlOutput += `    <button class="btn-copy" onclick="copyContent('hidden-shint', this)">Copy All</button>`;
-                htmlOutput += `  </div>`;
-                htmlOutput += `  <div class="output-box">${shIntStatusHtml}</div>`;
-                htmlOutput += `  <textarea id="hidden-shint" class="hidden-copy-area">${shIntStatusText}</textarea>`;
-                htmlOutput += `</div>`;
-
-                htmlOutput += `</div>`; 
-            } else {
-                htmlOutput += `<em>No interfaces match your filter.</em>`;
-            }
-            htmlOutput += `</div>`;
-
-            outputDiv.innerHTML = htmlOutput;
+            htmlOutput += `</div>`; 
+            
+            // Update Status Msg
+            document.getElementById('statusMsg').style.display = 'block';
+            document.getElementById('statusMsg').innerText = `STATUS: ${filteredInterfaces.length} MAPPINGS_EXTRACTED | ${filteredSwitches.length} HOSTNAMES_FOUND`;
+        } else {
+            htmlOutput += `<div style="font-family: 'Courier New', Courier, monospace; color: #484f58; font-size: 13px;">No interfaces match your filter.</div>`;
         }
-    </script>
+
+        outputDiv.innerHTML = htmlOutput;
+    }
+</script>
 
 </body>
 </html>
