@@ -119,7 +119,33 @@
             color: #fff;
         }
 
-        /* --- README / SYSTEM MANUAL STYLES --- */
+        /* --- MULTI-TENANT DEVICE HUD --- */
+        .device-hud {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-main);
+            font-family: "Courier New", Courier, monospace;
+            opacity: 0;
+            transition: opacity 0.3s;
+            max-width: 600px;
+        }
+        .device-hud.visible { opacity: 1; }
+        .host-tag {
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+        }
+        .host-tag strong { color: #fff; margin-right: 5px; }
+        .ip-highlight { font-weight: bold; text-shadow: 0 0 5px rgba(57, 255, 20, 0.4); }
+
+        /* --- COLLAPSIBLE WRAPPERS --- */
         .readme-wrapper {
             max-height: 0;
             overflow: hidden;
@@ -145,19 +171,6 @@
             letter-spacing: 1px;
         }
         .readme-content p { margin: 0 0 10px 0; }
-        .sample-code {
-            background: var(--code-bg);
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            border-radius: 4px;
-            font-family: "Courier New", Courier, monospace;
-            color: #79c0ff;
-            white-space: pre-wrap;
-            margin-bottom: 15px;
-            font-size: 11.5px;
-            line-height: 1.4;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-        }
 
         /* --- CLEAN NATIVE TEXTAREA & INPUTS --- */
         textarea, input[type="text"] {
@@ -326,6 +339,33 @@
 
         .hidden-copy-area { display: none; }
         #statusMsg { font-size: 11px; color: var(--accent-blue); margin-top: 15px; font-family: "Courier New", Courier, monospace;}
+
+        /* --- LOCAL DB STYLES --- */
+        .bottom-actions { text-align: center; margin-top: 30px; margin-bottom: 20px; display: flex; justify-content: center; gap: 15px; }
+        
+        .db-box {
+            background: var(--code-bg);
+            border: 1px solid var(--accent-green);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .db-security-note {
+            background: rgba(35, 134, 54, 0.1);
+            border-left: 3px solid var(--accent-green);
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            font-size: 11px;
+            color: var(--text-main);
+            line-height: 1.4;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .db-box textarea { height: 150px; margin-bottom: 10px; border-color: rgba(35, 134, 54, 0.5); }
+        .db-controls { display: flex; justify-content: space-between; align-items: center; }
+        .db-status { font-size: 11px; color: var(--accent-green); font-family: monospace; }
+
     </style>
 </head>
 <body>
@@ -334,7 +374,7 @@
     
     <h2>
         <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-        <span class="version-tag">// v2.0 [Automated Port Extractor]</span>
+        <span class="version-tag">// v3.0 [Automated Port Extractor]</span>
     </h2>
 
     <div class="form-group" style="border-color: rgba(188, 140, 255, 0.3);">
@@ -356,9 +396,12 @@
     <div class="form-group">
         <div class="header-row">
             <label>01 // Config Input</label>
-            <button class="expand-btn" id="expandBtn" onclick="toggleExpand()">[ EXPAND ]</button>
+            <div style="display: flex; gap: 10px; align-items: center; justify-content: flex-end; flex-grow: 1;">
+                <div id="deviceHud" class="device-hud">Waiting for target...</div>
+                <button class="expand-btn" id="expandBtn" style="margin-left: 10px;" onclick="toggleExpand()">[ EXPAND ]</button>
+            </div>
         </div>
-        <textarea id="configInput" placeholder="Waiting for logs..." spellcheck="false"></textarea>
+        <textarea id="configInput" placeholder="Waiting for logs..." spellcheck="false" oninput="updateDynamicHUD()"></textarea>
         
         <div class="controls-row">
             <button class="cyber-btn" onclick="processText()">Execute_Run</button>
@@ -380,9 +423,103 @@
         <div id="statusMsg" style="display: none;"></div>
     </div>
 
+    <div class="bottom-actions">
+        <button class="expand-btn" id="dbBtn" style="color: var(--accent-green); border-color: var(--border-color); font-size: 11px; padding: 6px 15px;" onclick="toggleWrapper('dbWrapper', 'dbBtn', 'LOCAL_DATABASE')">[ LOCAL_DATABASE ]</button>
+    </div>
+    
+    <div id="dbWrapper" class="readme-wrapper">
+        <div class="db-box">
+            <label style="color: var(--accent-green); margin-bottom: 10px;">> ZERO-TRUST_LOCAL_DB</label>
+            
+            <div class="db-security-note">
+                <strong>🔒 SECURITY NOTE:</strong> This database is completely offline and Zero-Trust. Your data is saved directly into your browser's local cache (localStorage). It is <strong>never</strong> transmitted to GitHub, any external server, or the public internet.
+            </div>
+
+            <p style="font-size: 11.5px; color: var(--text-main); opacity: 0.8; margin-top: 0;">Any new data pasted here is <strong>MERGED</strong> into your existing local database. To remove old switches, click 'Clear Memory' and paste a fresh master list.</p>
+            <textarea id="dbInput" placeholder="-- Formats Accepted --&#10;PH-NOC-ACC0101, 10.20.30.40&#10;PH-NOC-AS0202   10.30.40.50   Access Switch" spellcheck="false"></textarea>
+            <div class="db-controls">
+                <span class="db-status" id="dbStatus">STATUS: DB_IDLE</span>
+                <div style="display: flex; gap: 10px;">
+                    <button class="clear-btn" style="padding: 4px 15px;" onclick="clearDB()">Clear Memory</button>
+                    <button class="cyber-btn" style="padding: 4px 15px;" onclick="saveDB()">Merge & Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
+    // --- LOCAL DATABASE LOGIC ---
+    let switchDB = {};
+
+    window.onload = function() {
+        const savedDB = localStorage.getItem('noccat_db');
+        if (savedDB) {
+            parseToDB(savedDB);
+            document.getElementById('dbInput').value = generateDBString();
+            document.getElementById('dbStatus').innerText = `STATUS: LOADED_${Object.keys(switchDB).length}_HOSTS`;
+        }
+    };
+
+    function parseToDB(text) {
+        const lines = text.split('\n');
+        const ipRegex = /\b(?:\d{1,3}\.){3}\d{1,3}\b/;
+
+        lines.forEach(line => {
+            let cleanLine = line.trim();
+            if (!cleanLine) return;
+
+            let ipMatch = cleanLine.match(ipRegex);
+            if (!ipMatch) return; 
+
+            let hostMatch = cleanLine.split(/[,\t\s]+/); 
+            if (hostMatch && hostMatch.length > 0) {
+                let host = hostMatch[0].toLowerCase();
+                switchDB[host] = ipMatch[0]; 
+            }
+        });
+    }
+
+    function generateDBString() {
+        let mergedDBArray = [];
+        for (let host in switchDB) {
+            mergedDBArray.push(`${host.toUpperCase()}, ${switchDB[host]}`);
+        }
+        mergedDBArray.sort(); 
+        return mergedDBArray.join('\n');
+    }
+
+    function saveDB() {
+        const dbText = document.getElementById('dbInput').value;
+        parseToDB(dbText);
+        const mergedString = generateDBString();
+        
+        localStorage.setItem('noccat_db', mergedString);
+        document.getElementById('dbInput').value = mergedString;
+
+        const count = Object.keys(switchDB).length;
+        const statusElem = document.getElementById('dbStatus');
+        statusElem.innerText = `STATUS: MERGED_&_SAVED_${count}_HOSTS`;
+        statusElem.style.color = 'var(--neon-green)';
+        setTimeout(() => { statusElem.style.color = 'var(--accent-green)'; }, 2000);
+        
+        // Re-scan input to update HUD instantly
+        updateDynamicHUD();
+    }
+
+    function clearDB() {
+        if(confirm("Are you sure you want to wipe the Local Browser Database?")) {
+            localStorage.removeItem('noccat_db');
+            document.getElementById('dbInput').value = "";
+            switchDB = {};
+            document.getElementById('dbStatus').innerText = "STATUS: MEMORY_WIPED";
+            
+            // Clear the HUD
+            document.getElementById('deviceHud').classList.remove('visible');
+        }
+    }
+
     // --- UI TOGGLES ---
     function toggleReadme() {
         const wrapper = document.getElementById('readmeWrapper');
@@ -398,6 +535,66 @@
         btn.innerText = textarea.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
     }
 
+    function toggleWrapper(wrapperId, btnId, name) {
+        const wrapper = document.getElementById(wrapperId);
+        const btn = document.getElementById(btnId);
+        wrapper.classList.toggle('expanded');
+        btn.innerText = wrapper.classList.contains('expanded') ? `[ CLOSE_${name} ]` : `[ ${name} ]`;
+    }
+
+    // --- DYNAMIC HUD SCANNER ---
+    function updateDynamicHUD() {
+        const text = document.getElementById('configInput').value;
+        const deviceHud = document.getElementById('deviceHud');
+        
+        if (!text.trim()) {
+            deviceHud.innerHTML = 'Waiting for target...';
+            deviceHud.classList.remove('visible');
+            return;
+        }
+
+        const uniqueHosts = new Set();
+        
+        // Match standard switch names
+        const switchRegex = /[a-zA-Z0-9\-]*(?:ACC|CAS)\d+/gi;
+        let match;
+        while ((match = switchRegex.exec(text)) !== null) { 
+            uniqueHosts.add(match[0].toUpperCase()); 
+        }
+
+        // Match table formats
+        const tableRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
+        while ((match = tableRegex.exec(text)) !== null) {
+            uniqueHosts.add(match[1].toUpperCase());
+        }
+
+        // Match hyphenated formats
+        const hyphenRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)-(\d+)[\s\t]+(\d+)/gi;
+        while ((match = hyphenRegex.exec(text)) !== null) {
+            uniqueHosts.add(match[1].toUpperCase());
+        }
+
+        const hostsArray = Array.from(uniqueHosts).sort();
+
+        if (hostsArray.length > 0) {
+            let hudHTML = `<span style="opacity: 0.7; margin-right: 5px;">Target${hostsArray.length > 1 ? 's' : ''}:</span>`;
+            
+            let hostTags = hostsArray.map(hostName => {
+                const lowerHost = hostName.toLowerCase();
+                let targetIp = switchDB[lowerHost] ? switchDB[lowerHost] : "NOT_IN_DB";
+                let ipColor = targetIp === 'NOT_IN_DB' ? 'var(--hl-orange)' : 'var(--neon-green)';
+                
+                return `<span class="host-tag"><strong>${hostName}</strong> <span class="ip-highlight" style="color: ${ipColor}">${targetIp}</span></span>`;
+            });
+            
+            deviceHud.innerHTML = hudHTML + hostTags.join(' ');
+            deviceHud.classList.add('visible');
+        } else {
+            deviceHud.innerHTML = 'Waiting for target...';
+            deviceHud.classList.remove('visible');
+        }
+    }
+
     // --- CORE LOGIC ---
     let globalSwitches = [];
     let globalInterfaces = [];
@@ -408,6 +605,7 @@
         document.getElementById('filterInput').style.display = 'none';
         document.getElementById('filterInput').value = '';
         document.getElementById('statusMsg').style.display = 'none';
+        document.getElementById('deviceHud').classList.remove('visible');
         
         globalSwitches = [];
         globalInterfaces = [];
@@ -440,21 +638,16 @@
         
         const tokens = [];
         
-        // Match Switches
         const switchRegex = /[a-zA-Z0-9\-]*(?:ACC|CAS)\d+/gi;
         let match;
         while ((match = switchRegex.exec(text)) !== null) { 
             tokens.push({ type: 'switch', value: match[0].toUpperCase(), index: match.index }); 
         }
 
-        // Match Standard & Comma-Separated Interfaces
-        // This captures the prefix (e.g. 3/0/) in group 1, and the comma list (e.g. 1,3,5) in group 2
         const ifaceRegex = /(?:gigabitethernet|gi)[^\d]*(\d+\/\d+\/)(\d+(?:\s*,\s*\d+)*)/gi;
         while ((match = ifaceRegex.exec(text)) !== null) { 
             const prefix = match[1]; 
             const ports = match[2].split(','); 
-            
-            // Loop through each number in the comma list and pair it with the prefix
             ports.forEach(port => {
                 const cleanPort = port.trim();
                 if (cleanPort) {
@@ -463,13 +656,11 @@
             });
         }
 
-        // Match Inline Table Format (e.g. SwitchName SW1 23)
         const tableRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
         while ((match = tableRegex.exec(text)) !== null) {
             tokens.push({ type: 'inline', switch: match[1].toUpperCase(), iface: `Gi${match[2]}/0/${match[3]}`, index: match.index });
         }
 
-        // Match Inline Hyphenated Format (e.g. SwitchName-1 26)
         const hyphenRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)-(\d+)[\s\t]+(\d+)/gi;
         while ((match = hyphenRegex.exec(text)) !== null) {
             tokens.push({ type: 'inline', switch: match[1].toUpperCase(), iface: `Gi${match[2]}/0/${match[3]}`, index: match.index });
@@ -479,8 +670,6 @@
 
         const switchesSet = new Set();
         const interfaceCounts = new Map(); 
-        
-        // Custom default tag if a switch is missing
         let currentSwitch = "[ SWITCH_NOT_FOUND ]";
 
         tokens.forEach(token => {
@@ -544,7 +733,7 @@
         }
 
         if (duplicateCount > 0) {
-            htmlOutput += `<div class="warning-box"><strong>////// WARNING: DUPLICATES DETECTED //////</strong><br>Found ${duplicateCount} interface(s) that appeared multiple times on the SAME switch.<br><em>They are highlighted in red below.</em></div>`;
+            htmlOutput += `<div class="warning-box" style="display:block;"><strong>////// WARNING: DUPLICATES DETECTED //////</strong><br>Found ${duplicateCount} interface(s) that appeared multiple times on the SAME switch.<br><em>They are highlighted in red below.</em></div>`;
         }
 
         if (filteredInterfaces.length > 0) {
@@ -557,13 +746,18 @@
                 const spanOpen = isDup ? `<span class="highlight-dup line-item" title="${tooltipText}">` : `<span class="line-item" title="${tooltipText}">`;
                 const spanClose = `</span>`;
 
-                switchesHtml += `${spanOpen}${item.sw}${spanClose}`;
+                let displaySw = item.sw;
+                if (item.sw !== "[ SWITCH_NOT_FOUND ]" && switchDB[item.sw.toLowerCase()]) {
+                    displaySw = `${item.sw} <span style="opacity:0.5; font-size:10.5px;">[${switchDB[item.sw.toLowerCase()]}]</span>`;
+                }
+
+                switchesHtml += `${spanOpen}${displaySw}${spanClose}`;
                 rawInterfacesHtml += `${spanOpen}${item.iface}${spanClose}`;
                 shRunHtml += `${spanOpen}sh run int ${item.iface}${spanClose}`;
                 shIntStatusHtml += `${spanOpen}sh int ${item.iface} status${spanClose}`;
 
                 const newline = (index < filteredInterfaces.length - 1) ? '\n' : '';
-                switchesText += `${item.sw}${newline}`;
+                switchesText += `${item.sw}${newline}`; 
                 rawInterfacesText += `${item.iface}${newline}`;
                 shRunText += `sh run int ${item.iface}${newline}`;
                 shIntStatusText += `sh int ${item.iface} status${newline}`;
@@ -601,7 +795,6 @@
 
             htmlOutput += `</div>`; 
             
-            // Update Status Msg
             document.getElementById('statusMsg').style.display = 'block';
             document.getElementById('statusMsg').innerText = `STATUS: ${filteredInterfaces.length} MAPPINGS_EXTRACTED | ${filteredSwitches.length} HOSTNAMES_FOUND`;
         } else {
