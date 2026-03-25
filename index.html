@@ -513,6 +513,7 @@
             document.getElementById('dbInput').value = "";
             switchDB = {};
             document.getElementById('dbStatus').innerText = "STATUS: MEMORY_WIPED";
+            
             document.getElementById('deviceHud').classList.remove('visible');
         }
     }
@@ -703,29 +704,6 @@
         renderOutput();
     }
 
-    function updateHUD(switches) {
-        const deviceHud = document.getElementById('deviceHud');
-        const validSwitches = switches.filter(sw => sw !== "[ SWITCH_NOT_FOUND ]");
-        
-        if (validSwitches.length > 0) {
-            let hudHTML = `<span style="opacity: 0.7; margin-right: 5px;">Target${validSwitches.length > 1 ? 's' : ''}:</span>`;
-            
-            let hostTags = validSwitches.map(hostName => {
-                const lowerHost = hostName.toLowerCase();
-                let targetIp = switchDB[lowerHost] ? switchDB[lowerHost] : "NOT_IN_DB";
-                let ipColor = targetIp === 'NOT_IN_DB' ? 'var(--hl-orange)' : 'var(--neon-green)';
-                
-                return `<span class="host-tag"><strong>${hostName}</strong> <span class="ip-highlight" style="color: ${ipColor}">${targetIp}</span></span>`;
-            });
-            
-            deviceHud.innerHTML = hudHTML + hostTags.join(' ');
-            deviceHud.classList.add('visible');
-        } else {
-            deviceHud.innerHTML = 'Waiting for target...';
-            deviceHud.classList.remove('visible');
-        }
-    }
-
     function renderOutput() {
         const rawFilterStr = document.getElementById('filterInput').value.trim().toLowerCase();
         const filterStr = rawFilterStr.replace(/gigabitethernet/g, 'gi');
@@ -737,8 +715,6 @@
         const filteredInterfaces = globalInterfaces.filter(item => {
             return item.iface.toLowerCase().includes(filterStr) || item.sw.toLowerCase().includes(filterStr);
         });
-
-        updateHUD(filteredSwitches);
 
         let duplicateCount = 0;
         for (let item of filteredInterfaces) {
