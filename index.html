@@ -504,7 +504,6 @@
         statusElem.style.color = 'var(--neon-green)';
         setTimeout(() => { statusElem.style.color = 'var(--accent-green)'; }, 2000);
         
-        // Re-scan input to update HUD instantly
         updateDynamicHUD();
     }
 
@@ -514,8 +513,6 @@
             document.getElementById('dbInput').value = "";
             switchDB = {};
             document.getElementById('dbStatus').innerText = "STATUS: MEMORY_WIPED";
-            
-            // Clear the HUD
             document.getElementById('deviceHud').classList.remove('visible');
         }
     }
@@ -555,20 +552,17 @@
 
         const uniqueHosts = new Set();
         
-        // Match standard switch names
         const switchRegex = /[a-zA-Z0-9\-]*(?:ACC|CAS)\d+/gi;
         let match;
         while ((match = switchRegex.exec(text)) !== null) { 
             uniqueHosts.add(match[0].toUpperCase()); 
         }
 
-        // Match table formats
         const tableRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
         while ((match = tableRegex.exec(text)) !== null) {
             uniqueHosts.add(match[1].toUpperCase());
         }
 
-        // Match hyphenated formats
         const hyphenRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)-(\d+)[\s\t]+(\d+)/gi;
         while ((match = hyphenRegex.exec(text)) !== null) {
             uniqueHosts.add(match[1].toUpperCase());
@@ -611,14 +605,6 @@
         globalInterfaces = [];
     }
 
-    function selectAllText(el) {
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        selection.removeAllRanges();
-        selection.addRange(range);
-    }
-
     function copyContent(hiddenElementId, btnElement) {
         const textToCopy = document.getElementById(hiddenElementId).value;
         navigator.clipboard.writeText(textToCopy).then(() => {
@@ -636,54 +622,56 @@
         const text = document.getElementById('configInput').value;
         if (!text.trim()) return; 
         
-        const tokens = [];
-        
-        const switchRegex = /[a-zA-Z0-9\-]*(?:ACC|CAS)\d+/gi;
-        let match;
-        while ((match = switchRegex.exec(text)) !== null) { 
-            tokens.push({ type: 'switch', value: match[0].toUpperCase(), index: match.index }); 
-        }
-
-        const ifaceRegex = /(?:gigabitethernet|gi)[^\d]*(\d+\/\d+\/)(\d+(?:\s*,\s*\d+)*)/gi;
-        while ((match = ifaceRegex.exec(text)) !== null) { 
-            const prefix = match[1]; 
-            const ports = match[2].split(','); 
-            ports.forEach(port => {
-                const cleanPort = port.trim();
-                if (cleanPort) {
-                    tokens.push({ type: 'iface', value: "Gi" + prefix + cleanPort, index: match.index }); 
-                }
-            });
-        }
-
-        const tableRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
-        while ((match = tableRegex.exec(text)) !== null) {
-            tokens.push({ type: 'inline', switch: match[1].toUpperCase(), iface: `Gi${match[2]}/0/${match[3]}`, index: match.index });
-        }
-
-        const hyphenRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)-(\d+)[\s\t]+(\d+)/gi;
-        while ((match = hyphenRegex.exec(text)) !== null) {
-            tokens.push({ type: 'inline', switch: match[1].toUpperCase(), iface: `Gi${match[2]}/0/${match[3]}`, index: match.index });
-        }
-
-        tokens.sort((a, b) => a.index - b.index);
-
+        const lines = text.split('\n');
         const switchesSet = new Set();
         const interfaceCounts = new Map(); 
-        let currentSwitch = "[ SWITCH_NOT_FOUND ]";
+        let globalContextSwitch = "[ SWITCH_NOT_FOUND ]";
 
-        tokens.forEach(token => {
-            if (token.type === 'switch') {
-                currentSwitch = token.value;
-                switchesSet.add(currentSwitch);
-            } else if (token.type === 'iface') {
-                const iface = token.value;
-                const compositeKey = `${currentSwitch}|${iface}`;
+        lines.forEach(line => {
+            let currentSwitchForLine = globalContextSwitch;
+            
+            // 1. Scan for Hostnames
+            const switchRegex = /[a-zA-Z0-9\-]*(?:ACC|CAS)\d+/i;
+            const switchMatch = line.match(switchRegex);
+            if (switchMatch) {
+                currentSwitchForLine = switchMatch[0].toUpperCase();
+                globalContextSwitch = currentSwitchForLine;
+            }
+
+            // 2. Scan for standard or comma-separated interfaces
+            const ifaceRegex = /(?:gigabitethernet|gi)[^\d]*(\d+\/\d+\/)(\d+(?:\s*,\s*\d+)*)/gi;
+            let match;
+            while ((match = ifaceRegex.exec(line)) !== null) { 
+                const prefix = match[1]; 
+                const ports = match[2].split(','); 
+                ports.forEach(port => {
+                    const cleanPort = port.trim();
+                    if (cleanPort) {
+                        const iface = "Gi" + prefix + cleanPort;
+                        const compositeKey = `${currentSwitchForLine}|${iface}`;
+                        interfaceCounts.set(compositeKey, (interfaceCounts.get(compositeKey) || 0) + 1);
+                        switchesSet.add(currentSwitchForLine);
+                    }
+                });
+            }
+
+            // 3. Scan for table formats
+            const tableRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
+            while ((match = tableRegex.exec(line)) !== null) {
+                const sw = match[1].toUpperCase();
+                const iface = `Gi${match[2]}/0/${match[3]}`;
+                globalContextSwitch = sw;
+                switchesSet.add(sw);
+                const compositeKey = `${sw}|${iface}`;
                 interfaceCounts.set(compositeKey, (interfaceCounts.get(compositeKey) || 0) + 1);
-            } else if (token.type === 'inline') {
-                const sw = token.switch;
-                const iface = token.iface;
-                currentSwitch = sw; 
+            }
+
+            // 4. Scan for hyphenated formats
+            const hyphenRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)-(\d+)[\s\t]+(\d+)/gi;
+            while ((match = hyphenRegex.exec(line)) !== null) {
+                const sw = match[1].toUpperCase();
+                const iface = `Gi${match[2]}/0/${match[3]}`;
+                globalContextSwitch = sw;
                 switchesSet.add(sw);
                 const compositeKey = `${sw}|${iface}`;
                 interfaceCounts.set(compositeKey, (interfaceCounts.get(compositeKey) || 0) + 1);
@@ -715,6 +703,29 @@
         renderOutput();
     }
 
+    function updateHUD(switches) {
+        const deviceHud = document.getElementById('deviceHud');
+        const validSwitches = switches.filter(sw => sw !== "[ SWITCH_NOT_FOUND ]");
+        
+        if (validSwitches.length > 0) {
+            let hudHTML = `<span style="opacity: 0.7; margin-right: 5px;">Target${validSwitches.length > 1 ? 's' : ''}:</span>`;
+            
+            let hostTags = validSwitches.map(hostName => {
+                const lowerHost = hostName.toLowerCase();
+                let targetIp = switchDB[lowerHost] ? switchDB[lowerHost] : "NOT_IN_DB";
+                let ipColor = targetIp === 'NOT_IN_DB' ? 'var(--hl-orange)' : 'var(--neon-green)';
+                
+                return `<span class="host-tag"><strong>${hostName}</strong> <span class="ip-highlight" style="color: ${ipColor}">${targetIp}</span></span>`;
+            });
+            
+            deviceHud.innerHTML = hudHTML + hostTags.join(' ');
+            deviceHud.classList.add('visible');
+        } else {
+            deviceHud.innerHTML = 'Waiting for target...';
+            deviceHud.classList.remove('visible');
+        }
+    }
+
     function renderOutput() {
         const rawFilterStr = document.getElementById('filterInput').value.trim().toLowerCase();
         const filterStr = rawFilterStr.replace(/gigabitethernet/g, 'gi');
@@ -726,6 +737,8 @@
         const filteredInterfaces = globalInterfaces.filter(item => {
             return item.iface.toLowerCase().includes(filterStr) || item.sw.toLowerCase().includes(filterStr);
         });
+
+        updateHUD(filteredSwitches);
 
         let duplicateCount = 0;
         for (let item of filteredInterfaces) {
@@ -768,28 +781,28 @@
             // Col 1
             htmlOutput += `<div class="result-column">
                 <div class="script-header"><label>> TARGET_SW</label><button class="copy-btn" onclick="copyContent('hidden-switches', this)">COPY</button></div>
-                <div class="output-box" onclick="selectAllText(this)">${switchesHtml}</div>
+                <div class="output-box">${switchesHtml}</div>
                 <textarea id="hidden-switches" class="hidden-copy-area">${switchesText}</textarea>
             </div>`;
 
             // Col 2
             htmlOutput += `<div class="result-column">
                 <div class="script-header"><label>> PORT_ID</label><button class="copy-btn" onclick="copyContent('hidden-interfaces', this)">COPY</button></div>
-                <div class="output-box" onclick="selectAllText(this)">${rawInterfacesHtml}</div>
+                <div class="output-box">${rawInterfacesHtml}</div>
                 <textarea id="hidden-interfaces" class="hidden-copy-area">${rawInterfacesText}</textarea>
             </div>`;
 
             // Col 3
             htmlOutput += `<div class="result-column">
                 <div class="script-header"><label>> SH_RUN_CMD</label><button class="copy-btn" onclick="copyContent('hidden-shrun', this)">COPY</button></div>
-                <div class="output-box" onclick="selectAllText(this)">${shRunHtml}</div>
+                <div class="output-box">${shRunHtml}</div>
                 <textarea id="hidden-shrun" class="hidden-copy-area">${shRunText}</textarea>
             </div>`;
 
             // Col 4
             htmlOutput += `<div class="result-column">
                 <div class="script-header"><label>> SH_STATUS_CMD</label><button class="copy-btn" onclick="copyContent('hidden-shint', this)">COPY</button></div>
-                <div class="output-box" onclick="selectAllText(this)">${shIntStatusHtml}</div>
+                <div class="output-box">${shIntStatusHtml}</div>
                 <textarea id="hidden-shint" class="hidden-copy-area">${shIntStatusText}</textarea>
             </div>`;
 
