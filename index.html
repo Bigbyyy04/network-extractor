@@ -282,7 +282,6 @@
             overflow-y: auto; 
             background-color: var(--code-bg); 
             color: #79c0ff; 
-            cursor: text;
             counter-reset: linenumber; 
             line-height: 1.5;
         }
@@ -641,61 +640,90 @@
 
             let processedLine = line;
 
-            // 2. Scan for Port Ranges (e.g. Gi2/0/23 - Gi2/0/27 OR Gi2/0/23-27)
-            const rangeRegex = /(?:gigabitethernet|gi)[^\d]*(\d+\/\d+\/)(\d+)\s*-\s*(?:(?:gigabitethernet|gi)[^\d]*(?:\d+\/\d+\/))?(\d+)/gi;
-            let matchRange;
-            while ((matchRange = rangeRegex.exec(processedLine)) !== null) {
-                const prefix = matchRange[1];
-                const startPort = parseInt(matchRange[2], 10);
-                const endPort = parseInt(matchRange[3], 10);
+            // Helper to dynamically build port names based on user input (Gi vs Te vs Fa)
+            function addPort(rawType, prefix, portNum) {
+                let cleanType = rawType.replace(/^gigabitethernet/i, 'Gi')
+                                       .replace(/^fastethernet/i, 'Fa')
+                                       .replace(/^tengigabitethernet/i, 'Te');
+                cleanType = cleanType.charAt(0).toUpperCase() + cleanType.slice(1).toLowerCase();
                 
-                // Sanity check to prevent massive accidental infinite loops
+                const iface = cleanType + prefix + portNum;
+                const compositeKey = `${currentSwitchForLine}|${iface}`;
+                interfaceCounts.set(compositeKey, (interfaceCounts.get(compositeKey) || 0) + 1);
+                switchesSet.add(currentSwitchForLine);
+            }
+
+            // 2. Scan for Full Port Ranges (e.g. Gi2/0/23 - Gi2/0/27)
+            const fullRangeRegex = /(gi|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)(\d+)\s*[-–—]\s*(?:gi|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(?:\d+(?:\/\d+)+\/)(\d+)/gi;
+            let matchFull;
+            while ((matchFull = fullRangeRegex.exec(processedLine)) !== null) {
+                const type = matchFull[1];
+                const prefix = matchFull[2];
+                const startPort = parseInt(matchFull[3], 10);
+                const endPort = parseInt(matchFull[4], 10);
+                
                 if (startPort <= endPort && (endPort - startPort) <= 100) { 
                     for (let i = startPort; i <= endPort; i++) {
-                        const iface = "Gi" + prefix + i;
-                        const compositeKey = `${currentSwitchForLine}|${iface}`;
-                        interfaceCounts.set(compositeKey, (interfaceCounts.get(compositeKey) || 0) + 1);
-                        switchesSet.add(currentSwitchForLine);
+                        addPort(type, prefix, i);
                     }
                 }
             }
-            
-            // Remove processed ranges to prevent double processing by the single iface regex
-            processedLine = processedLine.replace(rangeRegex, '');
+            processedLine = processedLine.replace(fullRangeRegex, ''); // Remove so we don't process it twice
 
-            // 3. Scan for standard or comma-separated interfaces on remaining line
-            const ifaceRegex = /(?:gigabitethernet|gi)[^\d]*(\d+\/\d+\/)(\d+(?:\s*,\s*\d+)*)/gi;
-            let match;
-            while ((match = ifaceRegex.exec(processedLine)) !== null) { 
-                const prefix = match[1]; 
-                const ports = match[2].split(','); 
-                ports.forEach(port => {
-                    const cleanPort = port.trim();
-                    if (cleanPort) {
-                        const iface = "Gi" + prefix + cleanPort;
-                        const compositeKey = `${currentSwitchForLine}|${iface}`;
-                        interfaceCounts.set(compositeKey, (interfaceCounts.get(compositeKey) || 0) + 1);
-                        switchesSet.add(currentSwitchForLine);
+            // 3. Scan for Standard, Commas, and Shorthand Ranges (e.g. Gi2/0/23-27 or Gi2/0/1,3,5)
+            const shortHandRegex = /(gi|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)([\d\s,\-–—]+)/gi;
+            let matchShort;
+            while ((matchShort = shortHandRegex.exec(processedLine)) !== null) { 
+                const type = matchShort[1]; 
+                const prefix = matchShort[2]; 
+                const listStr = matchShort[3]; 
+                
+                const parts = listStr.split(','); 
+                parts.forEach(part => {
+                    const cleanPart = part.trim();
+                    if (!cleanPart) return;
+
+                    // If part contains a dash, it is a range (e.g. "35-37")
+                    if (/[-–—]/.test(cleanPart)) {
+                        const rangeParts = cleanPart.split(/[-–—]/);
+                        if (rangeParts.length === 2) {
+                            const start = parseInt(rangeParts[0].trim(), 10);
+                            const end = parseInt(rangeParts[1].trim(), 10);
+                            if (!isNaN(start) && !isNaN(end) && start <= end && (end - start) <= 100) {
+                                for (let i = start; i <= end; i++) {
+                                    addPort(type, prefix, i);
+                                }
+                            }
+                        }
+                    } else {
+                        // Otherwise, it's a single port number (e.g. "35")
+                        const singlePort = parseInt(cleanPart, 10);
+                        if (!isNaN(singlePort)) {
+                            addPort(type, prefix, singlePort);
+                        }
                     }
                 });
             }
+            processedLine = processedLine.replace(shortHandRegex, '');
 
-            // 4. Scan for table formats
+            // 4. Scan for table formats (e.g. SwitchName SW1 23)
             const tableRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
-            while ((match = tableRegex.exec(processedLine)) !== null) {
-                const sw = match[1].toUpperCase();
-                const iface = `Gi${match[2]}/0/${match[3]}`;
+            let matchTable;
+            while ((matchTable = tableRegex.exec(processedLine)) !== null) {
+                const sw = matchTable[1].toUpperCase();
+                const iface = `Gi${matchTable[2]}/0/${matchTable[3]}`;
                 globalContextSwitch = sw;
                 switchesSet.add(sw);
                 const compositeKey = `${sw}|${iface}`;
                 interfaceCounts.set(compositeKey, (interfaceCounts.get(compositeKey) || 0) + 1);
             }
 
-            // 5. Scan for hyphenated formats
+            // 5. Scan for hyphenated formats (e.g. SwitchName-1 26)
             const hyphenRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)-(\d+)[\s\t]+(\d+)/gi;
-            while ((match = hyphenRegex.exec(processedLine)) !== null) {
-                const sw = match[1].toUpperCase();
-                const iface = `Gi${match[2]}/0/${match[3]}`;
+            let matchHyphen;
+            while ((matchHyphen = hyphenRegex.exec(processedLine)) !== null) {
+                const sw = matchHyphen[1].toUpperCase();
+                const iface = `Gi${matchHyphen[2]}/0/${matchHyphen[3]}`;
                 globalContextSwitch = sw;
                 switchesSet.add(sw);
                 const compositeKey = `${sw}|${iface}`;
