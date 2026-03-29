@@ -8,8 +8,8 @@
     <style>
         /* --- N0<AT COLOR PALETTE --- */
         :root {
-            --bg-color: #0d1117;
-            --card-bg: #161b22;
+            --bg-color: #030508; /* Deepened background for neon contrast */
+            --card-bg: rgba(22, 27, 34, 0.85); /* Semi-transparent for canvas depth */
             --border-color: #30363d;
             --text-main: #c9d1d9;
             --accent-blue: #58a6ff;
@@ -18,7 +18,7 @@
             --accent-purple: #bc8cff;
             --accent-red: #f85149;
             --hl-orange: #ff9d00;
-            --code-bg: #010409;
+            --code-bg: rgba(1, 4, 9, 0.7); /* Semi-transparent code boxes */
         }
 
         body {
@@ -29,10 +29,22 @@
             color: var(--text-main);
             display: flex;
             justify-content: center;
+            overflow-x: hidden;
+        }
+
+        /* --- ANIMATED BACKGROUND CANVAS --- */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
         }
 
         /* Widened to 1200px to support the 4-column output */
-        .container { max-width: 1200px; width: 100%; }
+        .container { max-width: 1200px; width: 100%; position: relative; z-index: 1;}
 
         /* --- PURE CSS TEXT LOGO WITH TERMINAL CURSOR --- */
         h2 {
@@ -44,6 +56,7 @@
             gap: 12px;
             font-family: "Courier New", Courier, monospace;
             font-weight: bold;
+            text-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
         }
 
         .logo-text {
@@ -54,10 +67,10 @@
 
         .logo-accent {
             background-color: var(--neon-green);
-            color: var(--code-bg);
+            color: #000;
             padding: 0px 6px;
             margin: 0 6px;
-            box-shadow: 0 0 12px rgba(57, 255, 20, 0.4);
+            box-shadow: 0 0 12px rgba(57, 255, 20, 0.6);
             display: inline-block;
             font-weight: 900;
         }
@@ -75,10 +88,13 @@
         /* --- FORM & PANEL STYLES --- */
         .form-group {
             background: var(--card-bg);
+            backdrop-filter: blur(8px); /* Frosted glass effect */
+            -webkit-backdrop-filter: blur(8px);
             padding: 15px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             margin-bottom: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .header-row {
@@ -176,6 +192,7 @@
         textarea, input[type="text"] {
             width: 100%;
             background: var(--code-bg);
+            backdrop-filter: blur(4px);
             color: #79c0ff;
             border: 1px solid var(--border-color);
             border-radius: 4px;
@@ -187,14 +204,14 @@
             line-height: 1.5;
             transition: height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             scrollbar-width: thin;
-            scrollbar-color: var(--border-color) var(--code-bg);
+            scrollbar-color: var(--border-color) transparent;
         }
         textarea { height: 120px; resize: none; }
-        textarea:focus, input[type="text"]:focus { border-color: var(--accent-blue); }
+        textarea:focus, input[type="text"]:focus { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(88, 166, 255, 0.2); }
         textarea.expanded { height: 400px; }
         
         textarea::-webkit-scrollbar, .output-box::-webkit-scrollbar { width: 10px; }
-        textarea::-webkit-scrollbar-track, .output-box::-webkit-scrollbar-track { background: var(--code-bg); }
+        textarea::-webkit-scrollbar-track, .output-box::-webkit-scrollbar-track { background: transparent; }
         textarea::-webkit-scrollbar-thumb, .output-box::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
         textarea::selection, .output-box::selection { background: rgba(88, 166, 255, 0.3); }
 
@@ -219,7 +236,8 @@
             box-shadow: 0 0 10px rgba(35, 134, 54, 0.3);
             white-space: nowrap;
         }
-        .cyber-btn:hover { background: #2ea043; box-shadow: 0 0 20px rgba(57, 255, 20, 0.5); }
+        .cyber-btn:hover { background: #2ea043; box-shadow: 0 0 20px rgba(57, 255, 20, 0.6); }
+        .cyber-btn:active { transform: scale(0.95); }
 
         .clear-btn {
             background: transparent;
@@ -281,7 +299,9 @@
             padding: 10px 0; 
             overflow-y: auto; 
             background-color: var(--code-bg); 
+            backdrop-filter: blur(4px);
             color: #79c0ff; 
+            cursor: text;
             counter-reset: linenumber; 
             line-height: 1.5;
         }
@@ -303,7 +323,7 @@
             width: 20px;
             text-align: right;
             color: #484f58; 
-            background-color: #0d1117; 
+            background-color: rgba(13, 17, 23, 0.5); 
             border-right: 1px solid var(--border-color);
             padding-right: 6px;
             height: 100%;
@@ -333,6 +353,7 @@
             font-size: 11.5px;
             text-align: center;
             line-height: 1.4;
+            backdrop-filter: blur(4px);
         }
         .warning-box strong { font-size: 12.5px; letter-spacing: 1px; }
 
@@ -343,11 +364,12 @@
         .bottom-actions { text-align: center; margin-top: 30px; margin-bottom: 20px; display: flex; justify-content: center; gap: 15px; }
         
         .db-box {
-            background: var(--code-bg);
+            background: var(--card-bg);
+            backdrop-filter: blur(8px);
             border: 1px solid var(--accent-green);
             padding: 15px;
             border-radius: 8px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 30px rgba(0,0,0,0.5);
         }
         
         .db-security-note {
@@ -361,7 +383,7 @@
             border-radius: 0 4px 4px 0;
         }
 
-        .db-box textarea { height: 150px; margin-bottom: 10px; border-color: rgba(35, 134, 54, 0.5); }
+        .db-box textarea { height: 150px; margin-bottom: 10px; border-color: rgba(35, 134, 54, 0.5); background: rgba(1, 4, 9, 0.8);}
         .db-controls { display: flex; justify-content: space-between; align-items: center; }
         .db-status { font-size: 11px; color: var(--accent-green); font-family: monospace; }
 
@@ -369,11 +391,13 @@
 </head>
 <body>
 
+<canvas id="bg-canvas"></canvas>
+
 <div class="container">
     
     <h2>
         <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-        <span class="version-tag">// v3.5 [Automated Port Extractor]</span>
+        <span class="version-tag">// v4.0 [Automated Port Extractor]</span>
     </h2>
 
     <div class="form-group" style="border-color: rgba(188, 140, 255, 0.3);">
@@ -449,6 +473,119 @@
 </div>
 
 <script>
+    // --- ANIMATED CANVAS MESH LOGIC ---
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+    let pulses = [];
+
+    function initCanvas() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        particles = [];
+        // Create organic node density based on screen size
+        const numParticles = Math.floor((width * height) / 12000); 
+        for(let i = 0; i < numParticles; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: (Math.random() - 0.5) * 0.6,
+                vy: (Math.random() - 0.5) * 0.6
+            });
+        }
+    }
+
+    window.addEventListener('resize', initCanvas);
+    initCanvas();
+
+    function triggerPulse() {
+        // Fire a shockwave pulse from a random point on screen
+        pulses.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            radius: 0,
+            thickness: 80,
+            speed: 15 + Math.random() * 5
+        });
+    }
+
+    function animateCanvas() {
+        // Dark wipe for trailing effects
+        ctx.clearRect(0, 0, width, height);
+
+        // Advance pulses
+        for (let i = pulses.length - 1; i >= 0; i--) {
+            let p = pulses[i];
+            p.radius += p.speed;
+            if (p.radius > Math.max(width, height) * 1.5) {
+                pulses.splice(i, 1);
+            }
+        }
+
+        // Move nodes
+        particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            // Bounce off walls
+            if(p.x < 0 || p.x > width) p.vx *= -1;
+            if(p.y < 0 || p.y > height) p.vy *= -1;
+        });
+
+        // Draw connections (The Polygon Mesh)
+        for(let i = 0; i < particles.length; i++) {
+            for(let j = i + 1; j < particles.length; j++) {
+                let p1 = particles[i];
+                let p2 = particles[j];
+                
+                // Fast distance check
+                let dx = p1.x - p2.x;
+                let dy = p1.y - p2.y;
+                let distSq = dx*dx + dy*dy;
+
+                // Threshold for connecting dots (~130px)
+                if(distSq < 16900) { 
+                    let dist = Math.sqrt(distSq);
+                    let baseAlpha = (1 - dist / 130) * 0.25; // Base cyan opacity
+                    
+                    let midX = (p1.x + p2.x) / 2;
+                    let midY = (p1.y + p2.y) / 2;
+                    
+                    let isPulse = false;
+                    let pulseIntensity = 0;
+
+                    // Check if this line intersects with any expanding shockwave pulse
+                    pulses.forEach(pulse => {
+                        let dToPulse = Math.hypot(midX - pulse.x, midY - pulse.y);
+                        if(Math.abs(dToPulse - pulse.radius) < pulse.thickness) {
+                            let intensity = 1 - (Math.abs(dToPulse - pulse.radius) / pulse.thickness);
+                            pulseIntensity = Math.max(pulseIntensity, intensity);
+                            isPulse = true;
+                        }
+                    });
+
+                    if(isPulse) {
+                        // Neon green flash during pulse
+                        ctx.strokeStyle = `rgba(57, 255, 20, ${baseAlpha + (pulseIntensity * 0.6)})`;
+                        ctx.lineWidth = 1 + (pulseIntensity * 2);
+                    } else {
+                        // Deep cyan normal state
+                        ctx.strokeStyle = `rgba(88, 166, 255, ${baseAlpha})`;
+                        ctx.lineWidth = 1;
+                    }
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(animateCanvas);
+    }
+    animateCanvas();
+
+
     // --- LOCAL DATABASE LOGIC ---
     let switchDB = {};
 
@@ -619,6 +756,9 @@
     }
 
     function processText() {
+        // Trigger Canvas Pulse on Execution!
+        if (typeof triggerPulse === 'function') triggerPulse();
+
         const text = document.getElementById('configInput').value;
         if (!text.trim()) return; 
         
@@ -668,7 +808,7 @@
                     }
                 }
             }
-            processedLine = processedLine.replace(fullRangeRegex, ''); // Remove so we don't process it twice
+            processedLine = processedLine.replace(fullRangeRegex, ''); 
 
             // 3. Scan for Standard, Commas, and Shorthand Ranges (e.g. Gi2/0/23-27 or Gi2/0/1,3,5)
             const shortHandRegex = /(gi|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)([\d\s,\-–—]+)/gi;
@@ -683,7 +823,6 @@
                     const cleanPart = part.trim();
                     if (!cleanPart) return;
 
-                    // If part contains a dash, it is a range (e.g. "35-37")
                     if (/[-–—]/.test(cleanPart)) {
                         const rangeParts = cleanPart.split(/[-–—]/);
                         if (rangeParts.length === 2) {
@@ -696,7 +835,6 @@
                             }
                         }
                     } else {
-                        // Otherwise, it's a single port number (e.g. "35")
                         const singlePort = parseInt(cleanPart, 10);
                         if (!isNaN(singlePort)) {
                             addPort(type, prefix, singlePort);
@@ -706,7 +844,7 @@
             }
             processedLine = processedLine.replace(shortHandRegex, '');
 
-            // 4. Scan for table formats (e.g. SwitchName SW1 23)
+            // 4. Scan for table formats
             const tableRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
             let matchTable;
             while ((matchTable = tableRegex.exec(processedLine)) !== null) {
@@ -718,7 +856,7 @@
                 interfaceCounts.set(compositeKey, (interfaceCounts.get(compositeKey) || 0) + 1);
             }
 
-            // 5. Scan for hyphenated formats (e.g. SwitchName-1 26)
+            // 5. Scan for hyphenated formats
             const hyphenRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+)-(\d+)[\s\t]+(\d+)/gi;
             let matchHyphen;
             while ((matchHyphen = hyphenRegex.exec(processedLine)) !== null) {
@@ -756,7 +894,7 @@
         renderOutput();
     }
 
-    function updateHUD(switches) {
+    function updateFilteredHUD(switches) {
         const deviceHud = document.getElementById('deviceHud');
         const validSwitches = switches.filter(sw => sw !== "[ SWITCH_NOT_FOUND ]");
         
@@ -791,7 +929,7 @@
             return item.iface.toLowerCase().includes(filterStr) || item.sw.toLowerCase().includes(filterStr);
         });
 
-        updateHUD(filteredSwitches);
+        updateFilteredHUD(filteredSwitches);
 
         let duplicateCount = 0;
         for (let item of filteredInterfaces) {
