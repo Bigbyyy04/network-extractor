@@ -8,8 +8,8 @@
     <style>
         /* --- N0<AT COLOR PALETTE --- */
         :root {
-            --bg-color: #030508; /* Deepened background for neon contrast */
-            --card-bg: rgba(22, 27, 34, 0.85); /* Semi-transparent for canvas depth */
+            --bg-color: #030508; 
+            --card-bg: rgba(22, 27, 34, 0.85); 
             --border-color: #30363d;
             --text-main: #c9d1d9;
             --accent-blue: #58a6ff;
@@ -18,7 +18,7 @@
             --accent-purple: #bc8cff;
             --accent-red: #f85149;
             --hl-orange: #ff9d00;
-            --code-bg: rgba(1, 4, 9, 0.7); /* Semi-transparent code boxes */
+            --code-bg: rgba(1, 4, 9, 0.7); 
         }
 
         body {
@@ -88,7 +88,7 @@
         /* --- FORM & PANEL STYLES --- */
         .form-group {
             background: var(--card-bg);
-            backdrop-filter: blur(8px); /* Frosted glass effect */
+            backdrop-filter: blur(8px); 
             -webkit-backdrop-filter: blur(8px);
             padding: 15px;
             border: 1px solid var(--border-color);
@@ -397,7 +397,7 @@
     
     <h2>
         <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-        <span class="version-tag">// v4.0 [Automated Port Extractor]</span>
+        <span class="version-tag">// v4.1 [Automated Port Extractor]</span>
     </h2>
 
     <div class="form-group" style="border-color: rgba(188, 140, 255, 0.3);">
@@ -410,8 +410,8 @@
                 <p>Welcome to <strong>N0CAPE</strong>. This utility dynamically extracts and pairs network interfaces with their respective switch hostnames from raw data.</p>
                 
                 <h3>> Instructions (01)</h3>
-                <p>Provide the engine with raw data (Ticket descriptions, CDP/LLDP outputs, or Inventory tables). As long as the text contains a Switch Hostname (e.g., <code>PH-CISCO-CAS0101</code>) and Port Numbers (e.g., <code>gi1/0/3</code>), the tool will map them.</p>
-                <p><strong>Supported Formats:</strong> It supports single ports, comma-separated shorthand (<code>Gi3/0/1,3,5</code>), and automatically expands ranges like <code>Gi2/0/23 - Gi2/0/27</code> or <code>Gi2/0/23-27</code>.</p>
+                <p>Provide the engine with raw data (Ticket descriptions, CDP/LLDP outputs, or Inventory tables). As long as the text contains a Switch Hostname (e.g., <code>CO-ARN-CAS0302</code>) and Port Numbers (e.g., <code>gi1/0/3</code>), the tool will map them.</p>
+                <p><strong>Supported Formats & Auto-Correct:</strong> It supports single ports, comma-separated shorthand (<code>Gi3/0/1,3,5</code>), and automatically expands ranges like <code>Gi2/0/23 - Gi2/0/27</code>. It also features a typo engine that automatically corrects <code>Gl</code> (G-ell) inputs into valid <code>Gi</code> formats.</p>
             </div>
         </div>
     </div>
@@ -459,7 +459,7 @@
             </div>
 
             <p style="font-size: 11.5px; color: var(--text-main); opacity: 0.8; margin-top: 0;">Any new data pasted here is <strong>MERGED</strong> into your existing local database. To remove old switches, click 'Clear Memory' and paste a fresh master list.</p>
-            <textarea id="dbInput" placeholder="-- Formats Accepted --&#10;PH-NOC-ACC0101, 10.20.30.40&#10;PH-NOC-AS0202   10.30.40.50   Access Switch" spellcheck="false"></textarea>
+            <textarea id="dbInput" placeholder="-- Formats Accepted --&#10;PH-NOC-ACC0101, 10.20.30.40&#10;CO-ARN-CAS0302   10.30.40.50   Access Switch" spellcheck="false"></textarea>
             <div class="db-controls">
                 <span class="db-status" id="dbStatus">STATUS: DB_IDLE</span>
                 <div style="display: flex; gap: 10px;">
@@ -484,7 +484,6 @@
         width = canvas.width = window.innerWidth;
         height = canvas.height = window.innerHeight;
         particles = [];
-        // Create organic node density based on screen size
         const numParticles = Math.floor((width * height) / 12000); 
         for(let i = 0; i < numParticles; i++) {
             particles.push({
@@ -500,7 +499,6 @@
     initCanvas();
 
     function triggerPulse() {
-        // Fire a shockwave pulse from a random point on screen
         pulses.push({
             x: Math.random() * width,
             y: Math.random() * height,
@@ -511,10 +509,8 @@
     }
 
     function animateCanvas() {
-        // Dark wipe for trailing effects
         ctx.clearRect(0, 0, width, height);
 
-        // Advance pulses
         for (let i = pulses.length - 1; i >= 0; i--) {
             let p = pulses[i];
             p.radius += p.speed;
@@ -523,30 +519,25 @@
             }
         }
 
-        // Move nodes
         particles.forEach(p => {
             p.x += p.vx;
             p.y += p.vy;
-            // Bounce off walls
             if(p.x < 0 || p.x > width) p.vx *= -1;
             if(p.y < 0 || p.y > height) p.vy *= -1;
         });
 
-        // Draw connections (The Polygon Mesh)
         for(let i = 0; i < particles.length; i++) {
             for(let j = i + 1; j < particles.length; j++) {
                 let p1 = particles[i];
                 let p2 = particles[j];
                 
-                // Fast distance check
                 let dx = p1.x - p2.x;
                 let dy = p1.y - p2.y;
                 let distSq = dx*dx + dy*dy;
 
-                // Threshold for connecting dots (~130px)
                 if(distSq < 16900) { 
                     let dist = Math.sqrt(distSq);
-                    let baseAlpha = (1 - dist / 130) * 0.25; // Base cyan opacity
+                    let baseAlpha = (1 - dist / 130) * 0.25; 
                     
                     let midX = (p1.x + p2.x) / 2;
                     let midY = (p1.y + p2.y) / 2;
@@ -554,7 +545,6 @@
                     let isPulse = false;
                     let pulseIntensity = 0;
 
-                    // Check if this line intersects with any expanding shockwave pulse
                     pulses.forEach(pulse => {
                         let dToPulse = Math.hypot(midX - pulse.x, midY - pulse.y);
                         if(Math.abs(dToPulse - pulse.radius) < pulse.thickness) {
@@ -565,11 +555,9 @@
                     });
 
                     if(isPulse) {
-                        // Neon green flash during pulse
                         ctx.strokeStyle = `rgba(57, 255, 20, ${baseAlpha + (pulseIntensity * 0.6)})`;
                         ctx.lineWidth = 1 + (pulseIntensity * 2);
                     } else {
-                        // Deep cyan normal state
                         ctx.strokeStyle = `rgba(88, 166, 255, ${baseAlpha})`;
                         ctx.lineWidth = 1;
                     }
@@ -756,7 +744,6 @@
     }
 
     function processText() {
-        // Trigger Canvas Pulse on Execution!
         if (typeof triggerPulse === 'function') triggerPulse();
 
         const text = document.getElementById('configInput').value;
@@ -780,9 +767,10 @@
 
             let processedLine = line;
 
-            // Helper to dynamically build port names based on user input (Gi vs Te vs Fa)
+            // Helper to dynamically build port names and Auto-Correct "Gl" typos
             function addPort(rawType, prefix, portNum) {
                 let cleanType = rawType.replace(/^gigabitethernet/i, 'Gi')
+                                       .replace(/^gl/i, 'Gi') // Fixes "Gl" Typo to "Gi"
                                        .replace(/^fastethernet/i, 'Fa')
                                        .replace(/^tengigabitethernet/i, 'Te');
                 cleanType = cleanType.charAt(0).toUpperCase() + cleanType.slice(1).toLowerCase();
@@ -793,8 +781,8 @@
                 switchesSet.add(currentSwitchForLine);
             }
 
-            // 2. Scan for Full Port Ranges (e.g. Gi2/0/23 - Gi2/0/27)
-            const fullRangeRegex = /(gi|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)(\d+)\s*[-–—]\s*(?:gi|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(?:\d+(?:\/\d+)+\/)(\d+)/gi;
+            // 2. Scan for Full Port Ranges including "Gl" typo (e.g. Gi2/0/23 - Gi2/0/27 or Gl3/0/27 - Gl3/0/29)
+            const fullRangeRegex = /(gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)(\d+)\s*[-–—]\s*(?:gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(?:\d+(?:\/\d+)+\/)(\d+)/gi;
             let matchFull;
             while ((matchFull = fullRangeRegex.exec(processedLine)) !== null) {
                 const type = matchFull[1];
@@ -810,8 +798,8 @@
             }
             processedLine = processedLine.replace(fullRangeRegex, ''); 
 
-            // 3. Scan for Standard, Commas, and Shorthand Ranges (e.g. Gi2/0/23-27 or Gi2/0/1,3,5)
-            const shortHandRegex = /(gi|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)([\d\s,\-–—]+)/gi;
+            // 3. Scan for Standard, Commas, and Shorthand Ranges including "Gl" typo (e.g. Gl3/0/1,3,5 or Gi2/0/23-27)
+            const shortHandRegex = /(gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)([\d\s,\-–—]+)/gi;
             let matchShort;
             while ((matchShort = shortHandRegex.exec(processedLine)) !== null) { 
                 const type = matchShort[1]; 
@@ -919,7 +907,9 @@
 
     function renderOutput() {
         const rawFilterStr = document.getElementById('filterInput').value.trim().toLowerCase();
-        const filterStr = rawFilterStr.replace(/gigabitethernet/g, 'gi');
+        
+        // Let users search with "gl" or "gi" equally
+        const filterStr = rawFilterStr.replace(/gigabitethernet/g, 'gi').replace(/gl/g, 'gi');
 
         const outputDiv = document.getElementById('output');
         let htmlOutput = "";
