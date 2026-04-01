@@ -338,7 +338,7 @@
             border-radius: 4px;
             cursor: pointer;
             transition: 0.3s;
-            box-shadow: 0 0 10px rgba(242, 122, 34, 0.2);
+            box-shadow: 0 0 10px rgba(35, 134, 54, 0.3);
             white-space: nowrap;
         }
         .cyber-btn:hover { background: var(--accent-blue); box-shadow: 0 0 20px rgba(242, 122, 34, 0.4); border-color: var(--accent-blue); }
@@ -358,8 +358,8 @@
         }
         .clear-btn:hover {
             opacity: 1;
-            border-color: var(--accent-blue);
-            color: var(--accent-blue);
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
             background: rgba(148, 74, 49, 0.05);
         }
 
@@ -517,7 +517,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v4.3 [Automated Port Extractor]</span>
+            <span class="version-tag">// v4.4 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -647,7 +647,6 @@
     const ctx = canvas.getContext('2d');
     let width, height;
     let particles = [];
-    let pulses = [];
 
     function initCanvas() {
         width = canvas.width = window.innerWidth;
@@ -667,32 +666,13 @@
     window.addEventListener('resize', initCanvas);
     initCanvas();
 
-    function triggerPulse() {
-        pulses.push({
-            x: Math.random() * width,
-            y: Math.random() * height,
-            radius: 0,
-            thickness: 80,
-            speed: 15 + Math.random() * 5
-        });
-    }
-
     function animateCanvas() {
         ctx.clearRect(0, 0, width, height);
         
         // Dynamically adjust colors based on current theme
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        const baseRGB = isLight ? '242, 122, 34' : '88, 166, 255';    // Orange vs Cyan
-        const pulseRGB = isLight ? '148, 74, 49' : '57, 255, 20';     // Rust vs Neon Green
-        const maxAlpha = isLight ? 0.4 : 0.25;                        // Stronger lines in light mode
-
-        for (let i = pulses.length - 1; i >= 0; i--) {
-            let p = pulses[i];
-            p.radius += p.speed;
-            if (p.radius > Math.max(width, height) * 1.5) {
-                pulses.splice(i, 1);
-            }
-        }
+        const baseRGB = isLight ? '242, 122, 34' : '88, 166, 255';    
+        const maxAlpha = isLight ? 0.4 : 0.25;                        
 
         particles.forEach(p => {
             p.x += p.vx;
@@ -714,28 +694,8 @@
                     let dist = Math.sqrt(distSq);
                     let baseAlpha = (1 - dist / 130) * maxAlpha; 
                     
-                    let midX = (p1.x + p2.x) / 2;
-                    let midY = (p1.y + p2.y) / 2;
-                    
-                    let isPulse = false;
-                    let pulseIntensity = 0;
-
-                    pulses.forEach(pulse => {
-                        let dToPulse = Math.hypot(midX - pulse.x, midY - pulse.y);
-                        if(Math.abs(dToPulse - pulse.radius) < pulse.thickness) {
-                            let intensity = 1 - (Math.abs(dToPulse - pulse.radius) / pulse.thickness);
-                            pulseIntensity = Math.max(pulseIntensity, intensity);
-                            isPulse = true;
-                        }
-                    });
-
-                    if(isPulse) {
-                        ctx.strokeStyle = `rgba(${pulseRGB}, ${baseAlpha + (pulseIntensity * 0.6)})`;
-                        ctx.lineWidth = 1 + (pulseIntensity * 2);
-                    } else {
-                        ctx.strokeStyle = `rgba(${baseRGB}, ${baseAlpha})`;
-                        ctx.lineWidth = 1;
-                    }
+                    ctx.strokeStyle = `rgba(${baseRGB}, ${baseAlpha})`;
+                    ctx.lineWidth = 1;
                     
                     ctx.beginPath();
                     ctx.moveTo(p1.x, p1.y);
@@ -919,8 +879,6 @@
     }
 
     function processText() {
-        if (typeof triggerPulse === 'function') triggerPulse();
-
         const text = document.getElementById('configInput').value;
         if (!text.trim()) return; 
         
