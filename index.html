@@ -8,6 +8,7 @@
     <style>
         /* --- N0<AT COLOR PALETTE & SCALE --- */
         :root {
+            /* DARK THEME (DEFAULT) */
             --bg-color: #030508; 
             --card-bg: rgba(22, 27, 34, 0.85); 
             --border-color: #30363d;
@@ -20,8 +21,36 @@
             --hl-orange: #ff9d00;
             --code-bg: rgba(1, 4, 9, 0.7); 
             
-            /* Dynamic Font Scale controlled by Slider */
+            --logo-text: #ffffff;
+            --logo-accent-text: #000000;
+            --input-text: #79c0ff;
+            --line-num-bg: rgba(13, 17, 23, 0.5);
+            --line-num-text: #484f58;
+            --btn-copy-bg: #8957e5;
+            
             --font-scale: 1;
+        }
+
+        [data-theme="light"] {
+            /* LIGHT THEME (FROM UPLOADED PALETTE) */
+            --bg-color: #e9e9e6;         /* Off-White Background */
+            --card-bg: rgba(255, 255, 255, 0.85); /* Frosted White Panels */
+            --border-color: #a48c7b;     /* Taupe Borders */
+            --text-main: #474a45;        /* Charcoal Text */
+            --accent-blue: #944a31;      /* Deep Rust Headers */
+            --accent-green: #f27a22;     /* Orange Primary Buttons */
+            --neon-green: #f27a22;       /* Orange Glows & Logo Accent */
+            --accent-purple: #a48c7b;    /* Taupe Secondary Elements */
+            --accent-red: #d32f2f;       /* Standard Error Red */
+            --hl-orange: #f27a22;        /* Orange Highlights */
+            --code-bg: rgba(240, 240, 238, 0.7); /* Light Gray Textboxes */
+            
+            --logo-text: #474a45;        /* Charcoal Logo */
+            --logo-accent-text: #ffffff; /* White text inside Orange Logo block */
+            --input-text: #944a31;       /* Deep Rust Extracted Text */
+            --line-num-bg: rgba(164, 140, 123, 0.15); /* Soft Taupe Line Numbers */
+            --line-num-text: #a48c7b;    /* Taupe Line Numbers Text */
+            --btn-copy-bg: #944a31;      /* Deep Rust Copy Buttons */
         }
 
         body {
@@ -33,6 +62,7 @@
             display: flex;
             justify-content: center;
             overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
 
         /* --- ANIMATED BACKGROUND CANVAS --- */
@@ -48,7 +78,7 @@
 
         .container { max-width: 1200px; width: 100%; position: relative; z-index: 1;}
 
-        /* --- HEADER & ZOOM CONTROLS --- */
+        /* --- HEADER & CONTROLS --- */
         .app-header {
             display: flex;
             justify-content: space-between;
@@ -57,7 +87,7 @@
         }
 
         h2 {
-            color: #ffffff;
+            color: var(--logo-text);
             font-size: calc(1.7rem * var(--font-scale));
             margin: 0;
             display: flex;
@@ -65,32 +95,61 @@
             gap: 12px;
             font-family: "Courier New", Courier, monospace;
             font-weight: bold;
-            text-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+            text-shadow: 0 0 10px rgba(242, 122, 34, 0.2);
+            transition: color 0.3s;
         }
 
         .logo-text { letter-spacing: 1px; display: flex; align-items: center; }
 
         .logo-accent {
             background-color: var(--neon-green);
-            color: #000;
+            color: var(--logo-accent-text);
             padding: 0px 6px;
             margin: 0 6px;
-            box-shadow: 0 0 12px rgba(57, 255, 20, 0.6);
+            box-shadow: 0 0 12px rgba(242, 122, 34, 0.4);
             display: inline-block;
             font-weight: 900;
+            transition: all 0.3s;
         }
 
         .version-tag {
             font-size: calc(0.8rem * var(--font-scale));
             color: var(--accent-blue);
-            opacity: 0.6;
+            opacity: 0.8;
             text-transform: uppercase;
             letter-spacing: 2px;
             font-weight: normal;
             font-family: "Segoe UI", Roboto, monospace;
         }
 
-        /* Cyberpunk Zoom Slider */
+        /* Top Right Controls (Zoom + Theme) */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theme-toggle-btn {
+            background: transparent;
+            color: var(--accent-blue);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            font-size: 11px;
+            font-family: "Courier New", Courier, monospace;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            background: var(--card-bg);
+            transition: 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .theme-toggle-btn:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            box-shadow: 0 0 10px rgba(242, 122, 34, 0.2);
+        }
+
         .zoom-controls {
             display: flex;
             align-items: center;
@@ -102,8 +161,9 @@
             border: 1px solid var(--border-color);
             border-radius: 20px;
             backdrop-filter: blur(4px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-            user-select: none; /* Prevents text highlighting on double click */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            user-select: none; 
+            transition: all 0.3s;
         }
         .zoom-controls input[type="range"] {
             -webkit-appearance: none;
@@ -138,7 +198,8 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             margin-bottom: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: all 0.3s;
         }
 
         .header-row {
@@ -155,7 +216,7 @@
             color: var(--accent-blue);
             font-size: calc(0.75rem * var(--font-scale));
             text-transform: uppercase;
-            opacity: 0.8;
+            opacity: 0.9;
         }
         .header-row label { margin-bottom: 0; }
 
@@ -176,7 +237,7 @@
             border-color: var(--accent-purple);
             background: rgba(188, 140, 255, 0.1);
             box-shadow: 0 0 8px rgba(188, 140, 255, 0.3);
-            color: #fff;
+            color: var(--text-main);
         }
 
         /* --- MULTI-TENANT DEVICE HUD --- */
@@ -195,15 +256,15 @@
         }
         .device-hud.visible { opacity: 1; }
         .host-tag {
-            background: rgba(88, 166, 255, 0.1);
-            border: 1px solid rgba(88, 166, 255, 0.3);
+            background: rgba(148, 74, 49, 0.1);
+            border: 1px solid var(--border-color);
             padding: 3px 8px;
             border-radius: 4px;
             display: inline-flex;
             align-items: center;
         }
-        .host-tag strong { color: #fff; margin-right: 5px; }
-        .ip-highlight { font-weight: bold; text-shadow: 0 0 5px rgba(57, 255, 20, 0.4); }
+        .host-tag strong { color: var(--logo-text); margin-right: 5px; }
+        .ip-highlight { font-weight: bold; text-shadow: 0 0 5px rgba(242, 122, 34, 0.3); }
 
         /* --- COLLAPSIBLE WRAPPERS --- */
         .readme-wrapper {
@@ -215,7 +276,7 @@
             max-height: 1000px;
             padding-top: 15px;
             margin-top: 10px;
-            border-top: 1px dashed rgba(188, 140, 255, 0.4);
+            border-top: 1px dashed var(--border-color);
         }
         .readme-content {
             font-size: calc(12px * var(--font-scale));
@@ -237,7 +298,7 @@
             width: 100%;
             background: var(--code-bg);
             backdrop-filter: blur(4px);
-            color: #79c0ff;
+            color: var(--input-text);
             border: 1px solid var(--border-color);
             border-radius: 4px;
             padding: 12px;
@@ -246,21 +307,21 @@
             outline: none;
             font-size: calc(13px * var(--font-scale));
             line-height: 1.6;
-            transition: height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             scrollbar-width: thin;
             scrollbar-color: var(--border-color) transparent;
         }
         textarea { height: calc(140px * var(--font-scale)); resize: vertical; }
-        textarea:focus, input[type="text"]:focus { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(88, 166, 255, 0.2); }
+        textarea:focus, input[type="text"]:focus { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(148, 74, 49, 0.2); }
         textarea.expanded { height: calc(400px * var(--font-scale)); }
         
         textarea::-webkit-scrollbar, .output-box::-webkit-scrollbar { width: 10px; height: 10px;}
         textarea::-webkit-scrollbar-track, .output-box::-webkit-scrollbar-track { background: transparent; }
         textarea::-webkit-scrollbar-thumb, .output-box::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
-        textarea::selection, .output-box::selection { background: rgba(88, 166, 255, 0.3); }
+        textarea::selection, .output-box::selection { background: rgba(148, 74, 49, 0.2); }
 
         input[type="text"] { margin-bottom: 15px; color: var(--hl-orange); }
-        input[type="text"]::placeholder { color: #484f58; }
+        input[type="text"]::placeholder { color: var(--line-num-text); }
 
         /* --- UI CONTROLS --- */
         .controls-row { display: flex; gap: 12px; margin-top: 15px; margin-bottom: 15px; align-items: flex-end;}
@@ -277,10 +338,10 @@
             border-radius: 4px;
             cursor: pointer;
             transition: 0.3s;
-            box-shadow: 0 0 10px rgba(35, 134, 54, 0.3);
+            box-shadow: 0 0 10px rgba(242, 122, 34, 0.2);
             white-space: nowrap;
         }
-        .cyber-btn:hover { background: #2ea043; box-shadow: 0 0 20px rgba(57, 255, 20, 0.6); }
+        .cyber-btn:hover { background: var(--accent-blue); box-shadow: 0 0 20px rgba(242, 122, 34, 0.4); border-color: var(--accent-blue); }
         .cyber-btn:active { transform: scale(0.95); }
 
         .clear-btn {
@@ -293,13 +354,13 @@
             cursor: pointer;
             border-radius: 4px;
             transition: 0.2s;
-            opacity: 0.7;
+            opacity: 0.8;
         }
         .clear-btn:hover {
             opacity: 1;
-            border-color: var(--accent-purple);
-            color: var(--accent-purple);
-            background: rgba(188, 140, 255, 0.05);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            background: rgba(148, 74, 49, 0.05);
         }
 
         /* --- 4-COLUMN OUTPUT STYLES --- */
@@ -311,7 +372,7 @@
             flex: 1; 
             display: flex;
             flex-direction: column;
-            min-width: 0; /* Prevents flex children from blowing out container bounds */
+            min-width: 0; 
         }
         .script-header {
             display: flex;
@@ -320,7 +381,7 @@
             margin-bottom: 5px;
         }
         .copy-btn {
-            background: #8957e5;
+            background: var(--btn-copy-bg);
             color: white;
             border: none;
             padding: 4px 10px;
@@ -330,7 +391,9 @@
             font-weight: bold;
             text-transform: uppercase;
             font-family: "Courier New", Courier, monospace;
+            transition: 0.2s;
         }
+        .copy-btn:hover { filter: brightness(1.2); }
 
         .output-box {
             width: 100%;
@@ -341,14 +404,15 @@
             border-radius: 4px;
             box-sizing: border-box;
             padding: 10px 0; 
-            overflow: auto; /* Dynamic anti-warp scrollbars */
+            overflow: auto; 
             background-color: var(--code-bg); 
             backdrop-filter: blur(4px);
-            color: #79c0ff; 
+            color: var(--input-text); 
             cursor: text;
             counter-reset: linenumber; 
             line-height: 1.6;
             resize: vertical;
+            transition: all 0.3s;
         }
 
         .line-item {
@@ -356,7 +420,7 @@
             padding-left: calc(35px * var(--font-scale)); 
             padding-right: 10px;
             position: relative;
-            white-space: pre; /* Protects from weird wrapping */
+            white-space: pre; 
         }
 
         .line-item::before {
@@ -367,23 +431,24 @@
             top: 0;
             width: calc(20px * var(--font-scale));
             text-align: right;
-            color: #484f58; 
-            background-color: rgba(13, 17, 23, 0.5); 
+            color: var(--line-num-text); 
+            background-color: var(--line-num-bg); 
             border-right: 1px solid var(--border-color);
             padding-right: calc(6px * var(--font-scale));
             height: 100%;
             user-select: none; 
             -webkit-user-select: none;
+            transition: all 0.3s;
         }
 
         /* Duplicate Warning Styles */
         .highlight-dup {
             background-color: rgba(248, 81, 73, 0.15); 
-            color: #ff7b72; 
+            color: var(--accent-red); 
         }
         .highlight-dup::before {
             background-color: rgba(248, 81, 73, 0.05); 
-            color: #ff7b72;
+            color: var(--accent-red);
             border-right-color: var(--accent-red);
         }
 
@@ -419,11 +484,11 @@
             border: 1px solid var(--accent-green);
             padding: 15px;
             border-radius: 8px;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1), 0 10px 30px rgba(0,0,0,0.1);
         }
         
         .db-security-note {
-            background: rgba(35, 134, 54, 0.1);
+            background: rgba(242, 122, 34, 0.1);
             border-left: 3px solid var(--accent-green);
             padding: 8px 12px;
             margin-bottom: 12px;
@@ -433,9 +498,13 @@
             border-radius: 0 4px 4px 0;
         }
 
-        .db-box textarea { height: calc(150px * var(--font-scale)); margin-bottom: 10px; border-color: rgba(35, 134, 54, 0.5); background: rgba(1, 4, 9, 0.8);}
+        .db-box textarea { 
+            height: calc(150px * var(--font-scale)); 
+            margin-bottom: 10px; 
+            border-color: rgba(242, 122, 34, 0.5); 
+        }
         .db-controls { display: flex; justify-content: space-between; align-items: center; }
-        .db-status { font-size: calc(11px * var(--font-scale)); color: var(--accent-green); font-family: monospace; }
+        .db-status { font-size: calc(11px * var(--font-scale)); color: var(--accent-green); font-family: monospace; font-weight: bold;}
 
     </style>
 </head>
@@ -448,19 +517,23 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v4.2 [Automated Port Extractor]</span>
+            <span class="version-tag">// v4.3 [Automated Port Extractor]</span>
         </h2>
         
-        <div class="zoom-controls">
-            <span style="font-size: 11px;">A-</span>
-            <input type="range" id="zoomSlider" min="0.8" max="1.6" step="0.05" value="1" title="Adjust Text Size (Double-click to reset)">
-            <span style="font-size: 15px; font-weight: bold;">A+</span>
+        <div class="header-controls">
+            <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">☀️ LIGHT</button>
+            
+            <div class="zoom-controls">
+                <span style="font-size: 11px;">A-</span>
+                <input type="range" id="zoomSlider" min="0.8" max="1.6" step="0.05" value="1" title="Adjust Text Size (Double-click to reset)">
+                <span style="font-size: 15px; font-weight: bold;">A+</span>
+            </div>
         </div>
     </div>
 
-    <div class="form-group" style="border-color: rgba(188, 140, 255, 0.3);">
+    <div class="form-group" style="border-color: var(--border-color);">
         <div class="header-row">
-            <label style="color: var(--accent-purple); text-shadow: 0 0 8px rgba(188, 140, 255, 0.4);">00 // SYSTEM_MANUAL [READ_ME]</label>
+            <label style="color: var(--accent-purple);">00 // SYSTEM_MANUAL [READ_ME]</label>
             <button class="expand-btn" id="readmeBtn" onclick="toggleReadme()">[ COLLAPSE ]</button>
         </div>
         <div id="readmeWrapper" class="readme-wrapper expanded">
@@ -498,7 +571,7 @@
         <input type="text" id="filterInput" placeholder="> Filter by interface (Gi1/0/1) or hostname..." onkeyup="renderOutput()" style="display: none;">
         
         <div id="output">
-            <div style="font-family: 'Courier New', Courier, monospace; color: #484f58; font-size: calc(13px * var(--font-scale));">-- system_idle --</div>
+            <div style="font-family: 'Courier New', Courier, monospace; color: var(--line-num-text); font-size: calc(13px * var(--font-scale));">-- system_idle --</div>
         </div>
         
         <div id="statusMsg" style="display: none;"></div>
@@ -531,6 +604,25 @@
 </div>
 
 <script>
+    // --- THEME TOGGLE LOGIC ---
+    function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('nocape_theme', newTheme);
+        
+        const btn = document.getElementById('themeToggleBtn');
+        btn.innerText = newTheme === 'light' ? '🌙 DARK' : '☀️ LIGHT';
+    }
+
+    // Load saved theme on startup
+    const savedTheme = localStorage.getItem('nocape_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('themeToggleBtn').innerText = savedTheme === 'light' ? '🌙 DARK' : '☀️ LIGHT';
+
+
     // --- ZOOM LOGIC & PERSISTENCE ---
     const zoomSlider = document.getElementById('zoomSlider');
     const savedZoom = localStorage.getItem('nocape_zoom') || 1;
@@ -548,6 +640,7 @@
         document.documentElement.style.setProperty('--font-scale', 1);
         localStorage.setItem('nocape_zoom', 1);
     });
+
 
     // --- ANIMATED CANVAS MESH LOGIC ---
     const canvas = document.getElementById('bg-canvas');
@@ -586,6 +679,12 @@
 
     function animateCanvas() {
         ctx.clearRect(0, 0, width, height);
+        
+        // Dynamically adjust colors based on current theme
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const baseRGB = isLight ? '242, 122, 34' : '88, 166, 255';    // Orange vs Cyan
+        const pulseRGB = isLight ? '148, 74, 49' : '57, 255, 20';     // Rust vs Neon Green
+        const maxAlpha = isLight ? 0.4 : 0.25;                        // Stronger lines in light mode
 
         for (let i = pulses.length - 1; i >= 0; i--) {
             let p = pulses[i];
@@ -613,7 +712,7 @@
 
                 if(distSq < 16900) { 
                     let dist = Math.sqrt(distSq);
-                    let baseAlpha = (1 - dist / 130) * 0.25; 
+                    let baseAlpha = (1 - dist / 130) * maxAlpha; 
                     
                     let midX = (p1.x + p2.x) / 2;
                     let midY = (p1.y + p2.y) / 2;
@@ -631,10 +730,10 @@
                     });
 
                     if(isPulse) {
-                        ctx.strokeStyle = `rgba(57, 255, 20, ${baseAlpha + (pulseIntensity * 0.6)})`;
+                        ctx.strokeStyle = `rgba(${pulseRGB}, ${baseAlpha + (pulseIntensity * 0.6)})`;
                         ctx.lineWidth = 1 + (pulseIntensity * 2);
                     } else {
-                        ctx.strokeStyle = `rgba(88, 166, 255, ${baseAlpha})`;
+                        ctx.strokeStyle = `rgba(${baseRGB}, ${baseAlpha})`;
                         ctx.lineWidth = 1;
                     }
                     
@@ -653,14 +752,14 @@
     // --- LOCAL DATABASE LOGIC ---
     let switchDB = {};
 
-    window.onload = function() {
+    window.addEventListener('DOMContentLoaded', () => {
         const savedDB = localStorage.getItem('noccat_db');
         if (savedDB) {
             parseToDB(savedDB);
             document.getElementById('dbInput').value = generateDBString();
             document.getElementById('dbStatus').innerText = `STATUS: LOADED_${Object.keys(switchDB).length}_HOSTS`;
         }
-    };
+    });
 
     function parseToDB(text) {
         const lines = text.split('\n');
@@ -796,7 +895,7 @@
 
     function clearText() {
         document.getElementById('configInput').value = '';
-        document.getElementById('output').innerHTML = `<div style="font-family: 'Courier New', Courier, monospace; color: #484f58; font-size: calc(13px * var(--font-scale));">-- system_idle --</div>`;
+        document.getElementById('output').innerHTML = `<div style="font-family: 'Courier New', Courier, monospace; color: var(--line-num-text); font-size: calc(13px * var(--font-scale));">-- system_idle --</div>`;
         document.getElementById('filterInput').style.display = 'none';
         document.getElementById('filterInput').value = '';
         document.getElementById('statusMsg').style.display = 'none';
@@ -846,7 +945,7 @@
             // Helper to dynamically build port names and Auto-Correct "Gl" typos
             function addPort(rawType, prefix, portNum) {
                 let cleanType = rawType.replace(/^gigabitethernet/i, 'Gi')
-                                       .replace(/^gl/i, 'Gi') // Fixes "Gl" Typo to "Gi"
+                                       .replace(/^gl/i, 'Gi') 
                                        .replace(/^fastethernet/i, 'Fa')
                                        .replace(/^tengigabitethernet/i, 'Te');
                 cleanType = cleanType.charAt(0).toUpperCase() + cleanType.slice(1).toLowerCase();
@@ -857,7 +956,7 @@
                 switchesSet.add(currentSwitchForLine);
             }
 
-            // 2. Scan for Full Port Ranges including "Gl" typo 
+            // 2. Scan for Full Port Ranges 
             const fullRangeRegex = /(gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)(\d+)\s*[-–—]\s*(?:gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(?:\d+(?:\/\d+)+\/)(\d+)/gi;
             let matchFull;
             while ((matchFull = fullRangeRegex.exec(processedLine)) !== null) {
@@ -874,7 +973,7 @@
             }
             processedLine = processedLine.replace(fullRangeRegex, ''); 
 
-            // 3. Scan for Standard, Commas, and Shorthand Ranges including "Gl" typo 
+            // 3. Scan for Standard, Commas, and Shorthand Ranges 
             const shortHandRegex = /(gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)([\d\s,\-–—]+)/gi;
             let matchShort;
             while ((matchShort = shortHandRegex.exec(processedLine)) !== null) { 
@@ -984,7 +1083,6 @@
     function renderOutput() {
         const rawFilterStr = document.getElementById('filterInput').value.trim().toLowerCase();
         
-        // Let users search with "gl" or "gi" equally
         const filterStr = rawFilterStr.replace(/gigabitethernet/g, 'gi').replace(/gl/g, 'gi');
 
         const outputDiv = document.getElementById('output');
@@ -1068,7 +1166,7 @@
             document.getElementById('statusMsg').style.display = 'block';
             document.getElementById('statusMsg').innerText = `STATUS: ${filteredInterfaces.length} MAPPINGS_EXTRACTED | ${filteredSwitches.length} HOSTNAMES_FOUND`;
         } else {
-            htmlOutput += `<div style="font-family: 'Courier New', Courier, monospace; color: #484f58; font-size: calc(13px * var(--font-scale));">No interfaces match your filter.</div>`;
+            htmlOutput += `<div style="font-family: 'Courier New', Courier, monospace; color: var(--line-num-text); font-size: calc(13px * var(--font-scale));">No interfaces match your filter.</div>`;
         }
 
         outputDiv.innerHTML = htmlOutput;
