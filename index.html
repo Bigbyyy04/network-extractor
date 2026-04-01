@@ -6,7 +6,7 @@
     <title>N0CAPE - Automated Port Extractor</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍌</text></svg>">
     <style>
-        /* --- N0<AT COLOR PALETTE --- */
+        /* --- N0<AT COLOR PALETTE & SCALE --- */
         :root {
             --bg-color: #030508; 
             --card-bg: rgba(22, 27, 34, 0.85); 
@@ -19,6 +19,9 @@
             --accent-red: #f85149;
             --hl-orange: #ff9d00;
             --code-bg: rgba(1, 4, 9, 0.7); 
+            
+            /* Dynamic Font Scale controlled by Slider */
+            --font-scale: 1;
         }
 
         body {
@@ -43,14 +46,20 @@
             pointer-events: none;
         }
 
-        /* Widened to 1200px to support the 4-column output */
         .container { max-width: 1200px; width: 100%; position: relative; z-index: 1;}
 
-        /* --- PURE CSS TEXT LOGO WITH TERMINAL CURSOR --- */
+        /* --- HEADER & ZOOM CONTROLS --- */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
         h2 {
             color: #ffffff;
-            font-size: 1.7rem;
-            margin-bottom: 20px;
+            font-size: calc(1.7rem * var(--font-scale));
+            margin: 0;
             display: flex;
             align-items: baseline;
             gap: 12px;
@@ -59,11 +68,7 @@
             text-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
         }
 
-        .logo-text {
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-        }
+        .logo-text { letter-spacing: 1px; display: flex; align-items: center; }
 
         .logo-accent {
             background-color: var(--neon-green);
@@ -76,13 +81,50 @@
         }
 
         .version-tag {
-            font-size: 0.8rem;
+            font-size: calc(0.8rem * var(--font-scale));
             color: var(--accent-blue);
             opacity: 0.6;
             text-transform: uppercase;
             letter-spacing: 2px;
             font-weight: normal;
             font-family: "Segoe UI", Roboto, monospace;
+        }
+
+        /* Cyberpunk Zoom Slider */
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--accent-blue);
+            font-family: "Courier New", Courier, monospace;
+            background: var(--card-bg);
+            padding: 6px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+        .zoom-controls input[type="range"] {
+            -webkit-appearance: none;
+            width: 100px;
+            background: var(--code-bg);
+            height: 4px;
+            border-radius: 2px;
+            outline: none;
+            border: 1px solid var(--border-color);
+        }
+        .zoom-controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--neon-green);
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--neon-green);
+            transition: 0.2s;
+        }
+        .zoom-controls input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
         }
 
         /* --- FORM & PANEL STYLES --- */
@@ -109,7 +151,7 @@
             display: block;
             margin-bottom: 8px;
             color: var(--accent-blue);
-            font-size: 0.75rem;
+            font-size: calc(0.75rem * var(--font-scale));
             text-transform: uppercase;
             opacity: 0.8;
         }
@@ -120,7 +162,7 @@
             color: var(--accent-purple);
             border: 1px solid var(--border-color);
             padding: 4px 10px;
-            font-size: 10px;
+            font-size: calc(10px * var(--font-scale));
             cursor: pointer;
             border-radius: 4px;
             transition: 0.3s ease;
@@ -142,7 +184,7 @@
             flex-wrap: wrap;
             justify-content: flex-end;
             gap: 6px;
-            font-size: 11px;
+            font-size: calc(11px * var(--font-scale));
             color: var(--text-main);
             font-family: "Courier New", Courier, monospace;
             opacity: 0;
@@ -168,20 +210,20 @@
             transition: max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.3s, margin 0.3s, border 0.3s;
         }
         .readme-wrapper.expanded {
-            max-height: 800px;
+            max-height: 1000px;
             padding-top: 15px;
             margin-top: 10px;
             border-top: 1px dashed rgba(188, 140, 255, 0.4);
         }
         .readme-content {
-            font-size: 12px;
+            font-size: calc(12px * var(--font-scale));
             line-height: 1.6;
             color: var(--text-main);
             opacity: 0.9;
         }
         .readme-content h3 {
             color: var(--accent-purple);
-            font-size: 12px;
+            font-size: calc(12px * var(--font-scale));
             margin: 12px 0 6px 0;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -200,17 +242,17 @@
             font-family: "Courier New", Courier, monospace;
             box-sizing: border-box;
             outline: none;
-            font-size: 13px;
-            line-height: 1.5;
+            font-size: calc(13px * var(--font-scale));
+            line-height: 1.6;
             transition: height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             scrollbar-width: thin;
             scrollbar-color: var(--border-color) transparent;
         }
-        textarea { height: 120px; resize: none; }
+        textarea { height: calc(140px * var(--font-scale)); resize: vertical; }
         textarea:focus, input[type="text"]:focus { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(88, 166, 255, 0.2); }
-        textarea.expanded { height: 400px; }
+        textarea.expanded { height: calc(400px * var(--font-scale)); }
         
-        textarea::-webkit-scrollbar, .output-box::-webkit-scrollbar { width: 10px; }
+        textarea::-webkit-scrollbar, .output-box::-webkit-scrollbar { width: 10px; height: 10px;}
         textarea::-webkit-scrollbar-track, .output-box::-webkit-scrollbar-track { background: transparent; }
         textarea::-webkit-scrollbar-thumb, .output-box::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
         textarea::selection, .output-box::selection { background: rgba(88, 166, 255, 0.3); }
@@ -225,7 +267,7 @@
             background: var(--accent-green);
             color: #fff;
             padding: 8px 20px;
-            font-size: 13px;
+            font-size: calc(13px * var(--font-scale));
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -244,7 +286,7 @@
             color: var(--text-main);
             border: 1px solid var(--border-color);
             padding: 6px 20px;
-            font-size: 12px;
+            font-size: calc(12px * var(--font-scale));
             text-transform: uppercase;
             cursor: pointer;
             border-radius: 4px;
@@ -267,7 +309,7 @@
             flex: 1; 
             display: flex;
             flex-direction: column;
-            overflow: hidden; 
+            min-width: 0; /* Prevents flex children from blowing out container bounds */
         }
         .script-header {
             display: flex;
@@ -282,7 +324,7 @@
             padding: 4px 10px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 10px;
+            font-size: calc(10px * var(--font-scale));
             font-weight: bold;
             text-transform: uppercase;
             font-family: "Courier New", Courier, monospace;
@@ -290,28 +332,29 @@
 
         .output-box {
             width: 100%;
-            height: 400px; 
+            height: calc(400px * Math.min(var(--font-scale), 1.5)); 
             font-family: "Courier New", Courier, monospace;
-            font-size: 12px;
+            font-size: calc(12px * var(--font-scale));
             border: 1px solid var(--border-color);
             border-radius: 4px;
             box-sizing: border-box;
             padding: 10px 0; 
-            overflow-y: auto; 
+            overflow: auto; /* Dynamic anti-warp scrollbars */
             background-color: var(--code-bg); 
             backdrop-filter: blur(4px);
             color: #79c0ff; 
             cursor: text;
             counter-reset: linenumber; 
-            line-height: 1.5;
+            line-height: 1.6;
+            resize: vertical;
         }
 
         .line-item {
             display: block;
-            padding-left: 35px; 
+            padding-left: calc(35px * var(--font-scale)); 
             padding-right: 10px;
             position: relative;
-            white-space: nowrap;
+            white-space: pre; /* Protects from weird wrapping */
         }
 
         .line-item::before {
@@ -320,12 +363,12 @@
             position: absolute;
             left: 0;
             top: 0;
-            width: 20px;
+            width: calc(20px * var(--font-scale));
             text-align: right;
             color: #484f58; 
             background-color: rgba(13, 17, 23, 0.5); 
             border-right: 1px solid var(--border-color);
-            padding-right: 6px;
+            padding-right: calc(6px * var(--font-scale));
             height: 100%;
             user-select: none; 
             -webkit-user-select: none;
@@ -350,15 +393,20 @@
             border-radius: 4px;
             margin-bottom: 15px;
             font-family: "Courier New", Courier, monospace;
-            font-size: 11.5px;
+            font-size: calc(11.5px * var(--font-scale));
             text-align: center;
-            line-height: 1.4;
+            line-height: 1.5;
             backdrop-filter: blur(4px);
         }
-        .warning-box strong { font-size: 12.5px; letter-spacing: 1px; }
+        .warning-box strong { font-size: calc(12.5px * var(--font-scale)); letter-spacing: 1px; }
 
         .hidden-copy-area { display: none; }
-        #statusMsg { font-size: 11px; color: var(--accent-blue); margin-top: 15px; font-family: "Courier New", Courier, monospace;}
+        #statusMsg { 
+            font-size: calc(11px * var(--font-scale)); 
+            color: var(--accent-blue); 
+            margin-top: 15px; 
+            font-family: "Courier New", Courier, monospace;
+        }
 
         /* --- LOCAL DB STYLES --- */
         .bottom-actions { text-align: center; margin-top: 30px; margin-bottom: 20px; display: flex; justify-content: center; gap: 15px; }
@@ -377,15 +425,15 @@
             border-left: 3px solid var(--accent-green);
             padding: 8px 12px;
             margin-bottom: 12px;
-            font-size: 11px;
+            font-size: calc(11px * var(--font-scale));
             color: var(--text-main);
-            line-height: 1.4;
+            line-height: 1.5;
             border-radius: 0 4px 4px 0;
         }
 
-        .db-box textarea { height: 150px; margin-bottom: 10px; border-color: rgba(35, 134, 54, 0.5); background: rgba(1, 4, 9, 0.8);}
+        .db-box textarea { height: calc(150px * var(--font-scale)); margin-bottom: 10px; border-color: rgba(35, 134, 54, 0.5); background: rgba(1, 4, 9, 0.8);}
         .db-controls { display: flex; justify-content: space-between; align-items: center; }
-        .db-status { font-size: 11px; color: var(--accent-green); font-family: monospace; }
+        .db-status { font-size: calc(11px * var(--font-scale)); color: var(--accent-green); font-family: monospace; }
 
     </style>
 </head>
@@ -395,10 +443,18 @@
 
 <div class="container">
     
-    <h2>
-        <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-        <span class="version-tag">// v4.1 [Automated Port Extractor]</span>
-    </h2>
+    <div class="app-header">
+        <h2>
+            <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
+            <span class="version-tag">// v4.2 [Automated Port Extractor]</span>
+        </h2>
+        
+        <div class="zoom-controls">
+            <span style="font-size: 11px;">A-</span>
+            <input type="range" id="zoomSlider" min="0.8" max="1.6" step="0.05" value="1" title="Adjust Text Size">
+            <span style="font-size: 15px; font-weight: bold;">A+</span>
+        </div>
+    </div>
 
     <div class="form-group" style="border-color: rgba(188, 140, 255, 0.3);">
         <div class="header-row">
@@ -440,14 +496,14 @@
         <input type="text" id="filterInput" placeholder="> Filter by interface (Gi1/0/1) or hostname..." onkeyup="renderOutput()" style="display: none;">
         
         <div id="output">
-            <div style="font-family: 'Courier New', Courier, monospace; color: #484f58; font-size: 13px;">-- system_idle --</div>
+            <div style="font-family: 'Courier New', Courier, monospace; color: #484f58; font-size: calc(13px * var(--font-scale));">-- system_idle --</div>
         </div>
         
         <div id="statusMsg" style="display: none;"></div>
     </div>
 
     <div class="bottom-actions">
-        <button class="expand-btn" id="dbBtn" style="color: var(--accent-green); border-color: var(--border-color); font-size: 11px; padding: 6px 15px;" onclick="toggleWrapper('dbWrapper', 'dbBtn', 'LOCAL_DATABASE')">[ LOCAL_DATABASE ]</button>
+        <button class="expand-btn" id="dbBtn" style="color: var(--accent-green); border-color: var(--border-color); font-size: calc(11px * var(--font-scale)); padding: 6px 15px;" onclick="toggleWrapper('dbWrapper', 'dbBtn', 'LOCAL_DATABASE')">[ LOCAL_DATABASE ]</button>
     </div>
     
     <div id="dbWrapper" class="readme-wrapper">
@@ -458,7 +514,7 @@
                 <strong>🔒 SECURITY NOTE:</strong> This database is completely offline and Zero-Trust. Your data is saved directly into your browser's local cache (localStorage). It is <strong>never</strong> transmitted to GitHub, any external server, or the public internet.
             </div>
 
-            <p style="font-size: 11.5px; color: var(--text-main); opacity: 0.8; margin-top: 0;">Any new data pasted here is <strong>MERGED</strong> into your existing local database. To remove old switches, click 'Clear Memory' and paste a fresh master list.</p>
+            <p style="font-size: calc(11.5px * var(--font-scale)); color: var(--text-main); opacity: 0.8; margin-top: 0;">Any new data pasted here is <strong>MERGED</strong> into your existing local database. To remove old switches, click 'Clear Memory' and paste a fresh master list.</p>
             <textarea id="dbInput" placeholder="-- Formats Accepted --&#10;PH-NOC-ACC0101, 10.20.30.40&#10;CO-ARN-CAS0302   10.30.40.50   Access Switch" spellcheck="false"></textarea>
             <div class="db-controls">
                 <span class="db-status" id="dbStatus">STATUS: DB_IDLE</span>
@@ -473,6 +529,17 @@
 </div>
 
 <script>
+    // --- ZOOM LOGIC & PERSISTENCE ---
+    const zoomSlider = document.getElementById('zoomSlider');
+    const savedZoom = localStorage.getItem('nocape_zoom') || 1;
+    zoomSlider.value = savedZoom;
+    document.documentElement.style.setProperty('--font-scale', savedZoom);
+
+    zoomSlider.addEventListener('input', function() {
+        document.documentElement.style.setProperty('--font-scale', this.value);
+        localStorage.setItem('nocape_zoom', this.value);
+    });
+
     // --- ANIMATED CANVAS MESH LOGIC ---
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
@@ -720,7 +787,7 @@
 
     function clearText() {
         document.getElementById('configInput').value = '';
-        document.getElementById('output').innerHTML = '<div style="font-family: \'Courier New\', Courier, monospace; color: #484f58; font-size: 13px;">-- system_idle --</div>';
+        document.getElementById('output').innerHTML = `<div style="font-family: 'Courier New', Courier, monospace; color: #484f58; font-size: calc(13px * var(--font-scale));">-- system_idle --</div>`;
         document.getElementById('filterInput').style.display = 'none';
         document.getElementById('filterInput').value = '';
         document.getElementById('statusMsg').style.display = 'none';
@@ -781,7 +848,7 @@
                 switchesSet.add(currentSwitchForLine);
             }
 
-            // 2. Scan for Full Port Ranges including "Gl" typo (e.g. Gi2/0/23 - Gi2/0/27 or Gl3/0/27 - Gl3/0/29)
+            // 2. Scan for Full Port Ranges including "Gl" typo 
             const fullRangeRegex = /(gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)(\d+)\s*[-–—]\s*(?:gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(?:\d+(?:\/\d+)+\/)(\d+)/gi;
             let matchFull;
             while ((matchFull = fullRangeRegex.exec(processedLine)) !== null) {
@@ -798,7 +865,7 @@
             }
             processedLine = processedLine.replace(fullRangeRegex, ''); 
 
-            // 3. Scan for Standard, Commas, and Shorthand Ranges including "Gl" typo (e.g. Gl3/0/1,3,5 or Gi2/0/23-27)
+            // 3. Scan for Standard, Commas, and Shorthand Ranges including "Gl" typo 
             const shortHandRegex = /(gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)([\d\s,\-–—]+)/gi;
             let matchShort;
             while ((matchShort = shortHandRegex.exec(processedLine)) !== null) { 
@@ -942,7 +1009,7 @@
 
                 let displaySw = item.sw;
                 if (item.sw !== "[ SWITCH_NOT_FOUND ]" && switchDB[item.sw.toLowerCase()]) {
-                    displaySw = `${item.sw} <span style="opacity:0.5; font-size:10.5px;">[${switchDB[item.sw.toLowerCase()]}]</span>`;
+                    displaySw = `${item.sw} <span style="opacity:0.5; font-size:calc(10.5px * var(--font-scale));">[${switchDB[item.sw.toLowerCase()]}]</span>`;
                 }
 
                 switchesHtml += `${spanOpen}${displaySw}${spanClose}`;
@@ -992,7 +1059,7 @@
             document.getElementById('statusMsg').style.display = 'block';
             document.getElementById('statusMsg').innerText = `STATUS: ${filteredInterfaces.length} MAPPINGS_EXTRACTED | ${filteredSwitches.length} HOSTNAMES_FOUND`;
         } else {
-            htmlOutput += `<div style="font-family: 'Courier New', Courier, monospace; color: #484f58; font-size: 13px;">No interfaces match your filter.</div>`;
+            htmlOutput += `<div style="font-family: 'Courier New', Courier, monospace; color: #484f58; font-size: calc(13px * var(--font-scale));">No interfaces match your filter.</div>`;
         }
 
         outputDiv.innerHTML = htmlOutput;
