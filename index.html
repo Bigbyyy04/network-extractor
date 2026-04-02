@@ -32,25 +32,47 @@
         }
 
         [data-theme="light"] {
-            /* LIGHT THEME (FROM UPLOADED PALETTE) */
-            --bg-color: #e9e9e6;         /* Off-White Background */
-            --card-bg: rgba(255, 255, 255, 0.85); /* Frosted White Panels */
-            --border-color: #a48c7b;     /* Taupe Borders */
-            --text-main: #474a45;        /* Charcoal Text */
-            --accent-blue: #944a31;      /* Deep Rust Headers */
-            --accent-green: #f27a22;     /* Orange Primary Buttons */
-            --neon-green: #f27a22;       /* Orange Glows & Logo Accent */
-            --accent-purple: #a48c7b;    /* Taupe Secondary Elements */
-            --accent-red: #d32f2f;       /* Standard Error Red */
-            --hl-orange: #f27a22;        /* Orange Highlights */
-            --code-bg: rgba(240, 240, 238, 0.7); /* Light Gray Textboxes */
+            /* LIGHT THEME */
+            --bg-color: #e9e9e6;         
+            --card-bg: rgba(255, 255, 255, 0.85); 
+            --border-color: #a48c7b;     
+            --text-main: #474a45;        
+            --accent-blue: #944a31;      
+            --accent-green: #f27a22;     
+            --neon-green: #f27a22;       
+            --accent-purple: #a48c7b;    
+            --accent-red: #d32f2f;       
+            --hl-orange: #f27a22;        
+            --code-bg: rgba(240, 240, 238, 0.7); 
             
-            --logo-text: #474a45;        /* Charcoal Logo */
-            --logo-accent-text: #ffffff; /* White text inside Orange Logo block */
-            --input-text: #944a31;       /* Deep Rust Extracted Text */
-            --line-num-bg: rgba(164, 140, 123, 0.15); /* Soft Taupe Line Numbers */
-            --line-num-text: #a48c7b;    /* Taupe Line Numbers Text */
-            --btn-copy-bg: #944a31;      /* Deep Rust Copy Buttons */
+            --logo-text: #474a45;        
+            --logo-accent-text: #ffffff; 
+            --input-text: #944a31;       
+            --line-num-bg: rgba(164, 140, 123, 0.15); 
+            --line-num-text: #a48c7b;    
+            --btn-copy-bg: #944a31;      
+        }
+
+        [data-theme="twilight"] {
+            /* TWILIGHT THEME (KATAWAREDOKI) */
+            --bg-color: #71789B;         /* Muted Indigo */
+            --card-bg: rgba(108, 142, 191, 0.45); /* Soft Blue frosted */
+            --border-color: #D68A9B;     /* Dusty Pink */
+            --text-main: #F2DFDF;        /* Pale Cream */
+            --accent-blue: #FEBCAB;      /* Soft Peach */
+            --accent-green: #D68A9B;     /* Dusty Pink for buttons */
+            --neon-green: #FEBCAB;       /* Peach for glows */
+            --accent-purple: #FEBCAB;    
+            --accent-red: #ff6b6b;       /* Softer Red for errors */
+            --hl-orange: #FEBCAB;        
+            --code-bg: rgba(113, 120, 155, 0.6); /* Indigo frosted for textboxes */
+            
+            --logo-text: #F2DFDF;        
+            --logo-accent-text: #71789B; /* Indigo text inside Peach logo */
+            --input-text: #F2DFDF;       
+            --line-num-bg: rgba(108, 142, 191, 0.3); 
+            --line-num-text: #FEBCAB;    
+            --btn-copy-bg: #6C8EBF;      /* Soft Blue for Copy buttons */
         }
 
         body {
@@ -99,7 +121,7 @@
 
         h2 {
             color: var(--logo-text);
-            font-size: 1.7rem; /* Fixed size, decoupled from slider */
+            font-size: 1.7rem; 
             margin: 0;
             display: flex;
             align-items: baseline;
@@ -124,7 +146,7 @@
         }
 
         .version-tag {
-            font-size: 0.8rem; /* Fixed size, decoupled from slider */
+            font-size: 0.8rem; 
             color: var(--accent-blue);
             opacity: 0.8;
             text-transform: uppercase;
@@ -528,11 +550,11 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v4.5 [Automated Port Extractor]</span>
+            <span class="version-tag">// v5.0 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
-            <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">☀️ LIGHT</button>
+            <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Cycle Theme">☀️ LIGHT</button>
             
             <div class="zoom-controls">
                 <span style="font-size: 11px;">A-</span>
@@ -616,22 +638,36 @@
 
 <script>
     // --- THEME TOGGLE LOGIC ---
+    function updateThemeButton(theme) {
+        const btn = document.getElementById('themeToggleBtn');
+        if (theme === 'dark') {
+            btn.innerText = '☀️ LIGHT';
+        } else if (theme === 'light') {
+            btn.innerText = '🌅 TWILIGHT';
+        } else if (theme === 'twilight') {
+            btn.innerText = '🌙 DARK';
+        }
+    }
+
     function toggleTheme() {
         const html = document.documentElement;
         const currentTheme = html.getAttribute('data-theme') || 'dark';
-        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        let newTheme;
+        
+        // Cycle: dark -> light -> twilight -> dark
+        if (currentTheme === 'dark') newTheme = 'light';
+        else if (currentTheme === 'light') newTheme = 'twilight';
+        else newTheme = 'dark';
         
         html.setAttribute('data-theme', newTheme);
         localStorage.setItem('nocape_theme', newTheme);
-        
-        const btn = document.getElementById('themeToggleBtn');
-        btn.innerText = newTheme === 'light' ? '🌙 DARK' : '☀️ LIGHT';
+        updateThemeButton(newTheme);
     }
 
     // Load saved theme on startup
     const savedTheme = localStorage.getItem('nocape_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
-    document.getElementById('themeToggleBtn').innerText = savedTheme === 'light' ? '🌙 DARK' : '☀️ LIGHT';
+    updateThemeButton(savedTheme);
 
 
     // --- ZOOM LOGIC & PERSISTENCE ---
@@ -658,6 +694,7 @@
     const ctx = canvas.getContext('2d');
     let width, height;
     let particles = [];
+    let pulses = [];
 
     function initCanvas() {
         width = canvas.width = window.innerWidth;
@@ -677,13 +714,44 @@
     window.addEventListener('resize', initCanvas);
     initCanvas();
 
+    function triggerPulse() {
+        pulses.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            radius: 0,
+            thickness: 80,
+            speed: 15 + Math.random() * 5
+        });
+    }
+
     function animateCanvas() {
         ctx.clearRect(0, 0, width, height);
         
         // Dynamically adjust colors based on current theme
-        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        const baseRGB = isLight ? '242, 122, 34' : '88, 166, 255';    
-        const maxAlpha = isLight ? 0.4 : 0.25;                        
+        const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+        let baseRGB, pulseRGB, maxAlpha;
+        
+        if (theme === 'light') {
+            baseRGB = '242, 122, 34';    // Orange
+            pulseRGB = '148, 74, 49';    // Rust
+            maxAlpha = 0.4;
+        } else if (theme === 'twilight') {
+            baseRGB = '214, 138, 155';   // Dusty Pink
+            pulseRGB = '254, 188, 171';  // Soft Peach
+            maxAlpha = 0.4;
+        } else {
+            baseRGB = '88, 166, 255';    // Cyan
+            pulseRGB = '57, 255, 20';    // Neon Green
+            maxAlpha = 0.25;
+        }
+
+        for (let i = pulses.length - 1; i >= 0; i--) {
+            let p = pulses[i];
+            p.radius += p.speed;
+            if (p.radius > Math.max(width, height) * 1.5) {
+                pulses.splice(i, 1);
+            }
+        }
 
         particles.forEach(p => {
             p.x += p.vx;
@@ -705,8 +773,28 @@
                     let dist = Math.sqrt(distSq);
                     let baseAlpha = (1 - dist / 130) * maxAlpha; 
                     
-                    ctx.strokeStyle = `rgba(${baseRGB}, ${baseAlpha})`;
-                    ctx.lineWidth = 1;
+                    let midX = (p1.x + p2.x) / 2;
+                    let midY = (p1.y + p2.y) / 2;
+                    
+                    let isPulse = false;
+                    let pulseIntensity = 0;
+
+                    pulses.forEach(pulse => {
+                        let dToPulse = Math.hypot(midX - pulse.x, midY - pulse.y);
+                        if(Math.abs(dToPulse - pulse.radius) < pulse.thickness) {
+                            let intensity = 1 - (Math.abs(dToPulse - pulse.radius) / pulse.thickness);
+                            pulseIntensity = Math.max(pulseIntensity, intensity);
+                            isPulse = true;
+                        }
+                    });
+
+                    if(isPulse) {
+                        ctx.strokeStyle = `rgba(${pulseRGB}, ${baseAlpha + (pulseIntensity * 0.6)})`;
+                        ctx.lineWidth = 1 + (pulseIntensity * 2);
+                    } else {
+                        ctx.strokeStyle = `rgba(${baseRGB}, ${baseAlpha})`;
+                        ctx.lineWidth = 1;
+                    }
                     
                     ctx.beginPath();
                     ctx.moveTo(p1.x, p1.y);
@@ -890,6 +978,8 @@
     }
 
     function processText() {
+        if (typeof triggerPulse === 'function') triggerPulse();
+
         const text = document.getElementById('configInput').value;
         if (!text.trim()) return; 
         
