@@ -78,17 +78,28 @@
 
         .container { max-width: 1200px; width: 100%; position: relative; z-index: 1;}
 
-        /* --- HEADER & CONTROLS --- */
+        /* --- FLOATING HEADER & CONTROLS --- */
         .app-header {
+            position: sticky;
+            top: 15px;
+            z-index: 1000;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
         }
 
         h2 {
             color: var(--logo-text);
-            font-size: calc(1.7rem * var(--font-scale));
+            font-size: 1.7rem; /* Fixed size, decoupled from slider */
             margin: 0;
             display: flex;
             align-items: baseline;
@@ -113,7 +124,7 @@
         }
 
         .version-tag {
-            font-size: calc(0.8rem * var(--font-scale));
+            font-size: 0.8rem; /* Fixed size, decoupled from slider */
             color: var(--accent-blue);
             opacity: 0.8;
             text-transform: uppercase;
@@ -140,9 +151,9 @@
             border-radius: 20px;
             cursor: pointer;
             backdrop-filter: blur(4px);
-            background: var(--card-bg);
+            background: var(--code-bg);
             transition: 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
         }
         .theme-toggle-btn:hover {
             border-color: var(--accent-green);
@@ -156,19 +167,19 @@
             gap: 12px;
             color: var(--accent-blue);
             font-family: "Courier New", Courier, monospace;
-            background: var(--card-bg);
+            background: var(--code-bg);
             padding: 6px 16px;
             border: 1px solid var(--border-color);
             border-radius: 20px;
             backdrop-filter: blur(4px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
             user-select: none; 
             transition: all 0.3s;
         }
         .zoom-controls input[type="range"] {
             -webkit-appearance: none;
             width: 100px;
-            background: var(--code-bg);
+            background: var(--card-bg);
             height: 4px;
             border-radius: 2px;
             outline: none;
@@ -517,7 +528,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v4.4 [Automated Port Extractor]</span>
+            <span class="version-tag">// v4.5 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
