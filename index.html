@@ -8,18 +8,19 @@
     <style>
         /* --- N0<AT COLOR PALETTE & SCALE --- */
         :root {
-            /* DARK THEME (DEFAULT) */
-            --bg-color: #030508; 
-            --card-bg: rgba(22, 27, 34, 0.85); 
-            --border-color: #30363d;
+            /* DARK THEME (DEFAULT) - Deep Navy */
+            --bg-color: #0d1424;         
+            --bg-image: none;
+            --card-bg: rgba(24, 34, 52, 0.85); 
+            --border-color: #2a3b54;     
             --text-main: #c9d1d9;
             --accent-blue: #58a6ff;
             --accent-green: #238636;
-            --neon-green: #39ff14;
+            --neon-green: #39ff14;       
             --accent-purple: #bc8cff;
             --accent-red: #f85149;
             --hl-orange: #ff9d00;
-            --code-bg: rgba(1, 4, 9, 0.7); 
+            --code-bg: rgba(7, 10, 18, 0.7); 
             
             --logo-text: #ffffff;
             --logo-accent-text: #000000;
@@ -33,7 +34,8 @@
 
         [data-theme="light"] {
             /* LIGHT THEME */
-            --bg-color: #e9e9e6;         
+            --bg-color: #e9e9e6;  
+            --bg-image: none;       
             --card-bg: rgba(255, 255, 255, 0.85); 
             --border-color: #a48c7b;     
             --text-main: #474a45;        
@@ -54,25 +56,27 @@
         }
 
         [data-theme="twilight"] {
-            /* TWILIGHT THEME (KATAWAREDOKI) - Deep Sky Redesign */
-            --bg-color: #1a1b36;         /* Deep Twilight Blue */
-            --card-bg: rgba(30, 32, 68, 0.7); /* Frosted Midnight Blue */
-            --border-color: #4f46e5;     /* Indigo border */
-            --text-main: #e2e8f0;        /* Light Gray/Blue */
-            --accent-blue: #38bdf8;      /* Bright Sky Blue */
-            --accent-green: #f59e0b;     /* Amber / Sunset Orange (for buttons) */
-            --neon-green: #fbbf24;       /* Golden Glow */
-            --accent-purple: #a855f7;    /* Soft Purple */
-            --accent-red: #ef4444;       /* Red for errors */
-            --hl-orange: #f43f5e;        /* Rose / Crimson */
-            --code-bg: rgba(15, 17, 35, 0.7); /* Very dark code blocks */
+            /* TWILIGHT THEME (KATAWAREDOKI) - Dynamic Gradient */
+            --bg-color: #172b5c; 
+            --bg-image: linear-gradient(to bottom, #172b5c 0%, #3b5082 25%, #7c6294 50%, #c483a9 75%, #e7aab0 100%);
             
-            --logo-text: #e2e8f0;        
-            --logo-accent-text: #1a1b36; /* Dark background inside Golden logo */
-            --input-text: #bae6fd;       /* Soft sky blue for inputs */
-            --line-num-bg: rgba(79, 70, 229, 0.15); 
-            --line-num-text: #818cf8;    
-            --btn-copy-bg: #4f46e5;      /* Indigo Copy buttons */
+            --card-bg: rgba(20, 25, 45, 0.35); 
+            --border-color: rgba(255, 255, 255, 0.2); 
+            --text-main: #f8fafc;        
+            --accent-blue: #a5b4fc;      
+            --accent-green: #f59e0b;     
+            --neon-green: #fbbf24;       
+            --accent-purple: #d8b4fe;    
+            --accent-red: #ef4444;       
+            --hl-orange: #f43f5e;        
+            --code-bg: rgba(10, 15, 30, 0.3); 
+            
+            --logo-text: #ffffff;        
+            --logo-accent-text: #1a1b36; 
+            --input-text: #e0e7ff;       
+            --line-num-bg: rgba(0, 0, 0, 0.15); 
+            --line-num-text: #a5b4fc;    
+            --btn-copy-bg: rgba(255, 255, 255, 0.2);      
         }
 
         body {
@@ -80,6 +84,8 @@
             margin: 0;
             padding: 20px;
             background-color: var(--bg-color);
+            background-image: var(--bg-image);
+            background-attachment: fixed; 
             color: var(--text-main);
             display: flex;
             justify-content: center;
@@ -681,7 +687,6 @@
         localStorage.setItem('nocape_zoom', this.value);
     });
 
-    // Double-click to reset zoom
     zoomSlider.addEventListener('dblclick', function() {
         this.value = 1;
         document.documentElement.style.setProperty('--font-scale', 1);
@@ -689,19 +694,36 @@
     });
 
 
-    // --- ANIMATED CANVAS (CONSTELLATIONS & POLYGONS) ---
+    // --- ANIMATED CANVAS (CONSTELLATIONS & POLYGONS & WATER RIPPLE) ---
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
     let width, height;
     let particles = [];
     let executeGlowIntensity = 0;
+    
+    // Mouse tracking for the Water Ripple effect
+    let mouse = {
+        x: -1000,
+        y: -1000,
+        radius: 120 // Radius of the interaction zone
+    };
+
+    window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+    });
+
+    window.addEventListener('mouseout', () => {
+        mouse.x = -1000;
+        mouse.y = -1000;
+    });
 
     function initCanvas() {
         width = canvas.width = window.innerWidth;
         height = canvas.height = window.innerHeight;
         particles = [];
         
-        // Balanced number of particles for O(n^3) triangle calculations
+        // Balanced number of particles
         const numParticles = Math.min(85, Math.floor((width * height) / 15000)); 
         for(let i = 0; i < numParticles; i++) {
             particles.push({
@@ -710,9 +732,9 @@
                 baseVx: (Math.random() - 0.5) * 0.4,
                 baseVy: (Math.random() - 0.5) * 0.4,
                 vx: 0,
-                vy: 0
+                vy: 0,
+                glow: 0 // Individual particle glow property
             });
-            // Initialize with base velocity
             particles[i].vx = particles[i].baseVx;
             particles[i].vy = particles[i].baseVy;
         }
@@ -732,10 +754,18 @@
             let dy = p.y - centerY;
             let dist = Math.sqrt(dx*dx + dy*dy) || 1;
             
-            // Push outwards heavily
             p.vx += (dx / dist) * (Math.random() * 12 + 4);
             p.vy += (dy / dist) * (Math.random() * 12 + 4);
         });
+    }
+
+    // Helper: Calculate contrast color based on vertical position (Y-axis) in Twilight Theme
+    function getTwilightContrastingRGB(yRatio) {
+        yRatio = Math.max(0, Math.min(1, yRatio)); 
+        const r = Math.round(255 - (255 - 20) * yRatio);
+        const g = Math.round(245 - (245 - 30) * yRatio);
+        const b = Math.round(220 - (220 - 80) * yRatio);
+        return `${r}, ${g}, ${b}`;
     }
 
     function animateCanvas() {
@@ -755,20 +785,44 @@
             glowRGB = '242, 122, 34';   // Orange
             lineAlpha = 0.3; polyAlpha = 0.08;
         } else if (theme === 'twilight') {
-            baseRGB = '99, 102, 241';   // Soft Indigo
+            // baseRGB is determined dynamically per-particle
             glowRGB = '245, 158, 11';   // Amber Glow
-            lineAlpha = 0.35; polyAlpha = 0.12;
+            lineAlpha = 0.4; polyAlpha = 0.12;
         } else {
-            baseRGB = '88, 166, 255';   // Cyan
+            baseRGB = '88, 166, 255';   // Cyan on Deep Navy
             glowRGB = '57, 255, 20';    // Neon Green Glow
             lineAlpha = 0.25; polyAlpha = 0.08;
         }
 
-        let currentPolyAlpha = polyAlpha + (executeGlowIntensity * 0.4);
-        let currentLineAlpha = lineAlpha + (executeGlowIntensity * 0.5);
+        let currentPolyAlpha = polyAlpha; 
+        let currentLineAlpha = lineAlpha; 
 
         // Update positions and handle physics
         particles.forEach(p => {
+            // WATER RIPPLE / HOVER PHYSICS
+            let dxMouse = p.x - mouse.x;
+            let dyMouse = p.y - mouse.y;
+            let distMouseSq = dxMouse * dxMouse + dyMouse * dyMouse;
+            let interactRadSq = mouse.radius * mouse.radius;
+
+            if (distMouseSq < interactRadSq) {
+                let distMouse = Math.sqrt(distMouseSq);
+                let force = (mouse.radius - distMouse) / mouse.radius; // 0 to 1
+                
+                // Repel vector
+                p.vx += (dxMouse / distMouse) * force * 0.6;
+                p.vy += (dyMouse / distMouse) * force * 0.6;
+
+                // Increase localized hover glow
+                p.glow = Math.max(p.glow, force);
+            }
+
+            // Decay local glow
+            if (p.glow > 0) {
+                p.glow -= 0.02;
+                if (p.glow < 0) p.glow = 0;
+            }
+
             p.x += p.vx;
             p.y += p.vy;
 
@@ -782,10 +836,18 @@
             if(p.y < 0) { p.y = 0; p.vy *= -1; p.baseVy *= -1; }
             if(p.y > height) { p.y = height; p.vy *= -1; p.baseVy *= -1; }
 
+            // Dynamic color determination for Stars
+            let nodeRGB = baseRGB;
+            if (theme === 'twilight') {
+                nodeRGB = getTwilightContrastingRGB(p.y / height);
+            }
+
+            let activeGlow = Math.max(executeGlowIntensity, p.glow);
+
             // Draw individual "Stars" (nodes)
             ctx.beginPath();
-            ctx.arc(p.x, p.y, 1.5 + (executeGlowIntensity * 1.5), 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${executeGlowIntensity > 0.1 ? glowRGB : baseRGB}, ${0.5 + executeGlowIntensity})`;
+            ctx.arc(p.x, p.y, 1.5 + (activeGlow * 1.5), 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${activeGlow > 0.05 ? glowRGB : nodeRGB}, ${0.5 + activeGlow})`;
             ctx.fill();
         });
 
@@ -803,16 +865,25 @@
                     let dist = Math.sqrt(distSq);
                     let alphaRatio = 1 - (dist / maxDist);
 
+                    // Dynamic color determination for Constellation Lines
+                    let lineRGB = baseRGB;
+                    if (theme === 'twilight') {
+                        let midY = (particles[i].y + particles[j].y) / 2;
+                        lineRGB = getTwilightContrastingRGB(midY / height);
+                    }
+
+                    let lineActiveGlow = Math.max(executeGlowIntensity, particles[i].glow, particles[j].glow);
+
                     // Draw connecting line
                     ctx.beginPath();
                     ctx.moveTo(particles[i].x, particles[i].y);
                     ctx.lineTo(particles[j].x, particles[j].y);
                     
-                    if (executeGlowIntensity > 0.05) {
-                        ctx.strokeStyle = `rgba(${glowRGB}, ${currentLineAlpha * alphaRatio})`;
-                        ctx.lineWidth = 1 + (executeGlowIntensity * 2);
+                    if (lineActiveGlow > 0.05) {
+                        ctx.strokeStyle = `rgba(${glowRGB}, ${currentLineAlpha * alphaRatio + (lineActiveGlow * 0.4)})`;
+                        ctx.lineWidth = 1 + (lineActiveGlow * 1.5);
                     } else {
-                        ctx.strokeStyle = `rgba(${baseRGB}, ${currentLineAlpha * alphaRatio})`;
+                        ctx.strokeStyle = `rgba(${lineRGB}, ${currentLineAlpha * alphaRatio})`;
                         ctx.lineWidth = 1;
                     }
                     ctx.stroke();
@@ -829,6 +900,16 @@
                             let distSq3 = dx3*dx3 + dy3*dy3;
 
                             if (distSq3 < maxDistSq) {
+                                
+                                // Dynamic color determination for Polygons
+                                let polyRGB = baseRGB;
+                                if (theme === 'twilight') {
+                                    let polyMidY = (particles[i].y + particles[j].y + particles[k].y) / 3;
+                                    polyRGB = getTwilightContrastingRGB(polyMidY / height);
+                                }
+
+                                let polyActiveGlow = Math.max(executeGlowIntensity, particles[i].glow, particles[j].glow, particles[k].glow);
+
                                 ctx.beginPath();
                                 ctx.moveTo(particles[i].x, particles[i].y);
                                 ctx.lineTo(particles[j].x, particles[j].y);
@@ -839,10 +920,10 @@
                                 let maxD = Math.max(distSq, distSq2, distSq3);
                                 let polyA = (1 - (Math.sqrt(maxD) / maxDist)) * currentPolyAlpha;
                                 
-                                if (executeGlowIntensity > 0.05) {
-                                    ctx.fillStyle = `rgba(${glowRGB}, ${polyA + (executeGlowIntensity * 0.3)})`;
+                                if (polyActiveGlow > 0.05) {
+                                    ctx.fillStyle = `rgba(${glowRGB}, ${polyA + (polyActiveGlow * 0.25)})`;
                                 } else {
-                                    ctx.fillStyle = `rgba(${baseRGB}, ${polyA})`;
+                                    ctx.fillStyle = `rgba(${polyRGB}, ${polyA})`;
                                 }
                                 ctx.fill();
                             }
