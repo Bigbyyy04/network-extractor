@@ -54,25 +54,25 @@
         }
 
         [data-theme="twilight"] {
-            /* TWILIGHT THEME (KATAWAREDOKI) */
-            --bg-color: #71789B;         /* Muted Indigo */
-            --card-bg: rgba(108, 142, 191, 0.45); /* Soft Blue frosted */
-            --border-color: #D68A9B;     /* Dusty Pink */
-            --text-main: #F2DFDF;        /* Pale Cream */
-            --accent-blue: #FEBCAB;      /* Soft Peach */
-            --accent-green: #D68A9B;     /* Dusty Pink for buttons */
-            --neon-green: #FEBCAB;       /* Peach for glows */
-            --accent-purple: #FEBCAB;    
-            --accent-red: #ff6b6b;       /* Softer Red for errors */
-            --hl-orange: #FEBCAB;        
-            --code-bg: rgba(113, 120, 155, 0.6); /* Indigo frosted for textboxes */
+            /* TWILIGHT THEME (KATAWAREDOKI) - Deep Sky Redesign */
+            --bg-color: #1a1b36;         /* Deep Twilight Blue */
+            --card-bg: rgba(30, 32, 68, 0.7); /* Frosted Midnight Blue */
+            --border-color: #4f46e5;     /* Indigo border */
+            --text-main: #e2e8f0;        /* Light Gray/Blue */
+            --accent-blue: #38bdf8;      /* Bright Sky Blue */
+            --accent-green: #f59e0b;     /* Amber / Sunset Orange (for buttons) */
+            --neon-green: #fbbf24;       /* Golden Glow */
+            --accent-purple: #a855f7;    /* Soft Purple */
+            --accent-red: #ef4444;       /* Red for errors */
+            --hl-orange: #f43f5e;        /* Rose / Crimson */
+            --code-bg: rgba(15, 17, 35, 0.7); /* Very dark code blocks */
             
-            --logo-text: #F2DFDF;        
-            --logo-accent-text: #71789B; /* Indigo text inside Peach logo */
-            --input-text: #F2DFDF;       
-            --line-num-bg: rgba(108, 142, 191, 0.3); 
-            --line-num-text: #FEBCAB;    
-            --btn-copy-bg: #6C8EBF;      /* Soft Blue for Copy buttons */
+            --logo-text: #e2e8f0;        
+            --logo-accent-text: #1a1b36; /* Dark background inside Golden logo */
+            --input-text: #bae6fd;       /* Soft sky blue for inputs */
+            --line-num-bg: rgba(79, 70, 229, 0.15); 
+            --line-num-text: #818cf8;    
+            --btn-copy-bg: #4f46e5;      /* Indigo Copy buttons */
         }
 
         body {
@@ -689,117 +689,165 @@
     });
 
 
-    // --- ANIMATED CANVAS MESH LOGIC ---
+    // --- ANIMATED CANVAS (CONSTELLATIONS & POLYGONS) ---
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
     let width, height;
     let particles = [];
-    let pulses = [];
+    let executeGlowIntensity = 0;
 
     function initCanvas() {
         width = canvas.width = window.innerWidth;
         height = canvas.height = window.innerHeight;
         particles = [];
-        const numParticles = Math.floor((width * height) / 12000); 
+        
+        // Balanced number of particles for O(n^3) triangle calculations
+        const numParticles = Math.min(85, Math.floor((width * height) / 15000)); 
         for(let i = 0; i < numParticles; i++) {
             particles.push({
                 x: Math.random() * width,
                 y: Math.random() * height,
-                vx: (Math.random() - 0.5) * 0.6,
-                vy: (Math.random() - 0.5) * 0.6
+                baseVx: (Math.random() - 0.5) * 0.4,
+                baseVy: (Math.random() - 0.5) * 0.4,
+                vx: 0,
+                vy: 0
             });
+            // Initialize with base velocity
+            particles[i].vx = particles[i].baseVx;
+            particles[i].vy = particles[i].baseVy;
         }
     }
 
     window.addEventListener('resize', initCanvas);
     initCanvas();
 
-    function triggerPulse() {
-        pulses.push({
-            x: Math.random() * width,
-            y: Math.random() * height,
-            radius: 0,
-            thickness: 80,
-            speed: 15 + Math.random() * 5
+    function triggerExecuteEffect() {
+        executeGlowIntensity = 1.0;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        
+        // Scatter Burst outwards from center
+        particles.forEach(p => {
+            let dx = p.x - centerX;
+            let dy = p.y - centerY;
+            let dist = Math.sqrt(dx*dx + dy*dy) || 1;
+            
+            // Push outwards heavily
+            p.vx += (dx / dist) * (Math.random() * 12 + 4);
+            p.vy += (dy / dist) * (Math.random() * 12 + 4);
         });
     }
 
     function animateCanvas() {
         ctx.clearRect(0, 0, width, height);
         
-        // Dynamically adjust colors based on current theme
+        // Decay the execution glow smoothly over time
+        if (executeGlowIntensity > 0) {
+            executeGlowIntensity -= 0.015; 
+            if (executeGlowIntensity < 0) executeGlowIntensity = 0;
+        }
+
         const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-        let baseRGB, pulseRGB, maxAlpha;
+        let baseRGB, glowRGB, lineAlpha, polyAlpha;
         
         if (theme === 'light') {
-            baseRGB = '242, 122, 34';    // Orange
-            pulseRGB = '148, 74, 49';    // Rust
-            maxAlpha = 0.4;
+            baseRGB = '148, 74, 49';    // Rust
+            glowRGB = '242, 122, 34';   // Orange
+            lineAlpha = 0.3; polyAlpha = 0.08;
         } else if (theme === 'twilight') {
-            baseRGB = '214, 138, 155';   // Dusty Pink
-            pulseRGB = '254, 188, 171';  // Soft Peach
-            maxAlpha = 0.4;
+            baseRGB = '99, 102, 241';   // Soft Indigo
+            glowRGB = '245, 158, 11';   // Amber Glow
+            lineAlpha = 0.35; polyAlpha = 0.12;
         } else {
-            baseRGB = '88, 166, 255';    // Cyan
-            pulseRGB = '57, 255, 20';    // Neon Green
-            maxAlpha = 0.25;
+            baseRGB = '88, 166, 255';   // Cyan
+            glowRGB = '57, 255, 20';    // Neon Green Glow
+            lineAlpha = 0.25; polyAlpha = 0.08;
         }
 
-        for (let i = pulses.length - 1; i >= 0; i--) {
-            let p = pulses[i];
-            p.radius += p.speed;
-            if (p.radius > Math.max(width, height) * 1.5) {
-                pulses.splice(i, 1);
-            }
-        }
+        let currentPolyAlpha = polyAlpha + (executeGlowIntensity * 0.4);
+        let currentLineAlpha = lineAlpha + (executeGlowIntensity * 0.5);
 
+        // Update positions and handle physics
         particles.forEach(p => {
             p.x += p.vx;
             p.y += p.vy;
-            if(p.x < 0 || p.x > width) p.vx *= -1;
-            if(p.y < 0 || p.y > height) p.vy *= -1;
+
+            // Friction brings them back to their slow drift speed gradually
+            p.vx += (p.baseVx - p.vx) * 0.05;
+            p.vy += (p.baseVy - p.vy) * 0.05;
+
+            // Bounce off edges seamlessly
+            if(p.x < 0) { p.x = 0; p.vx *= -1; p.baseVx *= -1; }
+            if(p.x > width) { p.x = width; p.vx *= -1; p.baseVx *= -1; }
+            if(p.y < 0) { p.y = 0; p.vy *= -1; p.baseVy *= -1; }
+            if(p.y > height) { p.y = height; p.vy *= -1; p.baseVy *= -1; }
+
+            // Draw individual "Stars" (nodes)
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 1.5 + (executeGlowIntensity * 1.5), 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${executeGlowIntensity > 0.1 ? glowRGB : baseRGB}, ${0.5 + executeGlowIntensity})`;
+            ctx.fill();
         });
 
+        const maxDist = 130; 
+        const maxDistSq = maxDist * maxDist;
+
+        // Form Constellations (Lines) and Polygons (Triangles)
         for(let i = 0; i < particles.length; i++) {
             for(let j = i + 1; j < particles.length; j++) {
-                let p1 = particles[i];
-                let p2 = particles[j];
-                
-                let dx = p1.x - p2.x;
-                let dy = p1.y - p2.y;
+                let dx = particles[i].x - particles[j].x;
+                let dy = particles[i].y - particles[j].y;
                 let distSq = dx*dx + dy*dy;
 
-                if(distSq < 16900) { 
+                if(distSq < maxDistSq) {
                     let dist = Math.sqrt(distSq);
-                    let baseAlpha = (1 - dist / 130) * maxAlpha; 
-                    
-                    let midX = (p1.x + p2.x) / 2;
-                    let midY = (p1.y + p2.y) / 2;
-                    
-                    let isPulse = false;
-                    let pulseIntensity = 0;
+                    let alphaRatio = 1 - (dist / maxDist);
 
-                    pulses.forEach(pulse => {
-                        let dToPulse = Math.hypot(midX - pulse.x, midY - pulse.y);
-                        if(Math.abs(dToPulse - pulse.radius) < pulse.thickness) {
-                            let intensity = 1 - (Math.abs(dToPulse - pulse.radius) / pulse.thickness);
-                            pulseIntensity = Math.max(pulseIntensity, intensity);
-                            isPulse = true;
-                        }
-                    });
-
-                    if(isPulse) {
-                        ctx.strokeStyle = `rgba(${pulseRGB}, ${baseAlpha + (pulseIntensity * 0.6)})`;
-                        ctx.lineWidth = 1 + (pulseIntensity * 2);
+                    // Draw connecting line
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    
+                    if (executeGlowIntensity > 0.05) {
+                        ctx.strokeStyle = `rgba(${glowRGB}, ${currentLineAlpha * alphaRatio})`;
+                        ctx.lineWidth = 1 + (executeGlowIntensity * 2);
                     } else {
-                        ctx.strokeStyle = `rgba(${baseRGB}, ${baseAlpha})`;
+                        ctx.strokeStyle = `rgba(${baseRGB}, ${currentLineAlpha * alphaRatio})`;
                         ctx.lineWidth = 1;
                     }
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
                     ctx.stroke();
+
+                    // Form Filled Polygons if a 3rd nearby point connects them
+                    for(let k = j + 1; k < particles.length; k++) {
+                        let dx2 = particles[i].x - particles[k].x;
+                        let dy2 = particles[i].y - particles[k].y;
+                        let distSq2 = dx2*dx2 + dy2*dy2;
+
+                        if (distSq2 < maxDistSq) {
+                            let dx3 = particles[j].x - particles[k].x;
+                            let dy3 = particles[j].y - particles[k].y;
+                            let distSq3 = dx3*dx3 + dy3*dy3;
+
+                            if (distSq3 < maxDistSq) {
+                                ctx.beginPath();
+                                ctx.moveTo(particles[i].x, particles[i].y);
+                                ctx.lineTo(particles[j].x, particles[j].y);
+                                ctx.lineTo(particles[k].x, particles[k].y);
+                                ctx.closePath();
+
+                                // Fades polygon depending on its longest edge
+                                let maxD = Math.max(distSq, distSq2, distSq3);
+                                let polyA = (1 - (Math.sqrt(maxD) / maxDist)) * currentPolyAlpha;
+                                
+                                if (executeGlowIntensity > 0.05) {
+                                    ctx.fillStyle = `rgba(${glowRGB}, ${polyA + (executeGlowIntensity * 0.3)})`;
+                                } else {
+                                    ctx.fillStyle = `rgba(${baseRGB}, ${polyA})`;
+                                }
+                                ctx.fill();
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -978,7 +1026,7 @@
     }
 
     function processText() {
-        if (typeof triggerPulse === 'function') triggerPulse();
+        if (typeof triggerExecuteEffect === 'function') triggerExecuteEffect();
 
         const text = document.getElementById('configInput').value;
         if (!text.trim()) return; 
