@@ -350,7 +350,7 @@
             scrollbar-width: thin;
             scrollbar-color: var(--border-color) transparent;
         }
-        textarea { height: calc(140px * var(--font-scale)); resize: vertical; }
+        textarea { height: calc(140px * var(--font-scale)); resize: none; }
         textarea:focus, input[type="text"]:focus { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(148, 74, 49, 0.2); }
         textarea.expanded { height: calc(400px * var(--font-scale)); }
         
@@ -450,7 +450,7 @@
             cursor: text;
             counter-reset: linenumber; 
             line-height: 1.6;
-            resize: vertical;
+            resize: none;
             transition: all 0.3s;
         }
 
@@ -556,7 +556,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v5.0 [Automated Port Extractor]</span>
+            <span class="version-tag">// v5.1 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -594,7 +594,7 @@
                 <button class="expand-btn" id="expandBtn" style="margin-left: 10px;" onclick="toggleExpand()">[ EXPAND ]</button>
             </div>
         </div>
-        <textarea id="configInput" placeholder="Waiting for logs..." spellcheck="false" oninput="updateDynamicHUD()"></textarea>
+        <textarea id="configInput" placeholder="Waiting for logs..." spellcheck="false" oninput="handleConfigInput()"></textarea>
         
         <div class="controls-row">
             <button class="cyber-btn" onclick="processText()">Execute_Run</button>
@@ -660,7 +660,6 @@
         const currentTheme = html.getAttribute('data-theme') || 'dark';
         let newTheme;
         
-        // Cycle: dark -> light -> twilight -> dark
         if (currentTheme === 'dark') newTheme = 'light';
         else if (currentTheme === 'light') newTheme = 'twilight';
         else newTheme = 'dark';
@@ -670,7 +669,6 @@
         updateThemeButton(newTheme);
     }
 
-    // Load saved theme on startup
     const savedTheme = localStorage.getItem('nocape_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeButton(savedTheme);
@@ -694,36 +692,23 @@
     });
 
 
-    // --- ANIMATED CANVAS (CONSTELLATIONS & POLYGONS & WATER RIPPLE) ---
+    // --- ANIMATED CANVAS ---
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
     let width, height;
     let particles = [];
     let executeGlowIntensity = 0;
     
-    // Mouse tracking for the Water Ripple effect
-    let mouse = {
-        x: -1000,
-        y: -1000,
-        radius: 120 // Radius of the interaction zone
-    };
+    let mouse = { x: -1000, y: -1000, radius: 120 };
 
-    window.addEventListener('mousemove', (e) => {
-        mouse.x = e.clientX;
-        mouse.y = e.clientY;
-    });
-
-    window.addEventListener('mouseout', () => {
-        mouse.x = -1000;
-        mouse.y = -1000;
-    });
+    window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+    window.addEventListener('mouseout', () => { mouse.x = -1000; mouse.y = -1000; });
 
     function initCanvas() {
         width = canvas.width = window.innerWidth;
         height = canvas.height = window.innerHeight;
         particles = [];
         
-        // Balanced number of particles
         const numParticles = Math.min(85, Math.floor((width * height) / 15000)); 
         for(let i = 0; i < numParticles; i++) {
             particles.push({
@@ -733,7 +718,7 @@
                 baseVy: (Math.random() - 0.5) * 0.4,
                 vx: 0,
                 vy: 0,
-                glow: 0 // Individual particle glow property
+                glow: 0 
             });
             particles[i].vx = particles[i].baseVx;
             particles[i].vy = particles[i].baseVy;
@@ -748,18 +733,15 @@
         const centerX = width / 2;
         const centerY = height / 2;
         
-        // Scatter Burst outwards from center
         particles.forEach(p => {
             let dx = p.x - centerX;
             let dy = p.y - centerY;
             let dist = Math.sqrt(dx*dx + dy*dy) || 1;
-            
             p.vx += (dx / dist) * (Math.random() * 12 + 4);
             p.vy += (dy / dist) * (Math.random() * 12 + 4);
         });
     }
 
-    // Helper: Calculate contrast color based on vertical position (Y-axis) in Twilight Theme
     function getTwilightContrastingRGB(yRatio) {
         yRatio = Math.max(0, Math.min(1, yRatio)); 
         const r = Math.round(255 - (255 - 20) * yRatio);
@@ -771,7 +753,6 @@
     function animateCanvas() {
         ctx.clearRect(0, 0, width, height);
         
-        // Decay the execution glow smoothly over time
         if (executeGlowIntensity > 0) {
             executeGlowIntensity -= 0.015; 
             if (executeGlowIntensity < 0) executeGlowIntensity = 0;
@@ -781,25 +762,22 @@
         let baseRGB, glowRGB, lineAlpha, polyAlpha;
         
         if (theme === 'light') {
-            baseRGB = '148, 74, 49';    // Rust
-            glowRGB = '242, 122, 34';   // Orange
+            baseRGB = '148, 74, 49';    
+            glowRGB = '242, 122, 34';   
             lineAlpha = 0.3; polyAlpha = 0.08;
         } else if (theme === 'twilight') {
-            // baseRGB is determined dynamically per-particle
-            glowRGB = '245, 158, 11';   // Amber Glow
+            glowRGB = '245, 158, 11';   
             lineAlpha = 0.4; polyAlpha = 0.12;
         } else {
-            baseRGB = '88, 166, 255';   // Cyan on Deep Navy
-            glowRGB = '57, 255, 20';    // Neon Green Glow
+            baseRGB = '88, 166, 255';   
+            glowRGB = '57, 255, 20';    
             lineAlpha = 0.25; polyAlpha = 0.08;
         }
 
         let currentPolyAlpha = polyAlpha; 
         let currentLineAlpha = lineAlpha; 
 
-        // Update positions and handle physics
         particles.forEach(p => {
-            // WATER RIPPLE / HOVER PHYSICS
             let dxMouse = p.x - mouse.x;
             let dyMouse = p.y - mouse.y;
             let distMouseSq = dxMouse * dxMouse + dyMouse * dyMouse;
@@ -807,17 +785,12 @@
 
             if (distMouseSq < interactRadSq) {
                 let distMouse = Math.sqrt(distMouseSq);
-                let force = (mouse.radius - distMouse) / mouse.radius; // 0 to 1
-                
-                // Repel vector
+                let force = (mouse.radius - distMouse) / mouse.radius; 
                 p.vx += (dxMouse / distMouse) * force * 0.6;
                 p.vy += (dyMouse / distMouse) * force * 0.6;
-
-                // Increase localized hover glow
                 p.glow = Math.max(p.glow, force);
             }
 
-            // Decay local glow
             if (p.glow > 0) {
                 p.glow -= 0.02;
                 if (p.glow < 0) p.glow = 0;
@@ -826,25 +799,18 @@
             p.x += p.vx;
             p.y += p.vy;
 
-            // Friction brings them back to their slow drift speed gradually
             p.vx += (p.baseVx - p.vx) * 0.05;
             p.vy += (p.baseVy - p.vy) * 0.05;
 
-            // Bounce off edges seamlessly
             if(p.x < 0) { p.x = 0; p.vx *= -1; p.baseVx *= -1; }
             if(p.x > width) { p.x = width; p.vx *= -1; p.baseVx *= -1; }
             if(p.y < 0) { p.y = 0; p.vy *= -1; p.baseVy *= -1; }
             if(p.y > height) { p.y = height; p.vy *= -1; p.baseVy *= -1; }
 
-            // Dynamic color determination for Stars
             let nodeRGB = baseRGB;
-            if (theme === 'twilight') {
-                nodeRGB = getTwilightContrastingRGB(p.y / height);
-            }
-
+            if (theme === 'twilight') { nodeRGB = getTwilightContrastingRGB(p.y / height); }
             let activeGlow = Math.max(executeGlowIntensity, p.glow);
 
-            // Draw individual "Stars" (nodes)
             ctx.beginPath();
             ctx.arc(p.x, p.y, 1.5 + (activeGlow * 1.5), 0, Math.PI * 2);
             ctx.fillStyle = `rgba(${activeGlow > 0.05 ? glowRGB : nodeRGB}, ${0.5 + activeGlow})`;
@@ -854,7 +820,6 @@
         const maxDist = 130; 
         const maxDistSq = maxDist * maxDist;
 
-        // Form Constellations (Lines) and Polygons (Triangles)
         for(let i = 0; i < particles.length; i++) {
             for(let j = i + 1; j < particles.length; j++) {
                 let dx = particles[i].x - particles[j].x;
@@ -865,7 +830,6 @@
                     let dist = Math.sqrt(distSq);
                     let alphaRatio = 1 - (dist / maxDist);
 
-                    // Dynamic color determination for Constellation Lines
                     let lineRGB = baseRGB;
                     if (theme === 'twilight') {
                         let midY = (particles[i].y + particles[j].y) / 2;
@@ -874,7 +838,6 @@
 
                     let lineActiveGlow = Math.max(executeGlowIntensity, particles[i].glow, particles[j].glow);
 
-                    // Draw connecting line
                     ctx.beginPath();
                     ctx.moveTo(particles[i].x, particles[i].y);
                     ctx.lineTo(particles[j].x, particles[j].y);
@@ -888,7 +851,6 @@
                     }
                     ctx.stroke();
 
-                    // Form Filled Polygons if a 3rd nearby point connects them
                     for(let k = j + 1; k < particles.length; k++) {
                         let dx2 = particles[i].x - particles[k].x;
                         let dy2 = particles[i].y - particles[k].y;
@@ -901,7 +863,6 @@
 
                             if (distSq3 < maxDistSq) {
                                 
-                                // Dynamic color determination for Polygons
                                 let polyRGB = baseRGB;
                                 if (theme === 'twilight') {
                                     let polyMidY = (particles[i].y + particles[j].y + particles[k].y) / 3;
@@ -916,7 +877,6 @@
                                 ctx.lineTo(particles[k].x, particles[k].y);
                                 ctx.closePath();
 
-                                // Fades polygon depending on its longest edge
                                 let maxD = Math.max(distSq, distSq2, distSq3);
                                 let polyA = (1 - (Math.sqrt(maxD) / maxDist)) * currentPolyAlpha;
                                 
@@ -1005,7 +965,7 @@
         }
     }
 
-    // --- UI TOGGLES ---
+    // --- UI TOGGLES & AUTO EXPAND ---
     function toggleReadme() {
         const wrapper = document.getElementById('readmeWrapper');
         const btn = document.getElementById('readmeBtn');
@@ -1016,8 +976,37 @@
     function toggleExpand() {
         const textarea = document.getElementById('configInput');
         const btn = document.getElementById('expandBtn');
+        
+        textarea.style.height = ''; 
         textarea.classList.toggle('expanded');
         btn.innerText = textarea.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
+        
+        // Track manual collapse to prevent auto-expand from fighting the user
+        if (!textarea.classList.contains('expanded') && textarea.value.split('\n').length > 8) {
+            textarea.dataset.manualCollapse = "true";
+        } else {
+            textarea.dataset.manualCollapse = "";
+        }
+    }
+
+    function handleConfigInput() {
+        updateDynamicHUD();
+        
+        const textarea = document.getElementById('configInput');
+        const btn = document.getElementById('expandBtn');
+        const lineCount = textarea.value.split('\n').length;
+        
+        if (lineCount > 8) {
+            if (!textarea.classList.contains('expanded') && textarea.dataset.manualCollapse !== "true") {
+                textarea.classList.add('expanded');
+                btn.innerText = "[ COLLAPSE ]";
+            }
+        } else {
+            if (textarea.classList.contains('expanded') && textarea.dataset.manualCollapse !== "true") {
+                textarea.classList.remove('expanded');
+                btn.innerText = "[ EXPAND ]";
+            }
+        }
     }
 
     function toggleWrapper(wrapperId, btnId, name) {
@@ -1082,7 +1071,15 @@
     let globalInterfaces = [];
 
     function clearText() {
-        document.getElementById('configInput').value = '';
+        const textarea = document.getElementById('configInput');
+        textarea.value = '';
+        textarea.dataset.manualCollapse = ""; 
+        
+        if(textarea.classList.contains('expanded')) {
+             textarea.classList.remove('expanded');
+             document.getElementById('expandBtn').innerText = "[ EXPAND ]";
+        }
+
         document.getElementById('output').innerHTML = `<div style="font-family: 'Courier New', Courier, monospace; color: var(--line-num-text); font-size: calc(13px * var(--font-scale));">-- system_idle --</div>`;
         document.getElementById('filterInput').style.display = 'none';
         document.getElementById('filterInput').value = '';
@@ -1130,7 +1127,6 @@
 
             let processedLine = line;
 
-            // Helper to dynamically build port names and Auto-Correct "Gl" typos
             function addPort(rawType, prefix, portNum) {
                 let cleanType = rawType.replace(/^gigabitethernet/i, 'Gi')
                                        .replace(/^gl/i, 'Gi') 
