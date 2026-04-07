@@ -3,1437 +3,961 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>N0CAPE - Automated Port Extractor</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍌</text></svg>">
+    <title>N0COWL</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦉</text></svg>">
     <style>
-        /* --- N0<AT COLOR PALETTE & SCALE --- */
+        /* --- GLOBAL THEME VARIABLES --- */
         :root {
-            /* DARK THEME (DEFAULT) - Deep Navy */
-            --bg-color: #0d1424;         
-            --bg-image: none;
-            --card-bg: rgba(24, 34, 52, 0.85); 
-            --border-color: #2a3b54;     
+            /* DEFAULT: NOC Standard (Professional Tech) */
+            --bg-color: #0d1117; 
+            --panel-bg: rgba(22, 27, 34, 0.85); 
+            --panel-border: #30363d;
+            --grid-color: rgba(255, 255, 255, 0.02);
+            
             --text-main: #c9d1d9;
-            --accent-blue: #58a6ff;
-            --accent-green: #238636;
-            --neon-green: #39ff14;       
-            --accent-purple: #bc8cff;
-            --accent-red: #f85149;
-            --hl-orange: #ff9d00;
-            --code-bg: rgba(7, 10, 18, 0.7); 
+            --text-muted: #8b949e;
             
-            --logo-text: #ffffff;
-            --logo-accent-text: #000000;
-            --input-text: #79c0ff;
-            --line-num-bg: rgba(13, 17, 23, 0.5);
-            --line-num-text: #484f58;
-            --btn-copy-bg: #8957e5;
-
-            /* Tag Colors */
-            --tag-prod-bg: rgba(0, 255, 255, 0.15); 
-            --tag-prod-text: #00e5ff; 
-            --tag-prod-border: rgba(0, 255, 255, 0.5); 
-            --tag-train-bg: rgba(255, 215, 0, 0.15); 
-            --tag-train-text: #ffd700; 
-            --tag-train-border: rgba(255, 215, 0, 0.5);
+            --accent-primary: #58a6ff; /* Pro Tech Blue */
+            --accent-secondary: #00e5ff; /* Tech Cyan */
+            --logo-accent: #00e5ff; /* Cyan block for the Ø */
             
-            --font-scale: 1;
+            --success-color: #3fb950; 
+            --danger-color: #f85149;
+            --warning-color: #d29922;
         }
 
-        [data-theme="light"] {
-            /* LIGHT THEME */
-            --bg-color: #e9e9e6;  
-            --bg-image: none;       
-            --card-bg: rgba(255, 255, 255, 0.85); 
-            --border-color: #a48c7b;     
-            --text-main: #474a45;        
-            --accent-blue: #944a31;      
-            --accent-green: #f27a22;     
-            --neon-green: #f27a22;       
-            --accent-purple: #a48c7b;    
-            --accent-red: #d32f2f;       
-            --hl-orange: #f27a22;        
-            --code-bg: rgba(240, 240, 238, 0.7); 
+        /* THEME: Industrial Flare (Taupe/Orange) */
+        body.theme-industrial {
+            --bg-color: #252525; 
+            --panel-bg: rgba(37, 37, 37, 0.85); 
+            --panel-border: #7a706b;
+            --grid-color: rgba(122, 112, 107, 0.1);
             
-            --logo-text: #474a45;        
-            --logo-accent-text: #ffffff; 
-            --input-text: #944a31;       
-            --line-num-bg: rgba(164, 140, 123, 0.15); 
-            --line-num-text: #a48c7b;    
-            --btn-copy-bg: #944a31;
-
-            /* Tag Colors */
-            --tag-prod-text: #008b8b; 
-            --tag-prod-border: rgba(0, 139, 139, 0.5); 
-            --tag-train-text: #b8860b; 
-            --tag-train-border: rgba(184, 134, 11, 0.5);
+            --text-main: #c2cbd2;
+            --text-muted: #a0a6ac;
+            
+            --accent-primary: #f38200; /* Orange */
+            --accent-secondary: #eeb052; /* Gold */
+            --logo-accent: #f38200; 
+            
+            --success-color: #eeb052; 
+            --danger-color: #f38200;
+            --warning-color: #eeb052;
         }
 
-        [data-theme="twilight"] {
-            /* TWILIGHT THEME (KATAWAREDOKI) - Dynamic Gradient */
-            --bg-color: #172b5c; 
-            --bg-image: linear-gradient(to bottom, #172b5c 0%, #3b5082 25%, #7c6294 50%, #c483a9 75%, #e7aab0 100%);
+        /* THEME: Vapor Networks (Fuchsia/Purple/Teal/Green) */
+        body.theme-vapor {
+            --bg-color: #120a17; /* Deep dark purple */
+            --panel-bg: rgba(26, 15, 33, 0.85); 
+            --panel-border: #5c2f70; /* Deep Purple */
+            --grid-color: rgba(92, 47, 112, 0.2);
             
-            --card-bg: rgba(20, 25, 45, 0.35); 
-            --border-color: rgba(255, 255, 255, 0.2); 
-            --text-main: #f8fafc;        
-            --accent-blue: #a5b4fc;      
-            --accent-green: #f59e0b;     
-            --neon-green: #fbbf24;       
-            --accent-purple: #d8b4fe;    
-            --accent-red: #ef4444;       
-            --hl-orange: #f43f5e;        
-            --code-bg: rgba(10, 15, 30, 0.3); 
+            --text-main: #e6e6e6;
+            --text-muted: #957da3;
             
-            --logo-text: #ffffff;        
-            --logo-accent-text: #1a1b36; 
-            --input-text: #e0e7ff;       
-            --line-num-bg: rgba(0, 0, 0, 0.15); 
-            --line-num-text: #a5b4fc;    
-            --btn-copy-bg: rgba(255, 255, 255, 0.2); 
+            --accent-primary: #fd65ff; /* Fuchsia */
+            --accent-secondary: #7cf14f; /* Neon Green */
+            --logo-accent: #7cf14f; 
             
-            /* Tag Colors */
-            --tag-prod-text: #7de8e1; 
-            --tag-prod-border: rgba(125, 232, 225, 0.5); 
-            --tag-train-text: #fcd34d; 
-            --tag-train-border: rgba(252, 211, 77, 0.5);
+            --success-color: #b0dea4; /* Light Sage Green */
+            --danger-color: #fd65ff; /* Fuchsia */
+            --warning-color: #097381; /* Teal */
         }
+
+        /* --- Futuristic Scrollbar --- */
+        ::-webkit-scrollbar { width: 12px; height: 12px; }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+            border-left: 1px solid var(--panel-border);
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--accent-primary);
+            border: 3px solid var(--bg-color); 
+            border-radius: 0; 
+        }
+        ::-webkit-scrollbar-thumb:hover { background-color: var(--accent-secondary); }
+        ::-webkit-scrollbar-corner { background: var(--bg-color); }
+        * { scrollbar-width: thin; scrollbar-color: var(--accent-primary) var(--bg-color); }
 
         body {
-            font-family: "Segoe UI", Roboto, monospace;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             margin: 0;
             padding: 20px;
-            background-color: var(--bg-color);
-            background-image: var(--bg-image);
-            background-attachment: fixed; 
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
             overflow-x: hidden;
-            transition: background-color 0.4s ease, color 0.4s ease;
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 30px 30px;
+            background-position: center center;
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
 
-        /* --- ANIMATED BACKGROUND CANVAS --- */
-        #bg-canvas {
+        /* --- Dynamic Network Background --- */
+        #networkCanvas {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        .container { max-width: 1200px; width: 100%; position: relative; z-index: 1;}
-
-        /* --- FLOATING HEADER & CONTROLS --- */
-        .app-header {
-            position: sticky;
-            top: 15px;
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 12px 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-        }
-
-        h2 {
-            color: var(--logo-text);
-            font-size: 1.7rem; 
-            margin: 0;
-            display: flex;
-            align-items: baseline;
-            gap: 12px;
-            font-family: "Courier New", Courier, monospace;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(242, 122, 34, 0.2);
-            transition: color 0.3s;
-        }
-
-        .logo-text { letter-spacing: 1px; display: flex; align-items: center; }
-
-        .logo-accent {
-            background-color: var(--neon-green);
-            color: var(--logo-accent-text);
-            padding: 0px 6px;
-            margin: 0 6px;
-            box-shadow: 0 0 12px rgba(242, 122, 34, 0.4);
-            display: inline-block;
-            font-weight: 900;
-            transition: all 0.3s;
-        }
-
-        .version-tag {
-            font-size: 0.8rem; 
-            color: var(--accent-blue);
-            opacity: 0.8;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: normal;
-            font-family: "Segoe UI", Roboto, monospace;
-        }
-
-        /* Top Right Controls (Zoom + Theme) */
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .theme-toggle-btn {
-            background: transparent;
-            color: var(--accent-blue);
-            border: 1px solid var(--border-color);
-            padding: 6px 12px;
-            font-size: 11px;
-            font-family: "Courier New", Courier, monospace;
-            font-weight: bold;
-            border-radius: 20px;
-            cursor: pointer;
-            backdrop-filter: blur(4px);
-            background: var(--code-bg);
-            transition: 0.3s ease;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-        }
-        .theme-toggle-btn:hover {
-            border-color: var(--accent-green);
-            color: var(--accent-green);
-            box-shadow: 0 0 10px rgba(242, 122, 34, 0.2);
-        }
-
-        .zoom-controls {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--accent-blue);
-            font-family: "Courier New", Courier, monospace;
-            background: var(--code-bg);
-            padding: 6px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            backdrop-filter: blur(4px);
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-            user-select: none; 
-            transition: all 0.3s;
-        }
-        .zoom-controls input[type="range"] {
-            -webkit-appearance: none;
-            width: 100px;
-            background: var(--card-bg);
-            height: 4px;
-            border-radius: 2px;
-            outline: none;
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-        }
-        .zoom-controls input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: var(--neon-green);
-            cursor: pointer;
-            box-shadow: 0 0 8px var(--neon-green);
-            transition: 0.2s;
-        }
-        .zoom-controls input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.3);
-        }
-
-        /* --- FORM & PANEL STYLES --- */
-        .form-group {
-            background: var(--card-bg);
-            backdrop-filter: blur(8px); 
-            -webkit-backdrop-filter: blur(8px);
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            transition: all 0.3s;
-        }
-
-        .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        label {
-            font-weight: 600;
-            display: block;
-            margin-bottom: 8px;
-            color: var(--accent-blue);
-            font-size: calc(0.75rem * var(--font-scale));
-            text-transform: uppercase;
-            opacity: 0.9;
-        }
-        .header-row label { margin-bottom: 0; }
-
-        .expand-btn {
-            background: transparent;
-            color: var(--accent-purple);
-            border: 1px solid var(--border-color);
-            padding: 4px 10px;
-            font-size: calc(10px * var(--font-scale));
-            cursor: pointer;
-            border-radius: 4px;
-            transition: 0.3s ease;
-            font-family: "Courier New", Courier, monospace;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .expand-btn:hover {
-            border-color: var(--accent-purple);
-            background: rgba(188, 140, 255, 0.1);
-            box-shadow: 0 0 8px rgba(188, 140, 255, 0.3);
-            color: var(--text-main);
-        }
-
-        /* --- MULTI-TENANT DEVICE HUD --- */
-        .device-hud {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-            gap: 6px;
-            font-size: calc(11px * var(--font-scale));
-            color: var(--text-main);
-            font-family: "Courier New", Courier, monospace;
-            opacity: 0;
-            transition: opacity 0.3s;
-            max-width: 600px;
-        }
-        .device-hud.visible { opacity: 1; }
-        .host-tag {
-            background: rgba(148, 74, 49, 0.1);
-            border: 1px solid var(--border-color);
-            padding: 3px 8px;
-            border-radius: 4px;
-            display: inline-flex;
-            align-items: center;
-        }
-        .host-tag strong { color: var(--logo-text); margin-right: 5px; }
-        .ip-highlight { font-weight: bold; text-shadow: 0 0 5px rgba(242, 122, 34, 0.3); }
-
-        /* --- COLLAPSIBLE WRAPPERS --- */
-        .readme-wrapper {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.3s, margin 0.3s, border 0.3s;
-        }
-        .readme-wrapper.expanded {
-            max-height: 1000px;
-            padding-top: 15px;
-            margin-top: 10px;
-            border-top: 1px dashed var(--border-color);
-        }
-        .readme-content {
-            font-size: calc(12px * var(--font-scale));
-            line-height: 1.6;
-            color: var(--text-main);
-            opacity: 0.9;
-        }
-        .readme-content h3 {
-            color: var(--accent-purple);
-            font-size: calc(12px * var(--font-scale));
-            margin: 12px 0 6px 0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .readme-content p { margin: 0 0 10px 0; }
-
-        /* --- CLEAN NATIVE TEXTAREA & INPUTS --- */
-        textarea, input[type="text"] {
             width: 100%;
-            background: var(--code-bg);
-            backdrop-filter: blur(4px);
-            color: var(--input-text);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 12px;
-            font-family: "Courier New", Courier, monospace;
-            box-sizing: border-box;
-            outline: none;
-            font-size: calc(13px * var(--font-scale));
-            line-height: 1.6;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            scrollbar-width: thin;
-            scrollbar-color: var(--border-color) transparent;
-        }
-        textarea { height: calc(140px * var(--font-scale)); resize: none; }
-        textarea:focus, input[type="text"]:focus { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(148, 74, 49, 0.2); }
-        textarea.expanded { height: calc(400px * var(--font-scale)); }
-        
-        textarea::-webkit-scrollbar, .output-box::-webkit-scrollbar { width: 10px; height: 10px;}
-        textarea::-webkit-scrollbar-track, .output-box::-webkit-scrollbar-track { background: transparent; }
-        textarea::-webkit-scrollbar-thumb, .output-box::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
-        textarea::selection, .output-box::selection { background: rgba(148, 74, 49, 0.2); }
-
-        input[type="text"] { margin-bottom: 15px; color: var(--hl-orange); }
-        input[type="text"]::placeholder { color: var(--line-num-text); }
-
-        /* --- UI CONTROLS --- */
-        .controls-row { display: flex; gap: 12px; margin-top: 15px; margin-bottom: 15px; align-items: flex-end;}
-        
-        .cyber-btn {
-            background: var(--accent-green);
-            color: #fff;
-            padding: 8px 20px;
-            font-size: calc(13px * var(--font-scale));
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: 1px solid var(--neon-green);
-            border-radius: 4px;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 0 10px rgba(35, 134, 54, 0.3);
-            white-space: nowrap;
-        }
-        .cyber-btn:hover { background: var(--accent-blue); box-shadow: 0 0 20px rgba(242, 122, 34, 0.4); border-color: var(--accent-blue); }
-        .cyber-btn:active { transform: scale(0.95); }
-
-        .clear-btn {
-            background: transparent;
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-            padding: 6px 20px;
-            font-size: calc(12px * var(--font-scale));
-            text-transform: uppercase;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: 0.2s;
-            opacity: 0.8;
-        }
-        .clear-btn:hover {
-            opacity: 1;
-            border-color: var(--accent-purple);
-            color: var(--accent-purple);
-            background: rgba(148, 74, 49, 0.05);
-        }
-
-        /* --- 4-COLUMN OUTPUT STYLES --- */
-        .results-container {
-            display: flex;
-            gap: 12px; 
-        }
-        .result-column {
-            flex: 1; 
-            display: flex;
-            flex-direction: column;
-            min-width: 0; 
-        }
-        .script-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-        .copy-btn {
-            background: var(--btn-copy-bg);
-            color: white;
-            border: none;
-            padding: 4px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: calc(10px * var(--font-scale));
-            font-weight: bold;
-            text-transform: uppercase;
-            font-family: "Courier New", Courier, monospace;
-            transition: 0.2s;
-        }
-        .copy-btn:hover { filter: brightness(1.2); }
-
-        .output-box {
-            width: 100%;
-            height: calc(400px * Math.min(var(--font-scale), 1.5)); 
-            font-family: "Courier New", Courier, monospace;
-            font-size: calc(12px * var(--font-scale));
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            box-sizing: border-box;
-            padding: 10px 0; 
-            overflow: auto; 
-            background-color: var(--code-bg); 
-            backdrop-filter: blur(4px);
-            color: var(--input-text); 
-            cursor: text;
-            counter-reset: linenumber; 
-            line-height: 1.6;
-            resize: none;
-            transition: all 0.3s;
-        }
-
-        .line-item {
-            display: block;
-            padding-left: calc(35px * var(--font-scale)); 
-            padding-right: 10px;
-            position: relative;
-            white-space: pre; 
-        }
-
-        .line-item::before {
-            counter-increment: linenumber;
-            content: counter(linenumber);
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: calc(20px * var(--font-scale));
-            text-align: right;
-            color: var(--line-num-text); 
-            background-color: var(--line-num-bg); 
-            border-right: 1px solid var(--border-color);
-            padding-right: calc(6px * var(--font-scale));
             height: 100%;
-            user-select: none; 
-            -webkit-user-select: none;
-            transition: all 0.3s;
+            z-index: 0;
+            pointer-events: none; 
         }
 
-        /* Keyword Tags UI */
-        .tag-badge {
-            padding: 2px 5px; 
-            border-radius: 4px; 
-            font-size: calc(9.5px * var(--font-scale)); 
-            font-weight: bold; 
-            text-shadow: none; 
-            font-family: "Segoe UI", Roboto, sans-serif; 
-            letter-spacing: 0.5px;
-            margin-left: 6px;
-            display: inline-block;
-            vertical-align: middle;
-        }
-        .tag-prod { background: var(--tag-prod-bg); color: var(--tag-prod-text); border: 1px solid var(--tag-prod-border); }
-        .tag-train { background: var(--tag-train-bg); color: var(--tag-train-text); border: 1px solid var(--tag-train-border); }
-
-        /* Duplicate Warning Styles */
-        .highlight-dup {
-            background-color: rgba(248, 81, 73, 0.15); 
-            color: var(--accent-red); 
-        }
-        .highlight-dup::before {
-            background-color: rgba(248, 81, 73, 0.05); 
-            color: var(--accent-red);
-            border-right-color: var(--accent-red);
-        }
-
-        .warning-box {
-            background: rgba(248, 81, 73, 0.08);
-            border: 1px dashed var(--accent-red);
-            color: var(--accent-red);
-            padding: 10px 15px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            font-family: "Courier New", Courier, monospace;
-            font-size: calc(11.5px * var(--font-scale));
-            text-align: center;
-            line-height: 1.5;
-            backdrop-filter: blur(4px);
-        }
-        .warning-box strong { font-size: calc(12.5px * var(--font-scale)); letter-spacing: 1px; }
-
-        .hidden-copy-area { display: none; }
-        #statusMsg { 
-            font-size: calc(11px * var(--font-scale)); 
-            color: var(--accent-blue); 
-            margin-top: 15px; 
-            font-family: "Courier New", Courier, monospace;
-        }
-
-        /* --- LOCAL DB STYLES --- */
-        .bottom-actions { text-align: center; margin-top: 30px; margin-bottom: 20px; display: flex; justify-content: center; gap: 15px; }
-        
-        .db-box {
-            background: var(--card-bg);
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1; 
+            background: var(--panel-bg); 
             backdrop-filter: blur(8px);
-            border: 1px solid var(--accent-green);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 30px 40px;
+            border: 1px solid var(--panel-border);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 30px rgba(0,0,0,0.9);
+            clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+            transition: background-color 0.5s ease, border-color 0.5s ease;
+        }
+
+        /* --- Terminal Header --- */
+        .app-header {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--panel-border);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            margin-top: 0;
+            position: relative;
+        }
+
+        .gear-btn-box {
+            width: 32px;
+            height: 32px;
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid var(--panel-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 18px;
+            color: var(--text-muted);
+            font-size: 16px;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .gear-btn-box:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            box-shadow: 0 0 8px var(--accent-primary);
+        }
+
+        .app-branding {
+            display: flex;
+            align-items: center;
+            font-size: 30px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .brand-text { color: var(--text-main); letter-spacing: 2px; }
+
+        .brand-highlight {
+            background-color: var(--logo-accent);
+            color: var(--bg-color); 
+            padding: 0 6px;
+            margin: -2px 6px; 
+            letter-spacing: 0;
+            box-shadow: 0 0 12px var(--logo-accent);
+            transition: background-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        .app-subtext {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 20px;
+            letter-spacing: 1px;
+            position: relative;
+            top: 2px;
+        }
+
+        /* --- Theme Settings Menu --- */
+        #settingsMenu {
+            display: none;
+            position: absolute;
+            top: 50px;
+            left: 0;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--accent-primary);
             padding: 15px;
-            border-radius: 8px;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.1), 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.9);
+            z-index: 100;
+            min-width: 250px;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
         }
-        
-        .db-security-note {
-            background: rgba(242, 122, 34, 0.1);
-            border-left: 3px solid var(--accent-green);
-            padding: 8px 12px;
-            margin-bottom: 12px;
-            font-size: calc(11px * var(--font-scale));
+        .theme-option {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            cursor: pointer;
+            margin-bottom: 5px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            color: var(--text-muted);
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+        .theme-option:hover {
+            background-color: rgba(255,255,255,0.05);
+            border-color: var(--panel-border);
             color: var(--text-main);
+        }
+        .theme-option.active {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            background-color: rgba(0,0,0,0.3);
+        }
+        .theme-swatch {
+            width: 12px; height: 12px;
+            margin-right: 10px;
+            display: inline-block;
+        }
+
+        /* --- DB Card --- */
+        .db-card {
+            background-color: rgba(0,0,0,0.2);
+            border: 1px solid var(--panel-border);
+            border-left: 3px solid var(--accent-secondary);
+            margin-bottom: 25px;
+            overflow: hidden;
+            transition: border-color 0.5s ease;
+        }
+        .db-header {
+            padding: 12px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--accent-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(255,255,255,0.02);
+            text-transform: uppercase;
+        }
+        .db-header:hover { background-color: rgba(255,255,255,0.05); }
+        .db-chevron { transition: transform 0.3s ease; font-size: 12px; }
+        .db-chevron.open { transform: rotate(180deg); }
+        .db-content-wrapper { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s; }
+        .db-content-wrapper.open { grid-template-rows: 1fr; }
+        .db-content { overflow: hidden; padding: 0 15px; }
+        .mapping-controls { margin-top: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
+
+        /* --- Inputs --- */
+        .instructions {
+            background-color: rgba(255,255,255,0.02);
+            padding: 12px 15px;
+            border-left: 3px solid var(--accent-primary);
+            margin-bottom: 20px;
+            font-size: 13px;
             line-height: 1.5;
-            border-radius: 0 4px 4px 0;
+            color: var(--text-muted);
+            transition: border-color 0.5s ease;
         }
 
-        .db-box textarea { 
-            height: calc(150px * var(--font-scale)); 
-            margin-bottom: 10px; 
-            border-color: rgba(242, 122, 34, 0.5); 
+        textarea {
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            color: var(--text-main);
+            border: 1px solid var(--panel-border);
+            padding: 12px;
+            font-family: inherit;
+            font-size: 13px;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .db-controls { display: flex; justify-content: space-between; align-items: center; }
-        .db-status { font-size: calc(11px * var(--font-scale)); color: var(--accent-green); font-family: monospace; font-weight: bold;}
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: inset 2px 0 0 var(--accent-primary);
+        }
 
+        #logInput { 
+            min-height: 180px; 
+            margin-bottom: 20px; 
+            white-space: pre; 
+            overflow-y: hidden; /* For Auto Expand */
+            resize: none; 
+        }
+        #mappingInput { height: 100px; white-space: pre; }
+
+        .btn-group { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
+
+        button {
+            font-family: inherit; border: none; cursor: pointer;
+            text-transform: uppercase; font-weight: bold; transition: all 0.2s;
+        }
+        button.secondary {
+            background-color: var(--panel-border); color: var(--bg-color);
+            padding: 6px 15px; font-size: 12px;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+        button.secondary:hover { background-color: var(--accent-secondary); }
+
+        button.small-btn {
+            padding: 6px 15px; font-size: 12px; background-color: transparent;
+            color: var(--danger-color); border: 1px solid var(--danger-color);
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+        button.small-btn:hover { background-color: var(--danger-color); color: var(--bg-color); }
+
+        .btn-analyze {
+            background-color: var(--accent-primary); color: var(--bg-color);
+            padding: 10px 30px; font-size: 15px; letter-spacing: 2px;
+            clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+            box-shadow: 0 0 10px var(--accent-primary);
+        }
+        .btn-analyze:hover {
+            background-color: var(--text-main);
+            box-shadow: 0 0 20px var(--accent-primary);
+            transform: translateY(-1px);
+        }
+        .btn-analyze:active { transform: translateY(1px); }
+        .btn-clicked { animation: cyber-glitch 0.3s linear; }
+        @keyframes cyber-glitch {
+            0% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); background-color: var(--accent-secondary); }
+            50% { clip-path: polygon(10px 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+            100% { background-color: var(--accent-primary); }
+        }
+
+        .alert {
+            padding: 10px 15px; margin-top: 20px; font-size: 13px; font-weight: bold;
+            display: none; border-left: 3px solid; background-color: rgba(0,0,0,0.5); text-transform: uppercase;
+        }
+        .alert-info { border-color: var(--accent-primary); color: var(--accent-primary); }
+        .alert-success { border-color: var(--success-color); color: var(--success-color); display: none; margin-bottom: 15px;}
+
+        /* --- Data Table --- */
+        table { width: 100%; border-collapse: collapse; margin-top: 25px; background-color: transparent; }
+        th { 
+            background-color: rgba(0, 0, 0, 0.3); font-weight: 600; color: var(--text-muted); 
+            font-size: 12px; text-transform: uppercase; padding: 12px 15px; text-align: left;
+            border-bottom: 2px solid var(--panel-border);
+        }
+        td {
+            padding: 15px 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05);
+            vertical-align: top; background-color: rgba(0, 0, 0, 0.1);
+        }
+        tr { border-left: 2px solid transparent; transition: all 0.2s ease; }
+        tr:hover { border-left: 2px solid var(--accent-primary); background-color: rgba(255,255,255,0.02); }
+
+        .animated-row { opacity: 0; transform: translateX(-15px); animation: slideRightFade 0.4s forwards; }
+        @keyframes slideRightFade { to { opacity: 1; transform: translateX(0); } }
+
+        .status-down { color: var(--danger-color); font-weight: bold; }
+        .status-up { color: var(--success-color); font-weight: bold; }
+        .flap-1 { color: var(--success-color); font-weight: bold; font-size: 14px; }
+        .flap-2 { color: var(--warning-color); font-weight: bold; font-size: 14px; }
+        .flap-3 { color: var(--danger-color); font-weight: bold; font-size: 14px; }
+        .flap-critical { font-weight: bold; font-size: 14px; color: var(--danger-color); animation: cyber-pulse 1s infinite alternate; }
+        @keyframes cyber-pulse {
+            from { text-shadow: 0 0 5px rgba(255, 0, 0, 0.2); }
+            to { text-shadow: 0 0 15px var(--danger-color); }
+        }
+
+        .glow-accent1 { color: var(--text-main); text-shadow: 0 0 5px var(--accent-primary); }
+        .glow-accent2 { color: var(--text-main); text-shadow: 0 0 5px var(--accent-secondary); }
+
+        ul.flap-list { margin: 0; padding-left: 0; list-style-type: none; font-size: 12px; color: var(--text-muted); }
+        ul.flap-list li { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed rgba(255,255,255,0.05); }
+        ul.flap-list li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        
+        .instance-badge {
+            color: var(--bg-color); background-color: var(--text-muted); padding: 2px 6px; 
+            font-size: 11px; margin-bottom: 6px; font-weight: bold; display: inline-block; text-transform: uppercase;
+        }
+        .interval-badge {
+            color: var(--text-muted); font-size: 11px; margin-bottom: 6px; padding-left: 8px; 
+            border-left: 2px solid var(--accent-secondary); display: inline-block;
+        }
+        .site-badge {
+            font-size: 11px; padding: 2px 4px; background: rgba(0,0,0,0.5); 
+            border: 1px solid var(--panel-border); margin-right: 6px; color: var(--text-muted); vertical-align: middle;
+        }
     </style>
 </head>
 <body>
 
-<canvas id="bg-canvas"></canvas>
+    <canvas id="networkCanvas"></canvas>
 
-<div class="container">
-    
-    <div class="app-header">
-        <h2>
-            <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v5.2 [Automated Port Extractor]</span>
-        </h2>
+    <div class="container">
         
-        <div class="header-controls">
-            <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Cycle Theme">☀️ LIGHT</button>
+        <header class="app-header">
+            <div class="gear-btn-box" onclick="toggleThemeMenu()" title="Theme Settings">⚙️</div>
             
-            <div class="zoom-controls">
-                <span style="font-size: 11px;">A-</span>
-                <input type="range" id="zoomSlider" min="0.8" max="1.6" step="0.05" value="1" title="Adjust Text Size (Double-click to reset)">
-                <span style="font-size: 15px; font-weight: bold;">A+</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="form-group" style="border-color: var(--border-color);">
-        <div class="header-row">
-            <label style="color: var(--accent-purple);">00 // SYSTEM_MANUAL [READ_ME]</label>
-            <button class="expand-btn" id="readmeBtn" onclick="toggleReadme()">[ COLLAPSE ]</button>
-        </div>
-        <div id="readmeWrapper" class="readme-wrapper expanded">
-            <div class="readme-content">
-                <p>Welcome to <strong>N0CAPE</strong>. This utility dynamically extracts and pairs network interfaces with their respective switch hostnames from raw data.</p>
-                
-                <h3>> Instructions (01)</h3>
-                <p>Provide the engine with raw data (Ticket descriptions, CDP/LLDP outputs, or Inventory tables). As long as the text contains a Switch Hostname (e.g., <code>CO-ESP-ACC02M02</code>) and Port Numbers (e.g., <code>gi1/0/3</code>), the tool will map them.</p>
-                <p><strong>Supported Formats & Auto-Correct:</strong> It supports single ports, comma-separated shorthand (<code>Gi3/0/1,3,5</code>), dashed ranges (<code>Gi2/0/23 - Gi2/0/27</code>), and direct-attached formatting (<code>CO-ESP-ACC02M02-2/0/38</code>). It also auto-corrects <code>Gl</code> (G-ell) inputs to valid <code>Gi</code> formats.</p>
-                <p><strong>Smart Tagging:</strong> The engine automatically scans for keywords (<code>Prod</code>, <code>Production</code>, <code>Training</code>, <code>Training Room</code>) and highlights the corresponding ports.</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <div class="header-row">
-            <label>01 // Config Input</label>
-            <div style="display: flex; gap: 10px; align-items: center; justify-content: flex-end; flex-grow: 1;">
-                <div id="deviceHud" class="device-hud">Waiting for target...</div>
-                <button class="expand-btn" id="expandBtn" style="margin-left: 10px;" onclick="toggleExpand()">[ EXPAND ]</button>
-            </div>
-        </div>
-        <textarea id="configInput" placeholder="Waiting for logs..." spellcheck="false" oninput="handleConfigInput()"></textarea>
-        
-        <div class="controls-row">
-            <button class="cyber-btn" onclick="processText()">Execute_Run</button>
-            <button class="clear-btn" onclick="clearText()">Clear</button>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <div class="header-row" style="margin-bottom: 15px;">
-            <label>02 // Extracted Data</label>
-        </div>
-        
-        <input type="text" id="filterInput" placeholder="> Filter by interface (Gi1/0/1) or hostname..." onkeyup="renderOutput()" style="display: none;">
-        
-        <div id="output">
-            <div style="font-family: 'Courier New', Courier, monospace; color: var(--line-num-text); font-size: calc(13px * var(--font-scale));">-- system_idle --</div>
-        </div>
-        
-        <div id="statusMsg" style="display: none;"></div>
-    </div>
-
-    <div class="bottom-actions">
-        <button class="expand-btn" id="dbBtn" style="color: var(--accent-green); border-color: var(--border-color); font-size: calc(11px * var(--font-scale)); padding: 6px 15px;" onclick="toggleWrapper('dbWrapper', 'dbBtn', 'LOCAL_DATABASE')">[ LOCAL_DATABASE ]</button>
-    </div>
-    
-    <div id="dbWrapper" class="readme-wrapper">
-        <div class="db-box">
-            <label style="color: var(--accent-green); margin-bottom: 10px;">> ZERO-TRUST_LOCAL_DB</label>
-            
-            <div class="db-security-note">
-                <strong>🔒 SECURITY NOTE:</strong> This database is completely offline and Zero-Trust. Your data is saved directly into your browser's local cache (localStorage). It is <strong>never</strong> transmitted to GitHub, any external server, or the public internet.
+            <div id="settingsMenu">
+                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">// UI SCHEMATICS</div>
+                <div class="theme-option active" onclick="setTheme('default', this)">
+                    <span class="theme-swatch" style="background:#58a6ff;"></span> NOC STANDARD
+                </div>
+                <div class="theme-option" onclick="setTheme('industrial', this)">
+                    <span class="theme-swatch" style="background:#f38200;"></span> INDUSTRIAL FLARE
+                </div>
+                <div class="theme-option" onclick="setTheme('vapor', this)">
+                    <span class="theme-swatch" style="background:#fd65ff;"></span> VAPOR NETWORKS
+                </div>
             </div>
 
-            <p style="font-size: calc(11.5px * var(--font-scale)); color: var(--text-main); opacity: 0.8; margin-top: 0;">Any new data pasted here is <strong>MERGED</strong> into your existing local database. To remove old switches, click 'Clear Memory' and paste a fresh master list.</p>
-            <textarea id="dbInput" placeholder="-- Formats Accepted --&#10;PH-NOC-ACC0101, 10.20.30.40&#10;CO-ARN-CAS0302   10.30.40.50   Access Switch" spellcheck="false"></textarea>
-            <div class="db-controls">
-                <span class="db-status" id="dbStatus">STATUS: DB_IDLE</span>
-                <div style="display: flex; gap: 10px;">
-                    <button class="clear-btn" style="padding: 4px 15px;" onclick="clearDB()">Clear Memory</button>
-                    <button class="cyber-btn" style="padding: 4px 15px;" onclick="saveDB()">Merge & Save</button>
+            <div class="app-branding">
+                <span class="brand-text">N0C</span>
+                <span class="brand-highlight">Ø</span>
+                <span class="brand-text">WL</span>
+                <span class="app-subtext">// OVERWATCH LINK-ANALYZER</span>
+            </div>
+        </header>
+        
+        <div class="db-card">
+            <div class="db-header" onclick="toggleDB()">
+                <span>[+] LOCAL DATA MAPPING PROTOCOL</span>
+                <span class="db-chevron" id="dbChevron">▼</span>
+            </div>
+            <div class="db-content-wrapper" id="dbContentWrapper">
+                <div class="db-content">
+                    <div class="mapping-controls">
+                        <p style="margin:0; font-size:12px; color:var(--text-muted);">
+                            > Mapping Definition Interface.<br>
+                            > Format: <code>[REGION DC/DIA] - [NICKNAME] - [router_hostname] - [IP] - [ISP/CARRIER]</code>
+                        </p>
+                        <textarea id="mappingInput" placeholder="[PH DC] - Manila Core - [PH-NOC-CER02] - [100.64.1.2] - [AT&T]
+[IN DIA] - Mumbai Edge - IN-NOC-IGW2001 - 192.168.10.1 - Singtel
+UnknownPeer - [10.19.0.4] - Lumen"></textarea>
+                        <div class="btn-group" style="margin-bottom: 0;">
+                            <button class="secondary" onclick="saveMappings()">commit_changes</button>
+                            <button class="small-btn" onclick="clearMappings()">flush_database</button>
+                        </div>
+                        <div id="mappingAlert" class="alert alert-success"></div>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <div class="instructions">
+            > AWAITING BGP SYSLOG STREAM...<br>
+            > REQUIRED INPUTS: <code>sh log | i BGP-5-ADJ</code> AND <code>sh clock</code> (FOR TIME REFERENCE)
+        </div>
+
+        <textarea id="logInput" placeholder="> Input raw syslog output here...
+PH-PHX-CER1501#sh log | i BGP-5-ADJ
+Apr  5 07:51:12.150: %BGP-5-ADJCHANGE: neighbor 100.64.1.2 Down BFD adjacency down
+Apr  5 07:51:20.676: %BGP-5-ADJCHANGE: neighbor 100.64.1.2 Up
+PH-PHX-CER1501#sh clock
+16:02:54.588 UTC Sun Apr 5 2026"></textarea>
+        
+        <button id="analyzeBtn" class="btn-analyze" onclick="triggerAnalyze()">RUN_ANALYSIS // EXECUTE</button>
+        
+        <div id="timezoneAlert" class="alert alert-info"></div>
+        <div id="resultsArea"></div>
     </div>
 
-</div>
-
-<script>
-    // --- THEME TOGGLE LOGIC ---
-    function updateThemeButton(theme) {
-        const btn = document.getElementById('themeToggleBtn');
-        if (theme === 'dark') {
-            btn.innerText = '☀️ LIGHT';
-        } else if (theme === 'light') {
-            btn.innerText = '🌅 TWILIGHT';
-        } else if (theme === 'twilight') {
-            btn.innerText = '🌙 DARK';
+    <script>
+        // --- THEME LOGIC ---
+        function toggleThemeMenu() {
+            const menu = document.getElementById('settingsMenu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         }
-    }
 
-    function toggleTheme() {
-        const html = document.documentElement;
-        const currentTheme = html.getAttribute('data-theme') || 'dark';
-        let newTheme;
-        
-        if (currentTheme === 'dark') newTheme = 'light';
-        else if (currentTheme === 'light') newTheme = 'twilight';
-        else newTheme = 'dark';
-        
-        html.setAttribute('data-theme', newTheme);
-        localStorage.setItem('nocape_theme', newTheme);
-        updateThemeButton(newTheme);
-    }
+        function setTheme(themeName, element) {
+            // Update Body Class
+            document.body.className = '';
+            if (themeName !== 'default') {
+                document.body.classList.add(`theme-${themeName}`);
+            }
+            
+            // Save to Local Storage
+            localStorage.setItem('n0c_owl_theme', themeName);
 
-    const savedTheme = localStorage.getItem('nocape_theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    updateThemeButton(savedTheme);
+            // Update UI Selection
+            document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
 
+            // Force Canvas to pull new colors
+            updateCanvasColors();
+            toggleThemeMenu(); // close menu
+        }
 
-    // --- ZOOM LOGIC & PERSISTENCE ---
-    const zoomSlider = document.getElementById('zoomSlider');
-    const savedZoom = localStorage.getItem('nocape_zoom') || 1;
-    zoomSlider.value = savedZoom;
-    document.documentElement.style.setProperty('--font-scale', savedZoom);
+        // --- AUTO-EXPANDING TEXTAREA LOGIC ---
+        const logInputBox = document.getElementById('logInput');
+        logInputBox.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
 
-    zoomSlider.addEventListener('input', function() {
-        document.documentElement.style.setProperty('--font-scale', this.value);
-        localStorage.setItem('nocape_zoom', this.value);
-    });
+        // --- BACKGROUND CANVAS ANIMATION ---
+        let particles = [];
+        let canvasColors = ['#58a6ff', '#00e5ff']; // initial default for NOC STANDARD
 
-    zoomSlider.addEventListener('dblclick', function() {
-        this.value = 1;
-        document.documentElement.style.setProperty('--font-scale', 1);
-        localStorage.setItem('nocape_zoom', 1);
-    });
-
-
-    // --- ANIMATED CANVAS ---
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d');
-    let width, height;
-    let particles = [];
-    let executeGlowIntensity = 0;
-    
-    let mouse = { x: -1000, y: -1000, radius: 120 };
-
-    window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
-    window.addEventListener('mouseout', () => { mouse.x = -1000; mouse.y = -1000; });
-
-    function initCanvas() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-        particles = [];
-        
-        const numParticles = Math.min(85, Math.floor((width * height) / 15000)); 
-        for(let i = 0; i < numParticles; i++) {
-            particles.push({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                baseVx: (Math.random() - 0.5) * 0.4,
-                baseVy: (Math.random() - 0.5) * 0.4,
-                vx: 0,
-                vy: 0,
-                glow: 0 
+        function updateCanvasColors() {
+            // Pull the current CSS variables for the active theme
+            const style = getComputedStyle(document.body);
+            const pColor = style.getPropertyValue('--accent-primary').trim() || '#58a6ff';
+            const sColor = style.getPropertyValue('--accent-secondary').trim() || '#00e5ff';
+            canvasColors = [pColor, sColor];
+            
+            // Update existing particles
+            particles.forEach(p => {
+                p.color = canvasColors[Math.floor(Math.random() * canvasColors.length)];
             });
-            particles[i].vx = particles[i].baseVx;
-            particles[i].vy = particles[i].baseVy;
-        }
-    }
-
-    window.addEventListener('resize', initCanvas);
-    initCanvas();
-
-    function triggerExecuteEffect() {
-        executeGlowIntensity = 1.0;
-        const centerX = width / 2;
-        const centerY = height / 2;
-        
-        particles.forEach(p => {
-            let dx = p.x - centerX;
-            let dy = p.y - centerY;
-            let dist = Math.sqrt(dx*dx + dy*dy) || 1;
-            p.vx += (dx / dist) * (Math.random() * 12 + 4);
-            p.vy += (dy / dist) * (Math.random() * 12 + 4);
-        });
-    }
-
-    function getTwilightContrastingRGB(yRatio) {
-        yRatio = Math.max(0, Math.min(1, yRatio)); 
-        const r = Math.round(255 - (255 - 20) * yRatio);
-        const g = Math.round(245 - (245 - 30) * yRatio);
-        const b = Math.round(220 - (220 - 80) * yRatio);
-        return `${r}, ${g}, ${b}`;
-    }
-
-    function animateCanvas() {
-        ctx.clearRect(0, 0, width, height);
-        
-        if (executeGlowIntensity > 0) {
-            executeGlowIntensity -= 0.015; 
-            if (executeGlowIntensity < 0) executeGlowIntensity = 0;
         }
 
-        const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-        let baseRGB, glowRGB, lineAlpha, polyAlpha;
-        
-        if (theme === 'light') {
-            baseRGB = '148, 74, 49';    
-            glowRGB = '242, 122, 34';   
-            lineAlpha = 0.3; polyAlpha = 0.08;
-        } else if (theme === 'twilight') {
-            glowRGB = '245, 158, 11';   
-            lineAlpha = 0.4; polyAlpha = 0.12;
-        } else {
-            baseRGB = '88, 166, 255';   
-            glowRGB = '57, 255, 20';    
-            lineAlpha = 0.25; polyAlpha = 0.08;
-        }
+        (function initCanvas() {
+            const canvas = document.getElementById('networkCanvas');
+            const ctx = canvas.getContext('2d');
+            let mouse = { x: null, y: null };
+            
+            const PARTICLE_COUNT = 80;
+            const CONNECT_DISTANCE = 130; 
+            const MOUSE_CONNECT_DISTANCE = 200; 
 
-        let currentPolyAlpha = polyAlpha; 
-        let currentLineAlpha = lineAlpha; 
-
-        particles.forEach(p => {
-            let dxMouse = p.x - mouse.x;
-            let dyMouse = p.y - mouse.y;
-            let distMouseSq = dxMouse * dxMouse + dyMouse * dyMouse;
-            let interactRadSq = mouse.radius * mouse.radius;
-
-            if (distMouseSq < interactRadSq) {
-                let distMouse = Math.sqrt(distMouseSq);
-                let force = (mouse.radius - distMouse) / mouse.radius; 
-                p.vx += (dxMouse / distMouse) * force * 0.6;
-                p.vy += (dyMouse / distMouse) * force * 0.6;
-                p.glow = Math.max(p.glow, force);
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
             }
+            window.addEventListener('resize', resize);
+            resize();
 
-            if (p.glow > 0) {
-                p.glow -= 0.02;
-                if (p.glow < 0) p.glow = 0;
-            }
+            window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+            window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
 
-            p.x += p.vx;
-            p.y += p.vy;
-
-            p.vx += (p.baseVx - p.vx) * 0.05;
-            p.vy += (p.baseVy - p.vy) * 0.05;
-
-            if(p.x < 0) { p.x = 0; p.vx *= -1; p.baseVx *= -1; }
-            if(p.x > width) { p.x = width; p.vx *= -1; p.baseVx *= -1; }
-            if(p.y < 0) { p.y = 0; p.vy *= -1; p.baseVy *= -1; }
-            if(p.y > height) { p.y = height; p.vy *= -1; p.baseVy *= -1; }
-
-            let nodeRGB = baseRGB;
-            if (theme === 'twilight') { nodeRGB = getTwilightContrastingRGB(p.y / height); }
-            let activeGlow = Math.max(executeGlowIntensity, p.glow);
-
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 1.5 + (activeGlow * 1.5), 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${activeGlow > 0.05 ? glowRGB : nodeRGB}, ${0.5 + activeGlow})`;
-            ctx.fill();
-        });
-
-        const maxDist = 130; 
-        const maxDistSq = maxDist * maxDist;
-
-        for(let i = 0; i < particles.length; i++) {
-            for(let j = i + 1; j < particles.length; j++) {
-                let dx = particles[i].x - particles[j].x;
-                let dy = particles[i].y - particles[j].y;
-                let distSq = dx*dx + dy*dy;
-
-                if(distSq < maxDistSq) {
-                    let dist = Math.sqrt(distSq);
-                    let alphaRatio = 1 - (dist / maxDist);
-
-                    let lineRGB = baseRGB;
-                    if (theme === 'twilight') {
-                        let midY = (particles[i].y + particles[j].y) / 2;
-                        lineRGB = getTwilightContrastingRGB(midY / height);
-                    }
-
-                    let lineActiveGlow = Math.max(executeGlowIntensity, particles[i].glow, particles[j].glow);
-
+            class Particle {
+                constructor() { this.init(); }
+                init() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.vx = (Math.random() - 0.5) * 0.6;
+                    this.vy = (Math.random() - 0.5) * 0.6;
+                    // REFINED PARTICLE SIZE: Much smaller dots for a subtle look
+                    this.radius = Math.random() * 0.8 + 0.2; 
+                    this.color = canvasColors[Math.floor(Math.random() * canvasColors.length)];
+                }
+                update() {
+                    this.x += this.vx; this.y += this.vy;
+                    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                }
+                draw() {
                     ctx.beginPath();
-                    ctx.moveTo(particles[i].x, particles[i].y);
-                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    ctx.shadowBlur = 3;
+                    ctx.shadowColor = this.color;
+                }
+            }
+
+            for (let i = 0; i < PARTICLE_COUNT; i++) { particles.push(new Particle()); }
+            updateCanvasColors(); // Initialize colors based on active theme
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    let p1 = particles[i];
+                    p1.update();
+                    ctx.shadowBlur = 0; 
                     
-                    if (lineActiveGlow > 0.05) {
-                        ctx.strokeStyle = `rgba(${glowRGB}, ${currentLineAlpha * alphaRatio + (lineActiveGlow * 0.4)})`;
-                        ctx.lineWidth = 1 + (lineActiveGlow * 1.5);
-                    } else {
-                        ctx.strokeStyle = `rgba(${lineRGB}, ${currentLineAlpha * alphaRatio})`;
-                        ctx.lineWidth = 1;
+                    for (let j = i + 1; j < PARTICLE_COUNT; j++) {
+                        let p2 = particles[j];
+                        let dx = p1.x - p2.x; let dy = p1.y - p2.y;
+                        let dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < CONNECT_DISTANCE) {
+                            ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+                            let opacity = 1 - (dist / CONNECT_DISTANCE);
+                            
+                            ctx.strokeStyle = p1.color; 
+                            ctx.globalAlpha = opacity * 0.4;
+                            ctx.lineWidth = 0.8; // Thinner lines
+                            ctx.stroke();
+                            ctx.globalAlpha = 1.0; 
+                        }
                     }
-                    ctx.stroke();
+                    
+                    if (mouse.x !== null) {
+                        let dxMouse = p1.x - mouse.x; let dyMouse = p1.y - mouse.y;
+                        let distMouse = Math.sqrt(dxMouse*dxMouse + dyMouse*dyMouse);
+                        if (distMouse < MOUSE_CONNECT_DISTANCE) {
+                            ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(mouse.x, mouse.y);
+                            let opacityMouse = 1 - (distMouse / MOUSE_CONNECT_DISTANCE);
+                            ctx.strokeStyle = p1.color;
+                            ctx.globalAlpha = opacityMouse * 0.6;
+                            ctx.lineWidth = 1.2;
+                            ctx.stroke();
+                            ctx.globalAlpha = 1.0;
+                        }
+                    }
+                    p1.draw(); 
+                }
+                requestAnimationFrame(draw);
+            }
+            draw();
+        })();
 
-                    for(let k = j + 1; k < particles.length; k++) {
-                        let dx2 = particles[i].x - particles[k].x;
-                        let dy2 = particles[i].y - particles[k].y;
-                        let distSq2 = dx2*dx2 + dy2*dy2;
+        // --- UI TOGGLES ---
+        function toggleDB() {
+            const wrapper = document.getElementById('dbContentWrapper');
+            const chevron = document.getElementById('dbChevron');
+            wrapper.classList.toggle('open');
+            chevron.classList.toggle('open');
+        }
 
-                        if (distSq2 < maxDistSq) {
-                            let dx3 = particles[j].x - particles[k].x;
-                            let dy3 = particles[j].y - particles[k].y;
-                            let distSq3 = dx3*dx3 + dy3*dy3;
+        function triggerAnalyze() {
+            const btn = document.getElementById('analyzeBtn');
+            btn.classList.remove('btn-clicked');
+            void btn.offsetWidth; 
+            btn.classList.add('btn-clicked');
+            setTimeout(parseLogs, 100); 
+        }
 
-                            if (distSq3 < maxDistSq) {
-                                
-                                let polyRGB = baseRGB;
-                                if (theme === 'twilight') {
-                                    let polyMidY = (particles[i].y + particles[j].y + particles[k].y) / 3;
-                                    polyRGB = getTwilightContrastingRGB(polyMidY / height);
-                                }
+        // --- LOCAL STORAGE MAPPING LOGIC ---
+        let localMappings = {};
 
-                                let polyActiveGlow = Math.max(executeGlowIntensity, particles[i].glow, particles[j].glow, particles[k].glow);
+        window.onload = function() {
+            // Load Theme
+            const savedTheme = localStorage.getItem('n0c_owl_theme') || 'default';
+            if(savedTheme !== 'default') {
+                document.body.classList.add(`theme-${savedTheme}`);
+                document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
+                
+                // Set the correct menu item as active based on loaded theme
+                const options = document.querySelectorAll('.theme-option');
+                if(savedTheme === 'industrial') options[1].classList.add('active');
+                if(savedTheme === 'vapor') options[2].classList.add('active');
+            }
 
-                                ctx.beginPath();
-                                ctx.moveTo(particles[i].x, particles[i].y);
-                                ctx.lineTo(particles[j].x, particles[j].y);
-                                ctx.lineTo(particles[k].x, particles[k].y);
-                                ctx.closePath();
+            try {
+                const saved = localStorage.getItem('bgp_ip_mappings');
+                if (saved) {
+                    document.getElementById('mappingInput').value = saved;
+                    buildMappingDictionary(saved);
+                }
+            } catch (e) { console.error("Local storage is disabled."); }
+        };
 
-                                let maxD = Math.max(distSq, distSq2, distSq3);
-                                let polyA = (1 - (Math.sqrt(maxD) / maxDist)) * currentPolyAlpha;
-                                
-                                if (polyActiveGlow > 0.05) {
-                                    ctx.fillStyle = `rgba(${glowRGB}, ${polyA + (polyActiveGlow * 0.25)})`;
-                                } else {
-                                    ctx.fillStyle = `rgba(${polyRGB}, ${polyA})`;
-                                }
-                                ctx.fill();
-                            }
+        function buildMappingDictionary(rawText) {
+            localMappings = {};
+            const lines = rawText.split('\n');
+            const ipRegex = /\b(\d{1,3}(?:\.\d{1,3}){3})\b/;
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+
+                const match = line.match(ipRegex);
+                if (match) {
+                    const ip = match[1];
+                    const parts = line.split(ip);
+                    let leftPart = parts[0] || '';
+                    const rightPart = parts[1] || '';
+
+                    let siteCode = null; let siteType = null;
+                    const siteMatch = leftPart.match(/^\[([A-Z]+)\s+(DC|DIA)\]/i);
+                    if (siteMatch) {
+                        siteCode = siteMatch[1].toUpperCase();
+                        siteType = siteMatch[2].toUpperCase();
+                        leftPart = leftPart.substring(siteMatch[0].length).trim();
+                        leftPart = leftPart.replace(/^-/, '').trim();
+                    }
+
+                    let leftClean = leftPart.replace(/[\[\]]/g, ' ').trim().replace(/-$/, '').trim(); 
+                    let leftTokens = leftClean.split(/\s+-\s+/).filter(t => t);
+                    
+                    let nickname = ''; let realHostname = '';
+                    if (leftTokens.length >= 2) {
+                        realHostname = leftTokens.pop(); 
+                        nickname = leftTokens.join(' - '); 
+                    } else if (leftTokens.length === 1) {
+                        realHostname = leftTokens[0]; 
+                    }
+
+                    const isp = rightPart.replace(/[\[\]]/g, '').replace(/^[-,\s]+|[-,\s]+$/g, '').trim();
+                    if (nickname || realHostname || isp || siteCode) {
+                        localMappings[ip] = { siteCode, siteType, nickname, realHostname, isp };
+                    }
+                }
+            });
+        }
+
+        function saveMappings() {
+            const rawText = document.getElementById('mappingInput').value;
+            try {
+                localStorage.setItem('bgp_ip_mappings', rawText);
+                buildMappingDictionary(rawText);
+                const alertBox = document.getElementById('mappingAlert');
+                alertBox.innerText = "> PROTOCOL: DB_MAPPING_COMMITTED.";
+                alertBox.style.display = "block";
+                setTimeout(() => alertBox.style.display = "none", 3000);
+            } catch (e) { alert("Error saving data."); }
+        }
+
+        function clearMappings() {
+            if(confirm("EXECUTE TOTAL FLUSH OF LOCAL DATABASE?")) {
+                localStorage.removeItem('bgp_ip_mappings');
+                document.getElementById('mappingInput').value = "";
+                localMappings = {};
+                const alertBox = document.getElementById('mappingAlert');
+                alertBox.innerText = "> PROTOCOL: DB_MAPPING_FLUSHED.";
+                alertBox.style.display = "block";
+                setTimeout(() => alertBox.style.display = "none", 3000);
+            }
+        }
+
+        // --- BGP PARSER LOGIC ---
+        function parseLogs() {
+            const rawText = document.getElementById('logInput').value;
+            const lines = rawText.split('\n');
+            const peers = {};
+            let isUTC = false; let logYear = new Date().getFullYear();
+            let currentHostname = "Unknown-Router"; 
+
+            lines.forEach(line => {
+                const hostMatch = line.match(/^([A-Za-z0-9_-]+)#/);
+                if (hostMatch) currentHostname = hostMatch[1];
+                const clockMatch = line.match(/\d{2}:\d{2}:\d{2}(?:\.\d{3})?\s+([A-Z]{3,4})\s+[A-Za-z]{3}\s+[A-Za-z]{3}\s+\d+\s+(\d{4})/);
+                if (clockMatch) {
+                    if (clockMatch[1] === 'UTC') isUTC = true;
+                    logYear = clockMatch[2];
+                }
+            });
+
+            const alertBox = document.getElementById('timezoneAlert');
+            if (isUTC) {
+                alertBox.style.display = 'block';
+                alertBox.innerText = `> UTC CLOCK DETECTED. APPLYING PHT TEMPORAL OFFSET (+8h)...`;
+            } else { alertBox.style.display = 'none'; }
+
+            // UPDATED REGEX: Handles inline year, timezone, and arbitrary string insertions (like VRF)
+            lines.forEach(line => {
+                line = line.trim();
+                const hostMatch = line.match(/^([A-Za-z0-9_-]+)#/);
+                if (hostMatch) currentHostname = hostMatch[1];
+
+                const logMatch = line.match(/([A-Z][a-z]{2}\s+\d+(?:\s+\d{4})?\s+\d{2}:\d{2}:\d{2}(?:\.\d{3})?(?:\s+[A-Z]{3,4})?):?\s+%BGP-5-ADJCHANGE: neighbor (\d{1,3}(?:\.\d{1,3}){3}).*?\b(Down|Up)\b/i);
+                
+                if (logMatch) {
+                    const timeStr = logMatch[1]; 
+                    const ip = logMatch[2]; 
+                    // Normalize event type capitalization since we used /i flag
+                    const eventType = logMatch[3].charAt(0).toUpperCase() + logMatch[3].slice(1).toLowerCase(); 
+                    
+                    const cleanTimeStr = timeStr.replace(/\s+/g, ' '); 
+                    
+                    let parseStr = cleanTimeStr;
+                    if (!/\d{4}/.test(parseStr)) parseStr += ` ${logYear}`;
+                    if (isUTC && !/UTC/.test(parseStr)) parseStr += " UTC";
+                    
+                    const dateObj = new Date(parseStr);
+
+                    if (!peers[ip]) {
+                        peers[ip] = { ip, routerHostname: currentHostname, flapInstances: 0, rawDowns: 0, rawUps: 0, currentDownTime: null, currentDownStr: null, flaps: [] };
+                    } else { peers[ip].routerHostname = currentHostname; }
+
+                    if (eventType === 'Down') {
+                        peers[ip].rawDowns++;
+                        if (!peers[ip].currentDownTime) {
+                            peers[ip].flapInstances++; peers[ip].currentDownTime = dateObj; peers[ip].currentDownStr = timeStr;
+                        }
+                    } else if (eventType === 'Up') {
+                        peers[ip].rawUps++;
+                        if (peers[ip].currentDownTime) {
+                            const durationMs = dateObj.getTime() - peers[ip].currentDownTime.getTime();
+                            peers[ip].flaps.push({ downDate: peers[ip].currentDownTime, downStr: peers[ip].currentDownStr, upDate: dateObj, upStr: timeStr, duration: durationMs });
+                            peers[ip].currentDownTime = null; 
                         }
                     }
                 }
-            }
-        }
-        requestAnimationFrame(animateCanvas);
-    }
-    animateCanvas();
-
-
-    // --- LOCAL DATABASE LOGIC ---
-    let switchDB = {};
-
-    window.addEventListener('DOMContentLoaded', () => {
-        const savedDB = localStorage.getItem('noccat_db');
-        if (savedDB) {
-            parseToDB(savedDB);
-            document.getElementById('dbInput').value = generateDBString();
-            document.getElementById('dbStatus').innerText = `STATUS: LOADED_${Object.keys(switchDB).length}_HOSTS`;
-        }
-    });
-
-    function parseToDB(text) {
-        const lines = text.split('\n');
-        const ipRegex = /\b(?:\d{1,3}\.){3}\d{1,3}\b/;
-
-        lines.forEach(line => {
-            let cleanLine = line.trim();
-            if (!cleanLine) return;
-
-            let ipMatch = cleanLine.match(ipRegex);
-            if (!ipMatch) return; 
-
-            let hostMatch = cleanLine.split(/[,\t\s]+/); 
-            if (hostMatch && hostMatch.length > 0) {
-                let host = hostMatch[0].toLowerCase();
-                switchDB[host] = ipMatch[0]; 
-            }
-        });
-    }
-
-    function generateDBString() {
-        let mergedDBArray = [];
-        for (let host in switchDB) {
-            mergedDBArray.push(`${host.toUpperCase()}, ${switchDB[host]}`);
-        }
-        mergedDBArray.sort(); 
-        return mergedDBArray.join('\n');
-    }
-
-    function saveDB() {
-        const dbText = document.getElementById('dbInput').value;
-        parseToDB(dbText);
-        const mergedString = generateDBString();
-        
-        localStorage.setItem('noccat_db', mergedString);
-        document.getElementById('dbInput').value = mergedString;
-
-        const count = Object.keys(switchDB).length;
-        const statusElem = document.getElementById('dbStatus');
-        statusElem.innerText = `STATUS: MERGED_&_SAVED_${count}_HOSTS`;
-        statusElem.style.color = 'var(--neon-green)';
-        setTimeout(() => { statusElem.style.color = 'var(--accent-green)'; }, 2000);
-        
-        updateDynamicHUD();
-    }
-
-    function clearDB() {
-        if(confirm("Are you sure you want to wipe the Local Browser Database?")) {
-            localStorage.removeItem('noccat_db');
-            document.getElementById('dbInput').value = "";
-            switchDB = {};
-            document.getElementById('dbStatus').innerText = "STATUS: MEMORY_WIPED";
-            
-            document.getElementById('deviceHud').classList.remove('visible');
-        }
-    }
-
-    // --- UI TOGGLES & AUTO EXPAND ---
-    function toggleReadme() {
-        const wrapper = document.getElementById('readmeWrapper');
-        const btn = document.getElementById('readmeBtn');
-        wrapper.classList.toggle('expanded');
-        btn.innerText = wrapper.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
-    }
-
-    function toggleExpand() {
-        const textarea = document.getElementById('configInput');
-        const btn = document.getElementById('expandBtn');
-        
-        textarea.style.height = ''; 
-        textarea.classList.toggle('expanded');
-        btn.innerText = textarea.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
-        
-        if (!textarea.classList.contains('expanded') && textarea.value.split('\n').length > 8) {
-            textarea.dataset.manualCollapse = "true";
-        } else {
-            textarea.dataset.manualCollapse = "";
-        }
-    }
-
-    function handleConfigInput() {
-        updateDynamicHUD();
-        
-        const textarea = document.getElementById('configInput');
-        const btn = document.getElementById('expandBtn');
-        const lineCount = textarea.value.split('\n').length;
-        
-        if (lineCount > 8) {
-            if (!textarea.classList.contains('expanded') && textarea.dataset.manualCollapse !== "true") {
-                textarea.classList.add('expanded');
-                btn.innerText = "[ COLLAPSE ]";
-            }
-        } else {
-            if (textarea.classList.contains('expanded') && textarea.dataset.manualCollapse !== "true") {
-                textarea.classList.remove('expanded');
-                btn.innerText = "[ EXPAND ]";
-            }
-        }
-    }
-
-    function toggleWrapper(wrapperId, btnId, name) {
-        const wrapper = document.getElementById(wrapperId);
-        const btn = document.getElementById(btnId);
-        wrapper.classList.toggle('expanded');
-        btn.innerText = wrapper.classList.contains('expanded') ? `[ CLOSE_${name} ]` : `[ ${name} ]`;
-    }
-
-    // --- DYNAMIC HUD SCANNER ---
-    function updateDynamicHUD() {
-        const text = document.getElementById('configInput').value;
-        const deviceHud = document.getElementById('deviceHud');
-        
-        if (!text.trim()) {
-            deviceHud.innerHTML = 'Waiting for target...';
-            deviceHud.classList.remove('visible');
-            return;
-        }
-
-        const uniqueHosts = new Set();
-        
-        // Hostnames scanner
-        const switchRegex = /[a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*/gi;
-        let match;
-        while ((match = switchRegex.exec(text)) !== null) { 
-            uniqueHosts.add(match[0].toUpperCase()); 
-        }
-
-        // Table scanner
-        const tableRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
-        while ((match = tableRegex.exec(text)) !== null) {
-            uniqueHosts.add(match[1].toUpperCase());
-        }
-
-        // Hyphen scanner
-        const hyphenRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+)[\s\t]+(\d+)/gi;
-        while ((match = hyphenRegex.exec(text)) !== null) {
-            uniqueHosts.add(match[1].toUpperCase());
-        }
-        
-        // Attached format scanner (e.g. CO-ESP-ACC02M02-2/0/38)
-        const attachedRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+(?:\/\d+)+)/gi;
-        while ((match = attachedRegex.exec(text)) !== null) {
-            uniqueHosts.add(match[1].toUpperCase());
-        }
-
-        const hostsArray = Array.from(uniqueHosts).sort();
-
-        if (hostsArray.length > 0) {
-            let hudHTML = `<span style="opacity: 0.7; margin-right: 5px;">Target${hostsArray.length > 1 ? 's' : ''}:</span>`;
-            
-            let hostTags = hostsArray.map(hostName => {
-                const lowerHost = hostName.toLowerCase();
-                let targetIp = switchDB[lowerHost] ? switchDB[lowerHost] : "NOT_IN_DB";
-                let ipColor = targetIp === 'NOT_IN_DB' ? 'var(--hl-orange)' : 'var(--neon-green)';
-                
-                return `<span class="host-tag"><strong>${hostName}</strong> <span class="ip-highlight" style="color: ${ipColor}">${targetIp}</span></span>`;
             });
-            
-            deviceHud.innerHTML = hudHTML + hostTags.join(' ');
-            deviceHud.classList.add('visible');
-        } else {
-            deviceHud.innerHTML = 'Waiting for target...';
-            deviceHud.classList.remove('visible');
-        }
-    }
 
-    // --- CORE LOGIC ---
-    let globalSwitches = [];
-    let globalInterfaces = [];
-
-    function clearText() {
-        const textarea = document.getElementById('configInput');
-        textarea.value = '';
-        textarea.dataset.manualCollapse = ""; 
-        
-        if(textarea.classList.contains('expanded')) {
-             textarea.classList.remove('expanded');
-             document.getElementById('expandBtn').innerText = "[ EXPAND ]";
+            renderTable(peers, isUTC);
         }
 
-        document.getElementById('output').innerHTML = `<div style="font-family: 'Courier New', Courier, monospace; color: var(--line-num-text); font-size: calc(13px * var(--font-scale));">-- system_idle --</div>`;
-        document.getElementById('filterInput').style.display = 'none';
-        document.getElementById('filterInput').value = '';
-        document.getElementById('statusMsg').style.display = 'none';
-        document.getElementById('deviceHud').classList.remove('visible');
-        
-        globalSwitches = [];
-        globalInterfaces = [];
-    }
+        // --- UTILS ---
+        function formatDuration(ms) {
+            if (isNaN(ms) || ms < 0) return "Unknown";
+            if (ms < 1000) return `${ms}ms`;
+            let sec = ms / 1000;
+            if (sec < 60) return `${sec.toFixed(3)}s`;
+            let min = Math.floor(sec / 60);
+            let remSec = (sec % 60).toFixed(3);
+            if (min < 60) return `${min}m ${remSec}s`;
+            let hr = Math.floor(min / 60);
+            let remMin = min % 60;
+            return `${hr}h ${remMin}m ${remSec}s`;
+        }
 
-    function copyContent(hiddenElementId, btnElement) {
-        const textToCopy = document.getElementById(hiddenElementId).value;
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            const originalText = btnElement.innerText;
-            btnElement.innerText = "COPIED";
-            btnElement.style.background = "var(--accent-green)"; 
-            setTimeout(() => {
-                btnElement.innerText = originalText;
-                btnElement.style.background = ""; 
-            }, 2000);
-        }).catch(err => alert("Failed to copy text."));
-    }
+        function formatToPHT(dateObj) {
+            if (isNaN(dateObj)) return "Invalid Date";
+            const phtDate = new Date(dateObj.getTime() + (8 * 60 * 60 * 1000));
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const mon = months[phtDate.getUTCMonth()];
+            const day = String(phtDate.getUTCDate()).padStart(2, '0');
+            const hr = String(phtDate.getUTCHours()).padStart(2, '0');
+            const min = String(phtDate.getUTCMinutes()).padStart(2, '0');
+            const sec = String(phtDate.getUTCSeconds()).padStart(2, '0');
+            const ms = String(phtDate.getUTCMilliseconds()).padStart(3, '0');
+            return `${mon} ${day} ${hr}:${min}:${sec}.${ms} PHT`;
+        }
 
-    function processText() {
-        if (typeof triggerExecuteEffect === 'function') triggerExecuteEffect();
+        function getOrdinal(n) {
+            if (n % 100 >= 11 && n % 100 <= 13) return n + "th";
+            switch (n % 10) { case 1: return n + "st"; case 2: return n + "nd"; case 3: return n + "rd"; default: return n + "th"; }
+        }
 
-        const text = document.getElementById('configInput').value;
-        if (!text.trim()) return; 
-        
-        const lines = text.split('\n');
-        const switchesSet = new Set();
-        const interfaceCounts = new Map(); 
-        let globalContextSwitch = "[ SWITCH_NOT_FOUND ]";
+        // --- RENDER TABLE ---
+        function renderTable(peers, isUTC) {
+            const resultsArea = document.getElementById('resultsArea');
+            if (Object.keys(peers).length === 0) {
+                resultsArea.innerHTML = '<p style="color: var(--danger-color); margin-top: 20px;">> ERR: NULL_INPUT_OR_NO_VALID_BGP_DATA.</p>';
+                return;
+            }
 
-        lines.forEach(line => {
-            let currentSwitchForLine = globalContextSwitch;
-            
-            // Smart Tag Generation based on line content
-            let lineTags = [];
-            if (/(prod|production)/i.test(line)) lineTags.push('PROD');
-            if (/training(\sroom)?/i.test(line)) lineTags.push('TRAINING');
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 30%;">TARGET_NODES</th>
+                            <th style="width: 15%;">STATUS_CODE</th>
+                            <th style="width: 55%;">FAULT_LOG_AND_Temporal_DELTA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
 
-            // Helper to add ports to map and inject tags
-            function addPortToMap(sw, iface) {
-                const compositeKey = `${sw}|${iface}`;
-                let existing = interfaceCounts.get(compositeKey);
-                if (existing) {
-                    existing.count += 1;
-                    lineTags.forEach(t => { if (!existing.tags.includes(t)) existing.tags.push(t); });
+            let rowIndex = 0;
+
+            for (const ip in peers) {
+                const peer = peers[ip];
+                const flapCount = peer.flapInstances;
+                const mapping = localMappings[peer.ip];
+                
+                let primaryNameHtml = peer.ip; 
+                let subDetails = ''; let siteBadge = ''; let glowClass = '';
+
+                if (mapping) {
+                    if (mapping.siteCode && mapping.siteType) {
+                        siteBadge = `<span class="site-badge">[${mapping.siteCode} ${mapping.siteType}]</span>`;
+                        if (mapping.siteType === 'DC') {
+                            if (['PH', 'TWN', 'MY'].includes(mapping.siteCode)) glowClass = 'glow-accent1';
+                            else if (['IN'].includes(mapping.siteCode)) glowClass = 'glow-accent2';
+                            else if (['US', 'MX', 'GR'].includes(mapping.siteCode)) glowClass = 'glow-accent1';
+                            else if (['CO'].includes(mapping.siteCode)) glowClass = 'glow-accent2';
+                        }
+                    }
+
+                    if (mapping.nickname || mapping.realHostname) {
+                        let nicknameHtml = mapping.nickname;
+                        if (glowClass && nicknameHtml) nicknameHtml = `<span class="${glowClass}">${nicknameHtml}</span>`;
+
+                        if (mapping.nickname && mapping.realHostname) {
+                            primaryNameHtml = `${siteBadge}${nicknameHtml} <br><span style="font-size: 13px; color: var(--text-muted); font-weight: normal;">SYS: ${mapping.realHostname}</span>`;
+                        } else if (mapping.nickname) {
+                            primaryNameHtml = `${siteBadge}${nicknameHtml}`;
+                        } else if (mapping.realHostname) {
+                            primaryNameHtml = `${siteBadge}${mapping.realHostname}`;
+                        }
+
+                        subDetails += `<br><span style="color: var(--text-muted); font-size: 12px;">IP: ${peer.ip}</span>`;
+                        if (mapping.isp) subDetails += ` | <span style="color: var(--text-muted); font-size: 12px;">ISP: ${mapping.isp}</span>`;
+                    } else {
+                        primaryNameHtml = `${siteBadge}${peer.ip}`;
+                        if (mapping.isp) subDetails += `<br><span style="color: var(--text-muted); font-size: 12px;">ISP: ${mapping.isp}</span>`;
+                    }
+                }
+
+                let statusDisplayHtml = '';
+                if (peer.currentDownTime) {
+                    statusDisplayHtml = `<span class="flap-critical">⚠️ HARD_DOWN</span>`;
+                    if (flapCount > 1) {
+                        statusDisplayHtml += `<br><span style="color: var(--text-muted); font-size: 11px; display:inline-block; margin-top:2px;">(PREV_FAULTS: ${flapCount - 1})</span>`;
+                    }
                 } else {
-                    interfaceCounts.set(compositeKey, { count: 1, tags: [...lineTags] });
+                    let instanceFlapClass = '';
+                    if (flapCount === 1) instanceFlapClass = 'flap-1';
+                    else if (flapCount === 2) instanceFlapClass = 'flap-2';
+                    else if (flapCount >= 3) instanceFlapClass = 'flap-critical';
+
+                    const instanceText = flapCount === 1 ? 'FAULT' : 'FAULTS';
+                    statusDisplayHtml = `<span class="${instanceFlapClass}">${flapCount} ${instanceText}</span>`;
                 }
-                switchesSet.add(sw);
-            }
-            
-            // 1. Scan for Standard Hostnames
-            const switchRegex = /[a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*/i;
-            const switchMatch = line.match(switchRegex);
-            if (switchMatch) {
-                currentSwitchForLine = switchMatch[0].toUpperCase();
-                globalContextSwitch = currentSwitchForLine;
-            }
 
-            let processedLine = line;
-
-            // 1.5 Scan for direct Attached Format (e.g. CO-ESP-ACC02M02-2/0/38)
-            const attachedRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+(?:\/\d+)+)/gi;
-            let matchAttached;
-            while ((matchAttached = attachedRegex.exec(processedLine)) !== null) {
-                const sw = matchAttached[1].toUpperCase();
-                const iface = "Gi" + matchAttached[2];
-                currentSwitchForLine = sw; 
-                globalContextSwitch = sw;
-                addPortToMap(sw, iface);
-            }
-            processedLine = processedLine.replace(attachedRegex, '');
-
-            function addPort(rawType, prefix, portNum) {
-                let cleanType = rawType.replace(/^gigabitethernet/i, 'Gi')
-                                       .replace(/^gl/i, 'Gi') 
-                                       .replace(/^fastethernet/i, 'Fa')
-                                       .replace(/^tengigabitethernet/i, 'Te');
-                cleanType = cleanType.charAt(0).toUpperCase() + cleanType.slice(1).toLowerCase();
-                
-                const iface = cleanType + prefix + portNum;
-                addPortToMap(currentSwitchForLine, iface);
-            }
-
-            // 2. Scan for Full Port Ranges 
-            const fullRangeRegex = /(gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)(\d+)\s*[-–—]\s*(?:gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(?:\d+(?:\/\d+)+\/)(\d+)/gi;
-            let matchFull;
-            while ((matchFull = fullRangeRegex.exec(processedLine)) !== null) {
-                const type = matchFull[1];
-                const prefix = matchFull[2];
-                const startPort = parseInt(matchFull[3], 10);
-                const endPort = parseInt(matchFull[4], 10);
-                
-                if (startPort <= endPort && (endPort - startPort) <= 100) { 
-                    for (let i = startPort; i <= endPort; i++) {
-                        addPort(type, prefix, i);
+                let timelineHtml = '<ul class="flap-list">';
+                peer.flaps.forEach((flap, idx) => {
+                    const displayTime = isUTC ? formatToPHT(flap.downDate) : flap.downStr;
+                    const displayUpTime = isUTC ? formatToPHT(flap.upDate) : flap.upStr;
+                    
+                    let intervalHtml = '';
+                    if (idx > 0) {
+                        const prevUpDate = peer.flaps[idx - 1].upDate;
+                        const intervalMs = flap.downDate.getTime() - prevUpDate.getTime();
+                        intervalHtml = `
+                            <div class="interval-badge">
+                                UPTIME_DELTA: <span style="color: var(--warning-color);">${formatDuration(intervalMs)}</span>
+                            </div><br>`;
                     }
-                }
-            }
-            processedLine = processedLine.replace(fullRangeRegex, ''); 
 
-            // 3. Scan for Standard, Commas, and Shorthand Ranges 
-            const shortHandRegex = /(gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)([\d\s,\-–—]+)/gi;
-            let matchShort;
-            while ((matchShort = shortHandRegex.exec(processedLine)) !== null) { 
-                const type = matchShort[1]; 
-                const prefix = matchShort[2]; 
-                const listStr = matchShort[3]; 
-                
-                const parts = listStr.split(','); 
-                parts.forEach(part => {
-                    const cleanPart = part.trim();
-                    if (!cleanPart) return;
-
-                    if (/[-–—]/.test(cleanPart)) {
-                        const rangeParts = cleanPart.split(/[-–—]/);
-                        if (rangeParts.length === 2) {
-                            const start = parseInt(rangeParts[0].trim(), 10);
-                            const end = parseInt(rangeParts[1].trim(), 10);
-                            if (!isNaN(start) && !isNaN(end) && start <= end && (end - start) <= 100) {
-                                for (let i = start; i <= end; i++) {
-                                    addPort(type, prefix, i);
-                                }
-                            }
-                        }
-                    } else {
-                        const singlePort = parseInt(cleanPart, 10);
-                        if (!isNaN(singlePort)) {
-                            addPort(type, prefix, singlePort);
-                        }
-                    }
+                    timelineHtml += `
+                        <li>
+                            ${intervalHtml}
+                            <div class="instance-badge">INCIDENT_${getOrdinal(idx + 1)}</div><br>
+                            <span class="status-down">DN_EVENT:</span> ${displayTime} <br>
+                            <span class="status-up">UP_EVENT:</span> ${displayUpTime} <br>
+                            <span style="color:var(--text-muted);">OUTAGE_DURATION: <strong style="color:var(--text-main);">${formatDuration(flap.duration)}</strong></span>
+                        </li>`;
                 });
-            }
-            processedLine = processedLine.replace(shortHandRegex, '');
 
-            // 4. Scan for table formats
-            const tableRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
-            let matchTable;
-            while ((matchTable = tableRegex.exec(processedLine)) !== null) {
-                const sw = matchTable[1].toUpperCase();
-                const iface = `Gi${matchTable[2]}/0/${matchTable[3]}`;
-                globalContextSwitch = sw;
-                addPortToMap(sw, iface);
-            }
+                if (peer.currentDownTime) {
+                    const displayTime = isUTC ? formatToPHT(peer.currentDownTime) : peer.currentDownStr;
+                    
+                    let intervalHtml = '';
+                    if (peer.flaps.length > 0) {
+                        const prevUpDate = peer.flaps[peer.flaps.length - 1].upDate;
+                        const intervalMs = peer.currentDownTime.getTime() - prevUpDate.getTime();
+                        intervalHtml = `
+                            <div class="interval-badge">
+                                UPTIME_DELTA: <span style="color: var(--warning-color);">${formatDuration(intervalMs)}</span>
+                            </div><br>`;
+                    }
 
-            // 5. Scan for hyphenated formats
-            const hyphenRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+)[\s\t]+(\d+)/gi;
-            let matchHyphen;
-            while ((matchHyphen = hyphenRegex.exec(processedLine)) !== null) {
-                const sw = matchHyphen[1].toUpperCase();
-                const iface = `Gi${matchHyphen[2]}/0/${matchHyphen[3]}`;
-                globalContextSwitch = sw;
-                addPortToMap(sw, iface);
-            }
-        });
-
-        globalSwitches = Array.from(switchesSet).sort();
-        globalInterfaces = [];
-
-        for (let [key, data] of interfaceCounts.entries()) {
-            const [sw, iface] = key.split('|');
-            globalInterfaces.push({ sw: sw, iface: iface, count: data.count, tags: data.tags });
-        }
-
-        globalInterfaces.sort((a, b) => {
-            const partsA = a.iface.substring(2).split('/').map(Number);
-            const partsB = b.iface.substring(2).split('/').map(Number);
-            for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
-                const numA = partsA[i] || 0;
-                const numB = partsB[i] || 0;
-                if (numA !== numB) { return numA - numB; }
-            }
-            return a.sw.localeCompare(b.sw);
-        });
-
-        document.getElementById('filterInput').style.display = 'block';
-        document.getElementById('filterInput').value = '';
-        
-        renderOutput();
-    }
-
-    function updateFilteredHUD(switches) {
-        const deviceHud = document.getElementById('deviceHud');
-        const validSwitches = switches.filter(sw => sw !== "[ SWITCH_NOT_FOUND ]");
-        
-        if (validSwitches.length > 0) {
-            let hudHTML = `<span style="opacity: 0.7; margin-right: 5px;">Target${validSwitches.length > 1 ? 's' : ''}:</span>`;
-            
-            let hostTags = validSwitches.map(hostName => {
-                const lowerHost = hostName.toLowerCase();
-                let targetIp = switchDB[lowerHost] ? switchDB[lowerHost] : "NOT_IN_DB";
-                let ipColor = targetIp === 'NOT_IN_DB' ? 'var(--hl-orange)' : 'var(--neon-green)';
-                
-                return `<span class="host-tag"><strong>${hostName}</strong> <span class="ip-highlight" style="color: ${ipColor}">${targetIp}</span></span>`;
-            });
-            
-            deviceHud.innerHTML = hudHTML + hostTags.join(' ');
-            deviceHud.classList.add('visible');
-        } else {
-            deviceHud.innerHTML = 'Waiting for target...';
-            deviceHud.classList.remove('visible');
-        }
-    }
-
-    function renderOutput() {
-        const rawFilterStr = document.getElementById('filterInput').value.trim().toLowerCase();
-        
-        const filterStr = rawFilterStr.replace(/gigabitethernet/g, 'gi').replace(/gl/g, 'gi');
-
-        const outputDiv = document.getElementById('output');
-        let htmlOutput = "";
-
-        const filteredSwitches = globalSwitches.filter(sw => sw.toLowerCase().includes(filterStr));
-        const filteredInterfaces = globalInterfaces.filter(item => {
-            return item.iface.toLowerCase().includes(filterStr) || item.sw.toLowerCase().includes(filterStr);
-        });
-
-        updateFilteredHUD(filteredSwitches);
-
-        let duplicateCount = 0;
-        for (let item of filteredInterfaces) {
-            if (item.count > 1) duplicateCount++;
-        }
-
-        if (duplicateCount > 0) {
-            htmlOutput += `<div class="warning-box" style="display:block;"><strong>////// WARNING: DUPLICATES DETECTED //////</strong><br>Found ${duplicateCount} interface(s) that appeared multiple times on the SAME switch.<br><em>They are highlighted in red below.</em></div>`;
-        }
-
-        if (filteredInterfaces.length > 0) {
-            let switchesHtml = ""; let rawInterfacesHtml = ""; let shRunHtml = ""; let shIntStatusHtml = "";
-            let switchesText = ""; let rawInterfacesText = ""; let shRunText = ""; let shIntStatusText = "";
-
-            filteredInterfaces.forEach((item, index) => {
-                const isDup = item.count > 1;
-                const tooltipText = isDup ? `Duplicate: Found ${item.count} times` : ``;
-                const spanOpen = isDup ? `<span class="highlight-dup line-item" title="${tooltipText}">` : `<span class="line-item" title="${tooltipText}">`;
-                const spanClose = `</span>`;
-
-                let tagsHtml = "";
-                if (item.tags && item.tags.length > 0) {
-                    item.tags.forEach(tag => {
-                        if (tag === 'PROD') tagsHtml += `<span class="tag-badge tag-prod">PROD</span>`;
-                        if (tag === 'TRAINING') tagsHtml += `<span class="tag-badge tag-train">TRAIN</span>`;
-                    });
+                    timelineHtml += `
+                        <li>
+                            ${intervalHtml}
+                            <div class="instance-badge" style="background-color: transparent; color: var(--danger-color); border: 1px solid var(--danger-color);">INCIDENT_${getOrdinal(peer.flaps.length + 1)} (ACTIVE)</div><br>
+                            <span class="status-down">DN_EVENT:</span> ${displayTime} <br>
+                            > <em>AWAITING UPSTREAM RECOVERY LOG...</em>
+                        </li>`;
                 }
-
-                let displaySw = item.sw;
-                if (item.sw !== "[ SWITCH_NOT_FOUND ]" && switchDB[item.sw.toLowerCase()]) {
-                    displaySw = `${item.sw} <span style="opacity:0.5; font-size:calc(10.5px * var(--font-scale));">[${switchDB[item.sw.toLowerCase()]}]</span>`;
+                if (peer.flaps.length === 0 && !peer.currentDownTime) {
+                    timelineHtml += `<li><em>> ERR: INCOMPLETE_DATASET. UP LOGS DETECTED WITHOUT PRECEDING DOWN LOGS. Duration cannot be calculated.</em></li>`;
                 }
-                displaySw += tagsHtml;
+                timelineHtml += '</ul>';
 
-                switchesHtml += `${spanOpen}${displaySw}${spanClose}`;
-                rawInterfacesHtml += `${spanOpen}${item.iface}${spanClose}`;
-                shRunHtml += `${spanOpen}sh run int ${item.iface}${spanClose}`;
-                shIntStatusHtml += `${spanOpen}sh int ${item.iface} status${spanClose}`;
+                html += `
+                    <tr class="animated-row" style="animation-delay: ${rowIndex * 0.1}s">
+                        <td>
+                            <span style="font-size: 15px; font-weight: bold; color: var(--accent-primary); line-height: 1.4;">${primaryNameHtml}</span>
+                            ${subDetails}
+                        </td>
+                        <td>
+                            ${statusDisplayHtml}<br>
+                            <span style="color:var(--text-muted); font-size:11px; display:inline-block; margin-top:4px;">
+                                (RAW_METRICS: ${peer.rawDowns} DN, ${peer.rawUps} UP)
+                            </span>
+                        </td>
+                        <td>${timelineHtml}</td>
+                    </tr>
+                `;
+                rowIndex++;
+            }
 
-                const newline = (index < filteredInterfaces.length - 1) ? '\n' : '';
-                switchesText += `${item.sw}${newline}`; 
-                rawInterfacesText += `${item.iface}${newline}`;
-                shRunText += `sh run int ${item.iface}${newline}`;
-                shIntStatusText += `sh int ${item.iface} status${newline}`;
-            });
-
-            htmlOutput += `<div class="results-container">`;
-            
-            // Col 1
-            htmlOutput += `<div class="result-column">
-                <div class="script-header"><label>> TARGET_SW</label><button class="copy-btn" onclick="copyContent('hidden-switches', this)">COPY</button></div>
-                <div class="output-box">${switchesHtml}</div>
-                <textarea id="hidden-switches" class="hidden-copy-area">${switchesText}</textarea>
-            </div>`;
-
-            // Col 2
-            htmlOutput += `<div class="result-column">
-                <div class="script-header"><label>> PORT_ID</label><button class="copy-btn" onclick="copyContent('hidden-interfaces', this)">COPY</button></div>
-                <div class="output-box">${rawInterfacesHtml}</div>
-                <textarea id="hidden-interfaces" class="hidden-copy-area">${rawInterfacesText}</textarea>
-            </div>`;
-
-            // Col 3
-            htmlOutput += `<div class="result-column">
-                <div class="script-header"><label>> SH_RUN_CMD</label><button class="copy-btn" onclick="copyContent('hidden-shrun', this)">COPY</button></div>
-                <div class="output-box">${shRunHtml}</div>
-                <textarea id="hidden-shrun" class="hidden-copy-area">${shRunText}</textarea>
-            </div>`;
-
-            // Col 4
-            htmlOutput += `<div class="result-column">
-                <div class="script-header"><label>> SH_STATUS_CMD</label><button class="copy-btn" onclick="copyContent('hidden-shint', this)">COPY</button></div>
-                <div class="output-box">${shIntStatusHtml}</div>
-                <textarea id="hidden-shint" class="hidden-copy-area">${shIntStatusText}</textarea>
-            </div>`;
-
-            htmlOutput += `</div>`; 
-            
-            document.getElementById('statusMsg').style.display = 'block';
-            document.getElementById('statusMsg').innerText = `STATUS: ${filteredInterfaces.length} MAPPINGS_EXTRACTED | ${filteredSwitches.length} HOSTNAMES_FOUND`;
-        } else {
-            htmlOutput += `<div style="font-family: 'Courier New', Courier, monospace; color: var(--line-num-text); font-size: calc(13px * var(--font-scale));">No interfaces match your filter.</div>`;
+            html += `</tbody></table>`;
+            resultsArea.innerHTML = html;
         }
-
-        outputDiv.innerHTML = htmlOutput;
-    }
-</script>
-
+    </script>
 </body>
 </html>
