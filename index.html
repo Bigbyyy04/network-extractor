@@ -580,6 +580,33 @@
             font-family: "Courier New", Courier, monospace;
         }
 
+        /* --- IOS STYLE TOGGLE SWITCH --- */
+        .ios-toggle-wrapper {
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            font-size: calc(10px * var(--font-scale)); 
+            font-weight: bold; 
+            color: var(--accent-blue);
+            font-family: "Courier New", Courier, monospace;
+            letter-spacing: 1px;
+        }
+        .ios-switch { position: relative; display: inline-block; width: 34px; height: 18px; }
+        .ios-switch input { opacity: 0; width: 0; height: 0; }
+        .ios-slider { 
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; 
+            background-color: var(--code-bg); border: 1px solid var(--border-color); 
+            transition: .3s; border-radius: 20px; box-shadow: inset 0 0 5px rgba(0,0,0,0.3); 
+        }
+        .ios-slider:before { 
+            position: absolute; content: ""; height: 12px; width: 12px; left: 2px; bottom: 2px; 
+            background-color: var(--text-main); transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1); 
+            border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.4); 
+        }
+        input:checked + .ios-slider { background-color: var(--accent-green); border-color: var(--accent-green); }
+        input:checked + .ios-slider:before { transform: translateX(16px); background-color: #fff; }
+
+
         /* --- LOCAL DB STYLES --- */
         .bottom-actions { text-align: center; margin-top: 30px; margin-bottom: 20px; display: flex; justify-content: center; gap: 15px; }
         
@@ -622,7 +649,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v5.6 [Automated Port Extractor]</span>
+            <span class="version-tag">// v5.7 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -648,7 +675,7 @@
                 <h3>> Instructions (01)</h3>
                 <p>Provide the engine with raw data (Ticket descriptions, CDP/LLDP outputs, or Inventory tables). As long as the text contains a Switch Hostname (e.g., <code>CO-ESP-ACC02M02</code>) and Port Numbers (e.g., <code>gi1/0/3</code>), the tool will map them.</p>
                 <p><strong>Supported Formats & Auto-Correct:</strong> It supports single ports, comma-separated shorthand (<code>Gi3/0/1,3,5</code>), dashed ranges (<code>Gi2/0/23 - Gi2/0/27</code>), and direct-attached formatting (<code>CO-ESP-ACC02M02-2/0/38</code>). It also auto-corrects <code>Gl</code> (G-ell) inputs to valid <code>Gi</code> formats.</p>
-                <p><strong>Smart Tagging:</strong> The engine automatically scans for keywords (<code>Prod</code>, <code>Production</code>, <code>Training</code>, <code>Training Room</code>) and highlights the corresponding ports.</p>
+                <p><strong>Smart Grouping & Tagging:</strong> Toggle "SUMMARIZE SH RUN" to automatically group sequential port commands into a single regex format! The engine also automatically scans for keywords (<code>Prod</code>, <code>Training</code>) and highlights corresponding ports.</p>
             </div>
         </div>
     </div>
@@ -672,6 +699,14 @@
     <div class="form-group">
         <div class="header-row" style="margin-bottom: 15px;">
             <label>02 // Extracted Data</label>
+            
+            <div class="ios-toggle-wrapper">
+                <span>SUMMARIZE SH RUN</span>
+                <label class="ios-switch">
+                    <input type="checkbox" id="summarizeToggle" onchange="toggleSummarize()">
+                    <span class="ios-slider"></span>
+                </label>
+            </div>
         </div>
         
         <input type="text" id="filterInput" placeholder="> Filter by interface (Gi1/0/1) or hostname..." onkeyup="renderOutput()" style="display: none;">
@@ -710,6 +745,34 @@
 </div>
 
 <script>
+    // --- SUMMARIZE TOGGLE LOGIC ---
+    function toggleSummarize() {
+        const isChecked = document.getElementById('summarizeToggle').checked;
+        
+        // Satisfying mechanical pop/click via Web Audio API
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.type = 'sine';
+            // Slight pitch difference depending on ON or OFF
+            osc.frequency.setValueAtTime(isChecked ? 800 : 400, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(isChecked ? 1200 : 200, ctx.currentTime + 0.1);
+            
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+            
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.1);
+        } catch(e) {}
+
+        renderOutput();
+    }
+
+
     // --- EASTER EGG LISTENER (PLAYSTATION) ---
     let psCheatCode = ['p','l','a','y','s','t','a','t','i','o','n'];
     let keyBuffer = [];
@@ -1148,26 +1211,26 @@
         const uniqueHosts = new Set();
         
         // Hostnames scanner
-        const switchRegex = /[a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*/gi;
+        const switchRegex = /\b[a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*/gi;
         let match;
         while ((match = switchRegex.exec(text)) !== null) { 
             uniqueHosts.add(match[0].toUpperCase()); 
         }
 
         // Table scanner
-        const tableRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
+        const tableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
         while ((match = tableRegex.exec(text)) !== null) {
             uniqueHosts.add(match[1].toUpperCase());
         }
 
         // Hyphen scanner
-        const hyphenRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+)[\s\t]+(\d+)/gi;
+        const hyphenRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+)[\s\t]+(\d+)/gi;
         while ((match = hyphenRegex.exec(text)) !== null) {
             uniqueHosts.add(match[1].toUpperCase());
         }
         
         // Attached format scanner (e.g. CO-ESP-ACC02M02-2/0/38)
-        const attachedRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+(?:\/\d+)+)/gi;
+        const attachedRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+(?:\/\d+)+)/gi;
         while ((match = attachedRegex.exec(text)) !== null) {
             uniqueHosts.add(match[1].toUpperCase());
         }
@@ -1245,8 +1308,8 @@
             let currentSwitchForLine = globalContextSwitch;
             
             let lineTags = [];
-            if (/(prod|production)/i.test(line)) lineTags.push('PROD');
-            if (/training(\sroom)?/i.test(line)) lineTags.push('TRAINING');
+            if (/\b(prod|production)\b/i.test(line)) lineTags.push('PROD');
+            if (/\btraining(\sroom)?\b/i.test(line)) lineTags.push('TRAINING');
 
             function addPortToMap(sw, iface) {
                 const compositeKey = `${sw}|${iface}`;
@@ -1261,7 +1324,7 @@
             }
             
             // 1. Scan for Standard Hostnames
-            const switchRegex = /[a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*/i;
+            const switchRegex = /\b[a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*/i;
             const switchMatch = line.match(switchRegex);
             if (switchMatch) {
                 currentSwitchForLine = switchMatch[0].toUpperCase();
@@ -1271,7 +1334,7 @@
             let processedLine = line;
 
             // 1.5 Scan for direct Attached Format
-            const attachedRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+(?:\/\d+)+)/gi;
+            const attachedRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+(?:\/\d+)+)/gi;
             let matchAttached;
             while ((matchAttached = attachedRegex.exec(processedLine)) !== null) {
                 const sw = matchAttached[1].toUpperCase();
@@ -1345,7 +1408,7 @@
             processedLine = processedLine.replace(shortHandRegex, '');
 
             // 4. Scan for table formats
-            const tableRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
+            const tableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
             let matchTable;
             while ((matchTable = tableRegex.exec(processedLine)) !== null) {
                 const sw = matchTable[1].toUpperCase();
@@ -1355,7 +1418,7 @@
             }
 
             // 5. Scan for hyphenated formats
-            const hyphenRegex = /([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+)[\s\t]+(\d+)/gi;
+            const hyphenRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+)[\s\t]+(\d+)/gi;
             let matchHyphen;
             while ((matchHyphen = hyphenRegex.exec(processedLine)) !== null) {
                 const sw = matchHyphen[1].toUpperCase();
@@ -1437,6 +1500,30 @@
             htmlOutput += `<div class="warning-box" style="display:block;"><strong>////// WARNING: DUPLICATES DETECTED //////</strong><br>Found ${duplicateCount} interface(s) that appeared multiple times on the SAME switch.<br><em>They are highlighted in red below.</em></div>`;
         }
 
+        const isSummarized = document.getElementById('summarizeToggle') && document.getElementById('summarizeToggle').checked;
+        
+        let summaryGroups = {};
+        if (isSummarized) {
+            filteredInterfaces.forEach((item, index) => {
+                let match = item.iface.match(/^([a-zA-Z]+)(\d+(?:\/\d+)*\/)(\d+)$/);
+                if (match) {
+                    let type = match[1];
+                    let prefix = match[2];
+                    let port = match[3];
+                    let groupKey = `${item.sw}|${type}|${prefix}`;
+                    if (!summaryGroups[groupKey]) {
+                        summaryGroups[groupKey] = { ports: [], firstIndex: index };
+                    }
+                    summaryGroups[groupKey].ports.push(port);
+                } else {
+                    let groupKey = `${item.sw}|${item.iface}`;
+                    summaryGroups[groupKey] = { ports: [], firstIndex: index, raw: true };
+                }
+            });
+        }
+
+        const typeMap = { 'Gi': 'GigabitEthernet', 'Te': 'TenGigabitEthernet', 'Fa': 'FastEthernet', 'Eth': 'Ethernet' };
+
         if (filteredInterfaces.length > 0) {
             let switchesHtml = ""; let rawInterfacesHtml = ""; let shRunHtml = ""; let shIntStatusHtml = "";
             let switchesText = ""; let rawInterfacesText = ""; let shRunText = ""; let shIntStatusText = "";
@@ -1461,17 +1548,55 @@
                 }
                 displaySw += tagsHtml;
 
+                let shRunHtmlLine = "";
+                let shRunTextLine = "";
+
+                if (isSummarized) {
+                    let match = item.iface.match(/^([a-zA-Z]+)(\d+(?:\/\d+)*\/)(\d+)$/);
+                    if (match) {
+                        let type = match[1];
+                        let prefix = match[2];
+                        let groupKey = `${item.sw}|${type}|${prefix}`;
+                        let group = summaryGroups[groupKey];
+                        
+                        if (group.firstIndex === index) {
+                            let fullType = typeMap[type] || type;
+                            let portsStr = group.ports.length > 1 ? `(${group.ports.join('|')})` : group.ports[0];
+                            shRunTextLine = `show running-config | section interface ${fullType}${prefix}${portsStr}`;
+                            shRunHtmlLine = `${spanOpen}${shRunTextLine}${spanClose}`;
+                        } else {
+                            shRunHtmlLine = `<span class="line-item" style="color: var(--line-num-text); opacity: 0.5;">// grouped above //</span>`;
+                        }
+                    } else {
+                        let groupKey = `${item.sw}|${item.iface}`;
+                        if (summaryGroups[groupKey].firstIndex === index) {
+                            shRunTextLine = `sh run int ${item.iface}`;
+                            shRunHtmlLine = `${spanOpen}${shRunTextLine}${spanClose}`;
+                        } else {
+                            shRunHtmlLine = `<span class="line-item" style="color: var(--line-num-text); opacity: 0.5;">// grouped above //</span>`;
+                        }
+                    }
+                } else {
+                    shRunTextLine = `sh run int ${item.iface}`;
+                    shRunHtmlLine = `${spanOpen}${shRunTextLine}${spanClose}`;
+                }
+
                 switchesHtml += `${spanOpen}${displaySw}${spanClose}`;
                 rawInterfacesHtml += `${spanOpen}${item.iface}${spanClose}`;
-                shRunHtml += `${spanOpen}sh run int ${item.iface}${spanClose}`;
+                shRunHtml += shRunHtmlLine;
                 shIntStatusHtml += `${spanOpen}sh int ${item.iface} status${spanClose}`;
 
                 const newline = (index < filteredInterfaces.length - 1) ? '\n' : '';
                 switchesText += `${item.sw}${newline}`; 
                 rawInterfacesText += `${item.iface}${newline}`;
-                shRunText += `sh run int ${item.iface}${newline}`;
+                if (shRunTextLine) {
+                    shRunText += shRunTextLine + '\n';
+                }
                 shIntStatusText += `sh int ${item.iface} status${newline}`;
             });
+
+            // Strip the very last newline from shRunText if it exists so we don't copy a blank line at the bottom
+            if (shRunText.endsWith('\n')) shRunText = shRunText.slice(0, -1);
 
             htmlOutput += `<div class="results-container">`;
             
