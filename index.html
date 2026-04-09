@@ -622,7 +622,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v5.5 [Automated Port Extractor]</span>
+            <span class="version-tag">// v5.6 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -805,7 +805,7 @@
                 vx: 0,
                 vy: 0,
                 glow: 0,
-                shape: Math.floor(Math.random() * 4), // For PlayStation theme
+                shape: Math.floor(Math.random() * 4), 
                 rot: Math.random() * Math.PI * 2,
                 rotSpeed: (Math.random() - 0.5) * 0.04,
                 radius: Math.random() * 1.5 + 1
@@ -909,7 +909,6 @@
                 ctx.translate(p.x, p.y);
                 ctx.rotate(p.rot);
                 
-                // Warm Copper/Gold glow based on the reference image
                 ctx.shadowBlur = 8 + (activeGlow * 10);
                 ctx.shadowColor = `rgba(235, 175, 120, ${0.5 + activeGlow})`;
                 ctx.strokeStyle = `rgba(240, 190, 140, ${0.4 + activeGlow})`;
@@ -939,7 +938,6 @@
         const maxDist = 130; 
         const maxDistSq = maxDist * maxDist;
 
-        // Skip constellation lines completely for PlayStation theme to match dust/spark look
         if (theme !== 'playstation') {
             for(let i = 0; i < particles.length; i++) {
                 for(let j = i + 1; j < particles.length; j++) {
@@ -1296,7 +1294,7 @@
             }
 
             // 2. Scan for Full Port Ranges 
-            const fullRangeRegex = /(gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)(\d+)\s*[-–—]\s*(?:gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(?:\d+(?:\/\d+)+\/)(\d+)/gi;
+            const fullRangeRegex = /\b(gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)(\d+)\s*[-–—]\s*(?:gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(?:\d+(?:\/\d+)+\/)(\d+)/gi;
             let matchFull;
             while ((matchFull = fullRangeRegex.exec(processedLine)) !== null) {
                 const type = matchFull[1];
@@ -1313,7 +1311,7 @@
             processedLine = processedLine.replace(fullRangeRegex, ''); 
 
             // 3. Scan for Standard, Commas, and Shorthand Ranges 
-            const shortHandRegex = /(gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)([\d\s,\-–—]+)/gi;
+            const shortHandRegex = /\b(gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)([\d\s,\-–—]+)/gi;
             let matchShort;
             while ((matchShort = shortHandRegex.exec(processedLine)) !== null) { 
                 const type = matchShort[1]; 
