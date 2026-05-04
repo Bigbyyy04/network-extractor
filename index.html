@@ -649,7 +649,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v5.7 [Automated Port Extractor]</span>
+            <span class="version-tag">// v5.8 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -675,6 +675,7 @@
                 <h3>> Instructions (01)</h3>
                 <p>Provide the engine with raw data (Ticket descriptions, CDP/LLDP outputs, or Inventory tables). As long as the text contains a Switch Hostname (e.g., <code>CO-ESP-ACC02M02</code>) and Port Numbers (e.g., <code>gi1/0/3</code>), the tool will map them.</p>
                 <p><strong>Supported Formats & Auto-Correct:</strong> It supports single ports, comma-separated shorthand (<code>Gi3/0/1,3,5</code>), dashed ranges (<code>Gi2/0/23 - Gi2/0/27</code>), and direct-attached formatting (<code>CO-ESP-ACC02M02-2/0/38</code>). It also auto-corrects <code>Gl</code> (G-ell) inputs to valid <code>Gi</code> formats.</p>
+                <p><strong>Smart Proximity Mapping:</strong> The engine automatically maps your ports to the absolute closest Switch Hostname it can find, resolving issues with logs where ports are listed <em>before</em> the switch.</p>
                 <p><strong>Smart Grouping & Tagging:</strong> Toggle "SUMMARIZE SH RUN" to automatically group sequential port commands into a single regex format! The engine also automatically scans for keywords (<code>Prod</code>, <code>Training</code>) and highlights corresponding ports.</p>
             </div>
         </div>
@@ -749,7 +750,6 @@
     function toggleSummarize() {
         const isChecked = document.getElementById('summarizeToggle').checked;
         
-        // Satisfying mechanical pop/click via Web Audio API
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = ctx.createOscillator();
@@ -758,7 +758,6 @@
             gain.connect(ctx.destination);
             
             osc.type = 'sine';
-            // Slight pitch difference depending on ON or OFF
             osc.frequency.setValueAtTime(isChecked ? 800 : 400, ctx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(isChecked ? 1200 : 200, ctx.currentTime + 0.1);
             
@@ -808,7 +807,6 @@
         const currentTheme = html.getAttribute('data-theme') || 'dark';
         let newTheme;
         
-        // Cycle normal themes. If currently in Playstation, clicking it will reset to Dark
         if (currentTheme === 'dark') newTheme = 'light';
         else if (currentTheme === 'light') newTheme = 'twilight';
         else newTheme = 'dark';
@@ -922,7 +920,6 @@
             glowRGB = '245, 158, 11';   
             lineAlpha = 0.4; polyAlpha = 0.12;
         } else {
-            // Default dark mode (and base for PS mode)
             baseRGB = '88, 166, 255';   
             glowRGB = '57, 255, 20';    
             lineAlpha = 0.25; polyAlpha = 0.08;
@@ -1208,28 +1205,31 @@
             return;
         }
 
+        // Auto-Learn IPs dynamically for the HUD
+        const autoLearnRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)\s*[\(\[-]?\s*(\b(?:\d{1,3}\.){3}\d{1,3}\b)/gi;
+        let autoMatch;
+        while ((autoMatch = autoLearnRegex.exec(text)) !== null) {
+            switchDB[autoMatch[1].toLowerCase()] = autoMatch[2];
+        }
+
         const uniqueHosts = new Set();
         
-        // Hostnames scanner
         const switchRegex = /\b[a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*/gi;
         let match;
         while ((match = switchRegex.exec(text)) !== null) { 
             uniqueHosts.add(match[0].toUpperCase()); 
         }
 
-        // Table scanner
         const tableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
         while ((match = tableRegex.exec(text)) !== null) {
             uniqueHosts.add(match[1].toUpperCase());
         }
 
-        // Hyphen scanner
         const hyphenRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+)[\s\t]+(\d+)/gi;
         while ((match = hyphenRegex.exec(text)) !== null) {
             uniqueHosts.add(match[1].toUpperCase());
         }
         
-        // Attached format scanner (e.g. CO-ESP-ACC02M02-2/0/38)
         const attachedRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+(?:\/\d+)+)/gi;
         while ((match = attachedRegex.exec(text)) !== null) {
             uniqueHosts.add(match[1].toUpperCase());
@@ -1299,13 +1299,50 @@
         const text = document.getElementById('configInput').value;
         if (!text.trim()) return; 
         
+        // Auto-Learn IPs dynamically
+        const autoLearnRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)\s*[\(\[-]?\s*(\b(?:\d{1,3}\.){3}\d{1,3}\b)/gi;
+        let autoMatch;
+        while ((autoMatch = autoLearnRegex.exec(text)) !== null) {
+            switchDB[autoMatch[1].toLowerCase()] = autoMatch[2];
+        }
+
         const lines = text.split('\n');
         const switchesSet = new Set();
         const interfaceCounts = new Map(); 
-        let globalContextSwitch = "[ SWITCH_NOT_FOUND ]";
 
-        lines.forEach(line => {
-            let currentSwitchForLine = globalContextSwitch;
+        // Map all switch occurrences and their line numbers for distance mapping
+        const switchLines = [];
+        const switchRegexGlobal = /\b[a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*/gi;
+        lines.forEach((line, idx) => {
+            let match;
+            while ((match = switchRegexGlobal.exec(line)) !== null) {
+                switchLines.push({ line: idx, name: match[0].toUpperCase() });
+                switchesSet.add(match[0].toUpperCase());
+            }
+        });
+
+        // Function to find the nearest switch hostname for a given line index
+        function getClosestSwitch(lineIndex) {
+            if (switchLines.length === 0) return "[ SWITCH_NOT_FOUND ]";
+            let closest = switchLines[0];
+            let minDiff = Math.abs(lineIndex - closest.line);
+            for(let k = 1; k < switchLines.length; k++) {
+                let diff = Math.abs(lineIndex - switchLines[k].line);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closest = switchLines[k];
+                } else if (diff === minDiff) {
+                    // Prefer the switch above if equidistant
+                    if (switchLines[k].line < closest.line) {
+                        closest = switchLines[k];
+                    }
+                }
+            }
+            return closest.name;
+        }
+
+        lines.forEach((line, lineIndex) => {
+            let currentSwitchForLine = getClosestSwitch(lineIndex);
             
             let lineTags = [];
             if (/\b(prod|production)\b/i.test(line)) lineTags.push('PROD');
@@ -1322,14 +1359,6 @@
                 }
                 switchesSet.add(sw);
             }
-            
-            // 1. Scan for Standard Hostnames
-            const switchRegex = /\b[a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*/i;
-            const switchMatch = line.match(switchRegex);
-            if (switchMatch) {
-                currentSwitchForLine = switchMatch[0].toUpperCase();
-                globalContextSwitch = currentSwitchForLine;
-            }
 
             let processedLine = line;
 
@@ -1339,8 +1368,6 @@
             while ((matchAttached = attachedRegex.exec(processedLine)) !== null) {
                 const sw = matchAttached[1].toUpperCase();
                 const iface = "Gi" + matchAttached[2];
-                currentSwitchForLine = sw; 
-                globalContextSwitch = sw;
                 addPortToMap(sw, iface);
             }
             processedLine = processedLine.replace(attachedRegex, '');
@@ -1413,7 +1440,6 @@
             while ((matchTable = tableRegex.exec(processedLine)) !== null) {
                 const sw = matchTable[1].toUpperCase();
                 const iface = `Gi${matchTable[2]}/0/${matchTable[3]}`;
-                globalContextSwitch = sw;
                 addPortToMap(sw, iface);
             }
 
@@ -1423,7 +1449,6 @@
             while ((matchHyphen = hyphenRegex.exec(processedLine)) !== null) {
                 const sw = matchHyphen[1].toUpperCase();
                 const iface = `Gi${matchHyphen[2]}/0/${matchHyphen[3]}`;
-                globalContextSwitch = sw;
                 addPortToMap(sw, iface);
             }
         });
@@ -1595,7 +1620,6 @@
                 shIntStatusText += `sh int ${item.iface} status${newline}`;
             });
 
-            // Strip the very last newline from shRunText if it exists so we don't copy a blank line at the bottom
             if (shRunText.endsWith('\n')) shRunText = shRunText.slice(0, -1);
 
             htmlOutput += `<div class="results-container">`;
