@@ -70,7 +70,7 @@
         }
 
         [data-theme="twilight"] {
-            /* TWILIGHT THEME (KATAWAREDOKI) - Dynamic Gradient */
+            /* TWILIGHT THEME (KATAWAREDOKI) */
             --bg-color: #172b5c; 
             --bg-image: linear-gradient(to bottom, #172b5c 0%, #3b5082 25%, #7c6294 50%, #c483a9 75%, #e7aab0 100%);
             
@@ -673,7 +673,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v6.1 [Automated Port Extractor]</span>
+            <span class="version-tag">// v6.2 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -699,7 +699,7 @@
                 <h3>> Instructions (01)</h3>
                 <p>Provide the engine with raw data (Ticket descriptions, CDP/LLDP outputs, or Inventory tables). As long as the text contains a Switch Hostname (e.g., <code>CO-ESP-ACC02M02</code>) and Port Numbers (e.g., <code>gi1/0/3</code>), the tool will map them.</p>
                 <p><strong>Supported Formats & Auto-Correct:</strong> It supports single ports, comma-separated shorthand (<code>Gi3/0/1,3,5</code>), dashed ranges (<code>Gi2/0/23 - Gi2/0/27</code>), and direct-attached formatting (<code>CO-ESP-ACC02M02 - 1/0/2</code>). It also auto-corrects <code>Gl</code> (G-ell) inputs to valid <code>Gi</code> formats.</p>
-                <p><strong>Smart Proximity Mapping & FQDNs:</strong> The engine maps your ports to the absolute closest Switch Hostname it can find, resolving issues with logs where ports are listed <em>before</em> the switch. It also automatically strips Domains/FQDNs from hostnames (e.g., <code>SW01.CORP.LOCAL</code> -> <code>SW01</code>).</p>
+                <p><strong>Smart Proximity Mapping & FQDNs:</strong> The engine maps your ports to the absolute closest Switch Hostname it can find, resolving issues with logs where ports are listed <em>before</em> the switch or isolated entirely on separate lines. It also automatically strips Domains/FQDNs from hostnames (e.g., <code>SW01.CORP.LOCAL</code> -> <code>SW01</code>).</p>
                 <p><strong>Interactive Filtering & Grouping:</strong> Click any switch tag in the top right target bar to instantly isolate its mapped interfaces! Toggle "SUMMARIZE SH RUN" to automatically group sequential port commands into a single regex format. The engine also auto-highlights layout tags (<code>Prod</code>, <code>Training</code>).</p>
             </div>
         </div>
@@ -1440,6 +1440,10 @@
 
             let processedLine = line;
 
+            // Remove IPs and Dates to prevent false port matches
+            processedLine = processedLine.replace(/\b(?:\d{1,3}\.){3}\d{1,3}(?:\/\d+)?\b/gi, '');
+            processedLine = processedLine.replace(/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/gi, '');
+
             // 1. Scan for FQDN/Domain table formats (uses rawPrefix)
             const fqdnRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(\d+(?:\/\d+)+)/gi;
             let matchFqdn;
@@ -1449,6 +1453,7 @@
                 currentSwitchForLine = sw;
                 addPortToMap(sw, iface);
             }
+            processedLine = processedLine.replace(fqdnRegex, '');
 
             // 1.5 Scan for direct Attached Format (uses rawPrefix)
             const attachedRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)\s*-\s*(\d+(?:\/\d+)+)/gi;
@@ -1531,6 +1536,7 @@
                 const iface = `${rawPrefix}${matchTable[2]}/0/${matchTable[3]}`;
                 addPortToMap(sw, iface);
             }
+            processedLine = processedLine.replace(tableRegex, '');
 
             // 5. Scan for hyphenated formats (uses rawPrefix)
             const hyphenRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+)[\s\t]+(\d+)/gi;
@@ -1540,6 +1546,16 @@
                 const iface = `${rawPrefix}${matchHyphen[2]}/0/${matchHyphen[3]}`;
                 addPortToMap(sw, iface);
             }
+            processedLine = processedLine.replace(hyphenRegex, '');
+
+            // 6. Catch-all for standalone raw ports (e.g., "3/0/11")
+            const catchAllRawRegex = /\b(\d+(?:\/\d+)+)\b/gi;
+            let matchCatchAll;
+            while ((matchCatchAll = catchAllRawRegex.exec(processedLine)) !== null) {
+                const iface = rawPrefix + matchCatchAll[1];
+                addPortToMap(currentSwitchForLine, iface);
+            }
+            processedLine = processedLine.replace(catchAllRawRegex, '');
         });
 
         globalSwitches = Array.from(switchesSet).sort();
