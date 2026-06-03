@@ -673,7 +673,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v6.3 [Automated Port Extractor]</span>
+            <span class="version-tag">// v6.4 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -1553,7 +1553,6 @@
             let matchCatchAll;
             while ((matchCatchAll = catchAllRawRegex.exec(processedLine)) !== null) {
                 let parts = matchCatchAll[1].split('/');
-                // Ensure no part of the port exceeds normal limits to filter out garbage 
                 let isValid = parts.every(num => parseInt(num, 10) < 150);
                 if (isValid) {
                     const iface = rawPrefix + matchCatchAll[1];
@@ -1712,7 +1711,7 @@
                 shIntStatusHtml += `${spanOpen}sh int ${item.iface} status${spanClose}`;
 
                 const newline = (index < filteredInterfaces.length - 1) ? '\n' : '';
-                switchesText += `${item.sw}${newline}`; 
+                
                 rawInterfacesText += `${item.iface}${newline}`;
                 if (shRunTextLine) {
                     shRunText += shRunTextLine + '\n';
@@ -1720,35 +1719,80 @@
                 shIntStatusText += `sh int ${item.iface} status${newline}`;
             });
 
-            // Strip the very last newline from shRunText if it exists so we don't copy a blank line at the bottom
             if (shRunText.endsWith('\n')) shRunText = shRunText.slice(0, -1);
+
+            // Generate Deduplicated Export Variables
+            let activeSwitches = [...new Set(filteredInterfaces.map(item => item.sw))];
+            activeSwitches.sort((a, b) => a.localeCompare(b));
+
+            let copyHostText = "";
+            let copyIpText = "";
+            let copyHostIpText = "";
+            let copyAllText = "";
+
+            filteredInterfaces.forEach((item, index) => {
+                const ipStr = switchDB[item.sw.toLowerCase()] || "";
+                const newline = (index < filteredInterfaces.length - 1) ? '\n' : '';
+                copyHostText += `${item.sw}${newline}`;
+                copyIpText += `${ipStr}${newline}`;
+            });
+
+            activeSwitches.forEach((sw, idx) => {
+                let ip = switchDB[sw.toLowerCase()] || "";
+                
+                copyHostIpText += sw;
+                if (ip) copyHostIpText += "\n" + ip;
+                
+                copyAllText += sw;
+                if (ip) copyAllText += "\n" + ip;
+                copyAllText += "\n\n";
+                
+                let portsForSw = filteredInterfaces.filter(item => item.sw === sw).map(item => item.iface);
+                copyAllText += portsForSw.join("\n");
+
+                if (idx < activeSwitches.length - 1) {
+                    copyHostIpText += "\n\n";
+                    copyAllText += "\n\n";
+                }
+            });
 
             htmlOutput += `<div class="results-container">`;
             
-            // Col 1
+            // Col 1 - TARGET SW (Multi-Export Header)
             htmlOutput += `<div class="result-column">
-                <div class="script-header"><label>> TARGET_SW</label><button class="copy-btn" onclick="copyContent('hidden-switches', this)">COPY</button></div>
+                <div class="script-header" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+                    <label>> TARGET_SW</label>
+                    <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                        <button class="copy-btn" style="padding: 4px 6px;" onclick="copyContent('hidden-host-only', this)" title="Copy Hostnames (Line-by-Line)">HOST</button>
+                        <button class="copy-btn" style="padding: 4px 6px;" onclick="copyContent('hidden-ip-only', this)" title="Copy IPs (Line-by-Line)">IP</button>
+                        <button class="copy-btn" style="padding: 4px 6px; background: var(--accent-purple); color: #000;" onclick="copyContent('hidden-host-ip', this)" title="Copy Ticket Format: Host + IP">H+IP</button>
+                        <button class="copy-btn" style="padding: 4px 6px; background: var(--accent-green); color: #fff;" onclick="copyContent('hidden-all', this)" title="Copy Ticket Format: Host + IP + Ports">ALL</button>
+                    </div>
+                </div>
                 <div class="output-box">${switchesHtml}</div>
-                <textarea id="hidden-switches" class="hidden-copy-area">${switchesText}</textarea>
+                <textarea id="hidden-host-only" class="hidden-copy-area">${copyHostText}</textarea>
+                <textarea id="hidden-ip-only" class="hidden-copy-area">${copyIpText}</textarea>
+                <textarea id="hidden-host-ip" class="hidden-copy-area">${copyHostIpText}</textarea>
+                <textarea id="hidden-all" class="hidden-copy-area">${copyAllText}</textarea>
             </div>`;
 
             // Col 2
             htmlOutput += `<div class="result-column">
-                <div class="script-header"><label>> PORT_ID</label><button class="copy-btn" onclick="copyContent('hidden-interfaces', this)">COPY</button></div>
+                <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> PORT_ID</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-interfaces', this)">COPY</button></div>
                 <div class="output-box">${rawInterfacesHtml}</div>
                 <textarea id="hidden-interfaces" class="hidden-copy-area">${rawInterfacesText}</textarea>
             </div>`;
 
             // Col 3
             htmlOutput += `<div class="result-column">
-                <div class="script-header"><label>> SH_RUN_CMD</label><button class="copy-btn" onclick="copyContent('hidden-shrun', this)">COPY</button></div>
+                <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> SH_RUN_CMD</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-shrun', this)">COPY</button></div>
                 <div class="output-box">${shRunHtml}</div>
                 <textarea id="hidden-shrun" class="hidden-copy-area">${shRunText}</textarea>
             </div>`;
 
             // Col 4
             htmlOutput += `<div class="result-column">
-                <div class="script-header"><label>> SH_STATUS_CMD</label><button class="copy-btn" onclick="copyContent('hidden-shint', this)">COPY</button></div>
+                <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> SH_STATUS_CMD</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-shint', this)">COPY</button></div>
                 <div class="output-box">${shIntStatusHtml}</div>
                 <textarea id="hidden-shint" class="hidden-copy-area">${shIntStatusText}</textarea>
             </div>`;
