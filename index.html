@@ -673,7 +673,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v6.5 [Automated Port Extractor]</span>
+            <span class="version-tag">// v6.6 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -733,7 +733,10 @@
 
     <div class="form-group">
         <div class="header-row" style="margin-bottom: 15px;">
-            <label>02 // Extracted Data</label>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <label style="margin-bottom: 0;">02 // Extracted Data</label>
+                <button class="copy-btn" style="background: var(--accent-blue); padding: 4px 8px; font-size: 10px;" onclick="copyContent('hidden-both-cmds', this)" title="Copy both SH RUN and SH STATUS commands at once">COPY BOTH CMDS</button>
+            </div>
             
             <div class="ios-toggle-wrapper">
                 <span>SUMMARIZE SH RUN</span>
@@ -1719,7 +1722,11 @@
                 shIntStatusText += `sh int ${item.iface} status${newline}`;
             });
 
+            // Strip the very last newline from shRunText if it exists so we don't copy a blank line at the bottom
             if (shRunText.endsWith('\n')) shRunText = shRunText.slice(0, -1);
+            if (shIntStatusText.endsWith('\n')) shIntStatusText = shIntStatusText.slice(0, -1);
+            
+            let copyBothCmdsText = shRunText + "\n\n" + shIntStatusText;
 
             // Generate Deduplicated Export Variables
             let activeSwitches = [...new Set(filteredInterfaces.map(item => item.sw))];
@@ -1794,6 +1801,7 @@
                 <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> SH_STATUS_CMD</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-shint', this)">COPY</button></div>
                 <div class="output-box">${shIntStatusHtml}</div>
                 <textarea id="hidden-shint" class="hidden-copy-area">${shIntStatusText}</textarea>
+                <textarea id="hidden-both-cmds" class="hidden-copy-area">${copyBothCmdsText}</textarea>
             </div>`;
 
             htmlOutput += `</div>`; 
