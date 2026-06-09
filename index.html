@@ -673,7 +673,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v6.7 [Automated Port Extractor]</span>
+            <span class="version-tag">// v6.8 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -698,7 +698,7 @@
                 
                 <h3>> Instructions (01)</h3>
                 <p>Provide the engine with raw data (Ticket descriptions, CDP/LLDP outputs, or Inventory tables). As long as the text contains a Switch Hostname (e.g., <code>CO-ESP-ACC02M02</code>) and Port Numbers (e.g., <code>gi1/0/3</code>), the tool will map them.</p>
-                <p><strong>Supported Formats & Auto-Correct:</strong> It supports single ports, comma-separated shorthand (<code>Gi3/0/1,3,5</code>), dashed ranges (<code>Gi2/0/23 - Gi2/0/27</code>), reverse tables (<code>29  SW-NAME  2</code>), and direct-attached formatting (<code>SW-NAME - 1/0/2</code>). It also auto-corrects <code>Gl</code> (G-ell) inputs to valid <code>Gi</code> formats.</p>
+                <p><strong>Supported Formats & Auto-Correct:</strong> It supports single ports, comma-separated shorthand (<code>Gi3/0/1,3,5</code>), dashed ranges (<code>Gi2/0/23 - Gi2/0/27</code>), and direct-attached formatting (<code>CO-ESP-ACC02M02 - 1/0/2</code>). It also auto-corrects <code>Gl</code> (G-ell) inputs to valid <code>Gi</code> formats.</p>
                 <p><strong>Smart Proximity Mapping & FQDNs:</strong> The engine maps your ports to the absolute closest Switch Hostname it can find, resolving issues with logs where ports are listed <em>before</em> the switch or isolated entirely on separate lines. It also automatically strips Domains/FQDNs from hostnames (e.g., <code>SW01.CORP.LOCAL</code> -> <code>SW01</code>).</p>
                 <p><strong>Interactive Filtering & Grouping:</strong> Click any switch tag in the top right target bar to instantly isolate its mapped interfaces! Toggle "SUMMARIZE SH RUN" to automatically group sequential port commands into a single regex format. The engine also auto-highlights layout tags (<code>Prod</code>, <code>Training</code>).</p>
             </div>
@@ -1303,12 +1303,6 @@
             uniqueHosts.add(match[1].toUpperCase());
         }
 
-        // Reverse Table scanner (e.g. 29  PH-LZL-CAS201 2)
-        const reverseTableRegex = /\b(\d+)[\s\t]+([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(\d+)\b/gi;
-        while ((match = reverseTableRegex.exec(text)) !== null) {
-            uniqueHosts.add(match[2].toUpperCase());
-        }
-
         const hostsArray = Array.from(uniqueHosts).sort();
 
         if (hostsArray.length > 0) {
@@ -1399,18 +1393,24 @@
 
         // Map all switch occurrences and their line numbers for distance mapping
         const switchLines = [];
-        const switchRegexGlobal = /\b[a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*/gi;
+        // Capture Switch Name and optional Stack module (e.g., SW1 -> 1)
+        const switchRegexGlobal = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)(?:\s+SW(\d+))?/gi;
+        
         lines.forEach((line, idx) => {
             let match;
             while ((match = switchRegexGlobal.exec(line)) !== null) {
-                switchLines.push({ line: idx, name: match[0].toUpperCase() });
-                switchesSet.add(match[0].toUpperCase());
+                switchLines.push({ 
+                    line: idx, 
+                    name: match[1].toUpperCase(),
+                    stack: match[2] ? match[2] : "1"
+                });
+                switchesSet.add(match[1].toUpperCase());
             }
         });
 
         // Function to find the nearest switch hostname for a given line index
         function getClosestSwitch(lineIndex) {
-            if (switchLines.length === 0) return "[ SWITCH_NOT_FOUND ]";
+            if (switchLines.length === 0) return { name: "[ SWITCH_NOT_FOUND ]", stack: "1" };
             let closest = switchLines[0];
             let minDiff = Math.abs(lineIndex - closest.line);
             for(let k = 1; k < switchLines.length; k++) {
@@ -1425,11 +1425,12 @@
                     }
                 }
             }
-            return closest.name;
+            return closest;
         }
 
         lines.forEach((line, lineIndex) => {
-            let currentSwitchForLine = getClosestSwitch(lineIndex);
+            let currentSwitchObj = getClosestSwitch(lineIndex);
+            let currentSwitchForLine = currentSwitchObj.name;
             
             let lineTags = [];
             if (/\b(prod|production)\b/i.test(line)) lineTags.push('PROD');
@@ -1547,21 +1548,6 @@
             }
             processedLine = processedLine.replace(tableRegex, '');
 
-            // 4.5 Scan for Reverse Table Formats (e.g. 29   PH-LZL-CAS201 2)
-            const reverseTableRegex = /\b(\d+)[\s\t]+([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(\d+)\b/gi;
-            let matchReverseTable;
-            while ((matchReverseTable = reverseTableRegex.exec(processedLine)) !== null) {
-                const portNum = matchReverseTable[1];
-                const sw = matchReverseTable[2].toUpperCase();
-                const swNum = matchReverseTable[3];
-                
-                if (parseInt(portNum, 10) < 150 && parseInt(swNum, 10) < 20) {
-                    const iface = `${rawPrefix}${swNum}/0/${portNum}`;
-                    addPortToMap(sw, iface);
-                }
-            }
-            processedLine = processedLine.replace(reverseTableRegex, '');
-
             // 5. Scan for hyphenated formats (uses rawPrefix)
             const hyphenRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)\d+[a-zA-Z0-9]*)-(\d+)[\s\t]+(\d+)/gi;
             let matchHyphen;
@@ -1584,6 +1570,20 @@
                 }
             }
             processedLine = processedLine.replace(catchAllRawRegex, '');
+            
+            // 7. Catch-all for standalone 1-2 digit ports on their own line (e.g., "31")
+            // Strict bounds: line must contain ONLY the number (and whitespace)
+            const catchAllSinglePortRegex = /^\s*(\d{1,2})\s*$/g;
+            let matchCatchAllSingle;
+            while ((matchCatchAllSingle = catchAllSinglePortRegex.exec(processedLine)) !== null) {
+                let portNum = parseInt(matchCatchAllSingle[1], 10);
+                // Sanity check: switches rarely exceed 99 ports per module
+                if (portNum > 0 && portNum <= 99) {
+                    let iface = `${rawPrefix}${currentSwitchObj.stack}/0/${portNum}`;
+                    addPortToMap(currentSwitchForLine, iface);
+                }
+            }
+            processedLine = processedLine.replace(catchAllSinglePortRegex, '');
         });
 
         globalSwitches = Array.from(switchesSet).sort();
