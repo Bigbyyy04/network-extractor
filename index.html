@@ -673,7 +673,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v7.0 [Automated Port Extractor]</span>
+            <span class="version-tag">// v7.1 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -698,7 +698,7 @@
                 
                 <h3>> Instructions (01)</h3>
                 <p>Provide the engine with raw data (Ticket descriptions, CDP/LLDP outputs, or Inventory tables). As long as the text contains a Switch Hostname (e.g., <code>CO-ESP-ACC02M02</code>) and Port Numbers (e.g., <code>gi1/0/3</code>), the tool will map them.</p>
-                <p><strong>Supported Formats & Auto-Correct:</strong> It supports single ports, comma-separated shorthand (<code>Gi3/0/1,3,5</code>), dashed ranges (<code>Gi2/0/23 - Gi2/0/27</code>), reverse tables (<code>29  SW-NAME  2</code>), and direct-attached formatting (<code>SW-NAME - 1/0/2</code>). It auto-corrects <code>Gl</code> (G-ell) inputs to valid <code>Gi</code> formats, and auto-corrects hostname typos (e.g., <code>CASO702</code> -> <code>CAS0702</code>).</p>
+                <p><strong>Supported Formats & Auto-Correct:</strong> It supports single ports, comma-separated shorthand (<code>Gi3/0/1,3,5</code>), dashed ranges (<code>Gi2/0/23 - Gi2/0/27</code>), reverse tables (<code>29  SW-NAME  2</code>), and direct-attached formatting (<code>SW-NAME - 1/0/2</code>). It auto-corrects <code>G1</code>, <code>61</code>, and <code>Gl</code> inputs to valid <code>Gi</code> formats, and gracefully catches Hostname typos (e.g., <code>CASO702</code> -> <code>CAS0702</code>).</p>
                 <p><strong>Smart Proximity Mapping & FQDNs:</strong> The engine maps your ports to the absolute closest Switch Hostname it can find, resolving issues with logs where ports are listed <em>before</em> the switch or isolated entirely on separate lines. It also automatically strips Domains/FQDNs from hostnames (e.g., <code>SW01.CORP.LOCAL</code> -> <code>SW01</code>).</p>
                 <p><strong>Interactive Filtering & Grouping:</strong> Click any switch tag in the top right target bar to instantly isolate its mapped interfaces! Toggle "SUMMARIZE SH RUN" to automatically group sequential port commands into a single regex format. The engine also auto-highlights layout tags (<code>Prod</code>, <code>Training</code>).</p>
             </div>
@@ -1463,6 +1463,10 @@
 
             let processedLine = line;
 
+            // 0. OCR Typo Sanitization (Run before any matching)
+            // Fix G1, 61, G!, etc. typos (e.g., G12/0/30 -> Gi2/0/30, 614/0/46 -> Gi4/0/46)
+            processedLine = processedLine.replace(/\b(?:G1|61|G[lI\|!])(?=\d+(?:\/\d+)+)/gi, 'Gi');
+
             // Remove IPs and 4-digit Dates to prevent false port matches
             processedLine = processedLine.replace(/\b(?:\d{1,3}\.){3}\d{1,3}(?:\/\d+)?\b/gi, '');
             processedLine = processedLine.replace(/\b\d{1,2}\/\d{1,2}\/\d{4}\b/gi, '');
@@ -1490,10 +1494,9 @@
             processedLine = processedLine.replace(attachedRegex, '');
 
             function addPort(rawType, prefix, portNum) {
-                let cleanType = rawType.replace(/^gigabitethernet/i, 'Gi')
-                                       .replace(/^gl/i, 'Gi') 
-                                       .replace(/^fastethernet/i, 'Fa')
-                                       .replace(/^tengigabitethernet/i, 'Te');
+                let cleanType = rawType.replace(/^(gigabitethernet|gi|gl|g1|61)/i, 'Gi')
+                                       .replace(/^(fastethernet|fa)/i, 'Fa')
+                                       .replace(/^(tengigabitethernet|te)/i, 'Te');
                 cleanType = cleanType.charAt(0).toUpperCase() + cleanType.slice(1).toLowerCase();
                 
                 // Auto-correct 2-tuple (e.g., "0/") to 3-tuple ("1/0/") based on closest switch stack
@@ -1506,7 +1509,7 @@
             }
 
             // 2. Scan for Full Port Ranges 
-            const fullRangeRegex = /\b(gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)(\d+)\s*[-–—]\s*(?:gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(?:\d+(?:\/\d+)+\/)(\d+)/gi;
+            const fullRangeRegex = /\b(gi|gl|g1|61|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)(\d+)\s*[-–—]\s*(?:gi|gl|g1|61|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(?:\d+(?:\/\d+)+\/)(\d+)/gi;
             let matchFull;
             while ((matchFull = fullRangeRegex.exec(processedLine)) !== null) {
                 const type = matchFull[1];
@@ -1523,7 +1526,7 @@
             processedLine = processedLine.replace(fullRangeRegex, ''); 
 
             // 3. Scan for Standard, Commas, and Shorthand Ranges 
-            const shortHandRegex = /\b(gi|gl|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)([\d\s,\-–—]+)/gi;
+            const shortHandRegex = /\b(gi|gl|g1|61|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)([\d\s,\-–—]+)/gi;
             let matchShort;
             while ((matchShort = shortHandRegex.exec(processedLine)) !== null) { 
                 const type = matchShort[1]; 
