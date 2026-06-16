@@ -406,7 +406,7 @@
         }
         .readme-content p { margin: 0 0 10px 0; }
 
-        /* --- LIVE HIGHLIGHT EDITOR & INPUTS --- */
+        /* --- CLEAN NATIVE TEXTAREA & INPUTS --- */
         .input-container { position: relative; width: 100%; display: block; }
         
         textarea#configInput, .backdrop-highlighter {
@@ -448,6 +448,14 @@
 
         input[type="text"] { margin-bottom: 15px; color: var(--hl-orange); }
         input[type="text"]::placeholder { color: var(--line-num-text); }
+
+        /* Highlight View Layer */
+        #configHighlightView {
+            display: none; width: 100%; background: var(--code-bg); backdrop-filter: blur(4px); color: var(--input-text);
+            border: 1px solid var(--accent-red); box-shadow: inset 0 0 15px rgba(248, 81, 73, 0.1); border-radius: 4px; padding: 12px;
+            font-family: "Courier New", Courier, monospace; box-sizing: border-box; font-size: calc(13px * var(--font-scale));
+            line-height: 1.6; overflow: auto; white-space: pre-wrap; word-wrap: break-word; scrollbar-width: thin; scrollbar-color: var(--border-color) transparent;
+        }
 
         /* --- UI CONTROLS --- */
         .controls-row { display: flex; gap: 12px; margin-top: 15px; margin-bottom: 15px; align-items: flex-end;}
@@ -717,7 +725,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v7.7 [Automated Port Extractor]</span>
+            <span class="version-tag">// v7.8 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -843,6 +851,7 @@
 <script>
     // --- ACTIVE HOSTNAME HUD FILTER VARIABLE ---
     let currentHudFilter = null;
+    let lastInvalidPorts = [];
 
     // The Master Regex for identifying invalid port formats, typos, and missing tuples.
     // 1. Catches garbled prefixes: 612/0/1, G!/0/1, G0/0/1
@@ -851,7 +860,7 @@
     // 4. Catches missing middle tuple: Gi12/3
     // 5. Catches missing stack module: 0/30
     // 6. Catches missing slashes entirely: Gi101
-    const invalidPortRegex = /(^|[^a-zA-Z0-9\/])((?:(?:G1|61|6i|G[lI\|!]|G(?=\d))\d*(?:\/\d+)*\/?|(?:Gi|Te|Fa|Eth)\d*\/\d*\/(?!\d)|(?:Gi|Te|Fa|Eth)\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d+\/\d+(?!\/)|(?:Gi|Te|Fa|Eth)?0\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d{3,}))\b/gi;
+    const invalidPortRegex = /(^|[^a-zA-Z0-9\/])((?:(?:G1|61|6i|G[l\|!]|G(?=\d))\d*(?:\/\d+)*\/?|(?:Gi|Te|Fa|Eth)\d*\/\d*\/(?!\d)|(?:Gi|Te|Fa|Eth)\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d+\/\d+(?!\/)|(?:Gi|Te|Fa|Eth)?0\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d{3,}))\b/gi;
 
     function syncLiveHighlights() {
         const textarea = document.getElementById('configInput');
@@ -1512,15 +1521,8 @@
     let globalInterfaces = [];
 
     function clearText() {
-        const label = document.getElementById('configInputLabel');
-        const execBtn = document.getElementById('executeBtn');
-
-        // Reset execution button if we were in highlight mode
-        if (execBtn.innerText === "Re-Scan & Run") {
-            execBtn.innerText = "Execute_Run";
-            execBtn.style.background = "var(--accent-green)";
-            execBtn.style.borderColor = "var(--neon-green)";
-            label.innerHTML = `01 // Config Input`;
+        if (document.getElementById('configHighlightView').style.display === 'block') {
+            exitHighlightMode();
         }
 
         const textarea = document.getElementById('configInput');
@@ -1571,6 +1573,8 @@
         if (!text.trim()) return; 
 
         // --- STRICT TYPO VALIDATION SHIELD ---
+        // Catches heavily misspelled ports (e.g. G12/0/30, 614/0/46, 6i2/0/35, Gl1/0/1) 
+        // and completely missing stack modules (e.g. 0/30, Gi0/30, Gi/0/35)
         let invalidPortsFound = [];
         let invalidMatch;
         invalidPortRegex.lastIndex = 0;
@@ -1693,6 +1697,10 @@
             }
 
             let processedLine = line;
+
+            // 0. OCR Typo Sanitization (Run before any matching)
+            // Fix G1, 61, G!, etc. typos (e.g., G12/0/30 -> Gi2/0/30, 614/0/46 -> Gi4/0/46)
+            processedLine = processedLine.replace(/(^|[^a-zA-Z0-9\/])(G1|61|6i|G[l\|!]|G(?=\d))(?=\d+(?:\/\d+)+)/gi, '$1Gi');
 
             // Remove IPs and 4-digit Dates to prevent false port matches
             processedLine = processedLine.replace(/\b(?:\d{1,3}\.){3}\d{1,3}(?:\/\d+)?\b/gi, '');
