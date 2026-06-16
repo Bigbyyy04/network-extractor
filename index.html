@@ -685,7 +685,7 @@
     <div class="modal-box" style="border-color: var(--hl-orange); box-shadow: 0 0 25px rgba(255, 157, 0, 0.2);">
         <h3 style="color: var(--hl-orange); text-shadow: 0 0 8px rgba(255, 157, 0, 0.4);">⚠️ INVALID PORTS DETECTED</h3>
         <p>The engine detected heavily typo'd or invalid port formats in your source text. To prevent configuring incorrect ports on live production switches, execution has been <strong>halted</strong>.</p>
-        <p style="opacity: 0.8; font-size: 11px;">(e.g., Missing stack modules like <strong>0/30</strong>, or garbled prefixes like <strong>614/0/46</strong>)</p>
+        <p style="opacity: 0.8; font-size: 11px;">(e.g., Missing stack modules like <strong>0/30</strong> or <strong>Gi/0/35</strong>, or garbled prefixes like <strong>614/0/46</strong> or <strong>6i</strong>)</p>
         <p style="color: var(--neon-green); font-weight: bold;">You can correct the ports directly below. Clicking 'Update Logs & Resume' will auto-fix your text and run the extraction!</p>
         
         <div id="invalidPortsList" style="background: var(--code-bg); padding: 10px; border-radius: 4px; border: 1px solid var(--border-color); max-height: 200px; overflow-y: auto; font-family: monospace; margin-bottom: 20px;">
@@ -703,7 +703,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v7.4 [Automated Port Extractor]</span>
+            <span class="version-tag">// v7.5 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -753,7 +753,7 @@
         </div>
         <textarea id="configInput" placeholder="Waiting for logs..." spellcheck="false" oninput="handleConfigInput()"></textarea>
         <div style="font-size: 10px; color: var(--hl-orange); margin-top: 8px; font-family: 'Courier New', monospace; opacity: 0.8;">
-            ⚠️ STRICT VALIDATION ENABLED: Misspelled prefixes (e.g., '61', 'G1') or missing stack modules (e.g., '0/30') will trigger a hard stop.
+            ⚠️ STRICT VALIDATION ENABLED: Misspelled prefixes (e.g., '61', '6i', 'G1') or missing stack modules (e.g., '0/30', 'Gi/0/35') will trigger a hard stop.
         </div>
         <div class="controls-row">
             <button id="executeBtn" class="cyber-btn" onclick="processText()">Execute_Run</button>
@@ -1466,10 +1466,10 @@
         if (!text.trim()) return; 
 
         // --- STRICT TYPO VALIDATION SHIELD ---
-        // Catches heavily misspelled ports (e.g. G12/0/30, 614/0/46, Gl1/0/1) 
-        // and completely missing stack modules (e.g. 0/30, Gi0/30)
+        // Catches heavily misspelled ports (e.g. G12/0/30, 614/0/46, 6i2/0/35, Gl1/0/1) 
+        // and completely missing stack modules (e.g. 0/30, Gi0/30, Gi/0/35)
         // Fixed case-sensitivity bug so Gi1/0/41 safely passes
-        const invalidRegex = /(^|[^a-zA-Z0-9\/])((?:G1|61|G[l\|!]|G(?=\d))\d*(?:\/\d+)+|(?:Gi|Te|Fa|Eth)?0\/\d+(?:\/\d+)*)\b/gi;
+        const invalidRegex = /(^|[^a-zA-Z0-9\/])((?:G1|61|6i|G[l\|!]|G(?=\d))\d*(?:\/\d+)+|(?:Gi|Te|Fa|Eth)\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)?0\/\d+(?:\/\d+)*)\b/gi;
         let invalidPortsFound = [];
         let invalidMatch;
         invalidRegex.lastIndex = 0;
@@ -1613,6 +1613,11 @@
                                        .replace(/^(tengigabitethernet|te)/i, 'Te');
                 cleanType = cleanType.charAt(0).toUpperCase() + cleanType.slice(1).toLowerCase();
                 
+                // Auto-correct 2-tuple (e.g., "0/") to 3-tuple ("1/0/") based on closest switch stack
+                if (/^\d+\/$/.test(prefix)) {
+                    prefix = `${currentSwitchObj.stack}/${prefix}`;
+                }
+
                 const iface = cleanType + prefix + portNum;
                 addPortToMap(currentSwitchForLine, iface);
             }
@@ -1702,8 +1707,26 @@
                 addPortToMap(sw, iface);
             }
             processedLine = processedLine.replace(hyphenRegex, '');
+
+            // 6. Catch-all for standalone raw ports (e.g., "3/0/11" or "0/30")
+            const catchAllRawRegex = /\b(\d+(?:\/\d+)+)\b/gi;
+            let matchCatchAll;
+            while ((matchCatchAll = catchAllRawRegex.exec(processedLine)) !== null) {
+                let parts = matchCatchAll[1].split('/');
+                let isValid = parts.every(num => parseInt(num, 10) < 150);
+                if (isValid) {
+                    let ifaceStr = matchCatchAll[1];
+                    // If it is a 2-tuple (e.g., 0/30), dynamically prepend the closest stack module
+                    if (parts.length === 2) {
+                        ifaceStr = `${currentSwitchObj.stack}/${ifaceStr}`;
+                    }
+                    const iface = rawPrefix + ifaceStr;
+                    addPortToMap(currentSwitchForLine, iface);
+                }
+            }
+            processedLine = processedLine.replace(catchAllRawRegex, '');
             
-            // 6. DEEP SCAN: Catch-all for standalone 1-2 digit ports on their own line (e.g., "31")
+            // 7. DEEP SCAN: Catch-all for standalone 1-2 digit ports on their own line (e.g., "31")
             // ONLY runs if the user explicitly enables the toggle to avoid capturing random numbers
             if (isDeepScan) {
                 const catchAllSinglePortRegex = /^\s*(\d{1,2})\s*$/g;
