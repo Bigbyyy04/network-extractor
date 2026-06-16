@@ -407,6 +407,7 @@
         .readme-content p { margin: 0 0 10px 0; }
 
         /* --- CLEAN NATIVE TEXTAREA & INPUTS --- */
+        .input-container { position: relative; width: 100%; }
         textarea, input[type="text"] {
             width: 100%;
             background: var(--code-bg);
@@ -428,13 +429,21 @@
         textarea:focus, input[type="text"]:focus { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(148, 74, 49, 0.2); }
         textarea.expanded { height: calc(400px * var(--font-scale)); }
         
-        textarea::-webkit-scrollbar, .output-box::-webkit-scrollbar { width: 10px; height: 10px;}
-        textarea::-webkit-scrollbar-track, .output-box::-webkit-scrollbar-track { background: transparent; }
-        textarea::-webkit-scrollbar-thumb, .output-box::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        textarea::-webkit-scrollbar, .output-box::-webkit-scrollbar, #configHighlightView::-webkit-scrollbar { width: 10px; height: 10px;}
+        textarea::-webkit-scrollbar-track, .output-box::-webkit-scrollbar-track, #configHighlightView::-webkit-scrollbar-track { background: transparent; }
+        textarea::-webkit-scrollbar-thumb, .output-box::-webkit-scrollbar-thumb, #configHighlightView::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
         textarea::selection, .output-box::selection { background: rgba(148, 74, 49, 0.2); }
 
         input[type="text"] { margin-bottom: 15px; color: var(--hl-orange); }
         input[type="text"]::placeholder { color: var(--line-num-text); }
+
+        /* Highlight View Layer */
+        #configHighlightView {
+            display: none; width: 100%; background: var(--code-bg); backdrop-filter: blur(4px); color: var(--input-text);
+            border: 1px solid var(--accent-red); box-shadow: inset 0 0 15px rgba(248, 81, 73, 0.1); border-radius: 4px; padding: 12px;
+            font-family: "Courier New", Courier, monospace; box-sizing: border-box; font-size: calc(13px * var(--font-scale));
+            line-height: 1.6; overflow: auto; white-space: pre-wrap; word-wrap: break-word; scrollbar-width: thin; scrollbar-color: var(--border-color) transparent;
+        }
 
         /* --- UI CONTROLS --- */
         .controls-row { display: flex; gap: 12px; margin-top: 15px; margin-bottom: 15px; align-items: flex-end;}
@@ -693,6 +702,7 @@
         
         <div class="modal-buttons">
             <button class="clear-btn" onclick="closeInvalidPortsModal()">Cancel</button>
+            <button class="clear-btn" style="border-color: var(--accent-blue); color: var(--accent-blue);" onclick="showInvalidHighlights()">Go back and show me</button>
             <button class="cyber-btn" style="background: var(--hl-orange); border-color: var(--hl-orange); color: #000; box-shadow: 0 0 10px rgba(255, 157, 0, 0.3);" onclick="applyInvalidPortFixes()">Update Logs & Resume</button>
         </div>
     </div>
@@ -703,7 +713,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v7.5 [Automated Port Extractor]</span>
+            <span class="version-tag">// v7.6 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -737,7 +747,7 @@
 
     <div class="form-group">
         <div class="header-row">
-            <label>01 // Config Input</label>
+            <label id="configInputLabel">01 // Config Input</label>
             <div style="display: flex; gap: 10px; align-items: center; justify-content: flex-end; flex-grow: 1;">
                 <div style="display: flex; align-items: center; gap: 5px; border: 1px dashed rgba(255, 157, 0, 0.4); padding: 2px 6px; border-radius: 4px; background: rgba(255, 157, 0, 0.05);" title="Used when ports lack a prefix (e.g. '1/0/1' instead of 'Gi1/0/1')">
                     <span style="font-size: 10px; color: var(--hl-orange); font-family: 'Courier New', monospace; font-weight: bold;">PREFIX:</span>
@@ -751,7 +761,12 @@
                 <button class="expand-btn" id="expandBtn" style="margin-left: 10px;" onclick="toggleExpand()">[ EXPAND ]</button>
             </div>
         </div>
-        <textarea id="configInput" placeholder="Waiting for logs..." spellcheck="false" oninput="handleConfigInput()"></textarea>
+        
+        <div class="input-container">
+            <textarea id="configInput" placeholder="Waiting for logs..." spellcheck="false" oninput="handleConfigInput()"></textarea>
+            <div id="configHighlightView"></div>
+        </div>
+        
         <div style="font-size: 10px; color: var(--hl-orange); margin-top: 8px; font-family: 'Courier New', monospace; opacity: 0.8;">
             ⚠️ STRICT VALIDATION ENABLED: Misspelled prefixes (e.g., '61', '6i', 'G1') or missing stack modules (e.g., '0/30', 'Gi/0/35') will trigger a hard stop.
         </div>
@@ -824,9 +839,74 @@
 <script>
     // --- ACTIVE HOSTNAME HUD FILTER VARIABLE ---
     let currentHudFilter = null;
+    let lastInvalidPorts = [];
 
     function closeInvalidPortsModal() {
         document.getElementById('invalidPortsModal').classList.remove('visible');
+    }
+
+    function showInvalidHighlights() {
+        closeInvalidPortsModal();
+        const textarea = document.getElementById('configInput');
+        const highlightView = document.getElementById('configHighlightView');
+        const label = document.getElementById('configInputLabel');
+        
+        let text = textarea.value;
+        // Escape HTML to prevent accidental DOM injection
+        text = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        
+        // Wrap invalid ports in a highly visible red highlight marker
+        if (lastInvalidPorts && lastInvalidPorts.length > 0) {
+            lastInvalidPorts.forEach(p => {
+                let escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                let regex = new RegExp(`(^|[^a-zA-Z0-9\\/])(${escapeRegExp(p)})\\b`, 'gi');
+                text = text.replace(regex, `$1<mark style="background: rgba(248, 81, 73, 0.4); color: #fff; border-bottom: 2px solid var(--accent-red); padding: 0 3px; border-radius: 2px;">$2</mark>`);
+            });
+        }
+        
+        highlightView.innerHTML = text;
+        
+        // Sync the height of the read-only view with the textarea state
+        if (textarea.classList.contains('expanded')) {
+            highlightView.style.height = 'calc(400px * var(--font-scale))';
+        } else {
+            highlightView.style.height = 'calc(140px * var(--font-scale))';
+        }
+        
+        textarea.style.display = 'none';
+        highlightView.style.display = 'block';
+        label.innerHTML = `01 // Config Input <span style="color: var(--accent-red);">[ HIGHLIGHT MODE ]</span>`;
+        
+        // Transform the main button to an Exit mechanism
+        const execBtn = document.getElementById('executeBtn');
+        execBtn.innerText = "Exit_Highlight_Mode";
+        execBtn.style.background = "var(--accent-red)";
+        execBtn.style.borderColor = "var(--accent-red)";
+        execBtn.onclick = exitHighlightMode;
+        
+        document.getElementById('statusMsg').innerText = `STATUS: HIGHLIGHT_MODE_ACTIVE | Visually locate errors, then exit to edit.`;
+    }
+
+    function exitHighlightMode() {
+        const textarea = document.getElementById('configInput');
+        const highlightView = document.getElementById('configHighlightView');
+        const label = document.getElementById('configInputLabel');
+        
+        highlightView.style.display = 'none';
+        textarea.style.display = 'block';
+        label.innerHTML = `01 // Config Input`;
+        
+        // Restore the standard execution button
+        const execBtn = document.getElementById('executeBtn');
+        execBtn.innerText = "Execute_Run";
+        execBtn.style.background = "var(--accent-green)";
+        execBtn.style.borderColor = "var(--neon-green)";
+        execBtn.onclick = processText;
+        
+        document.getElementById('statusMsg').innerText = `STATUS: READY_FOR_EXECUTION`;
+        document.getElementById('statusMsg').style.color = 'var(--accent-blue)';
+        
+        textarea.focus();
     }
 
     function applyInvalidPortFixes() {
@@ -1270,12 +1350,17 @@
 
     function toggleExpand() {
         const textarea = document.getElementById('configInput');
+        const highlightView = document.getElementById('configHighlightView');
         const btn = document.getElementById('expandBtn');
         
         textarea.style.height = ''; 
         textarea.classList.toggle('expanded');
         btn.innerText = textarea.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
         
+        if (highlightView.style.display === 'block') {
+            highlightView.style.height = textarea.classList.contains('expanded') ? 'calc(400px * var(--font-scale))' : 'calc(140px * var(--font-scale))';
+        }
+
         if (!textarea.classList.contains('expanded') && textarea.value.split('\n').length > 8) {
             textarea.dataset.manualCollapse = "true";
         } else {
@@ -1426,6 +1511,10 @@
     let globalInterfaces = [];
 
     function clearText() {
+        if (document.getElementById('configHighlightView').style.display === 'block') {
+            exitHighlightMode();
+        }
+
         const textarea = document.getElementById('configInput');
         textarea.value = '';
         textarea.dataset.manualCollapse = ""; 
@@ -1479,6 +1568,7 @@
         
         if (invalidPortsFound.length > 0) {
             invalidPortsFound = [...new Set(invalidPortsFound)]; // Deduplicate
+            lastInvalidPorts = invalidPortsFound; // Save for highlight mode
             
             let htmlList = '';
             invalidPortsFound.forEach(p => {
@@ -1613,11 +1703,6 @@
                                        .replace(/^(tengigabitethernet|te)/i, 'Te');
                 cleanType = cleanType.charAt(0).toUpperCase() + cleanType.slice(1).toLowerCase();
                 
-                // Auto-correct 2-tuple (e.g., "0/") to 3-tuple ("1/0/") based on closest switch stack
-                if (/^\d+\/$/.test(prefix)) {
-                    prefix = `${currentSwitchObj.stack}/${prefix}`;
-                }
-
                 const iface = cleanType + prefix + portNum;
                 addPortToMap(currentSwitchForLine, iface);
             }
@@ -1708,19 +1793,15 @@
             }
             processedLine = processedLine.replace(hyphenRegex, '');
 
-            // 6. Catch-all for standalone raw ports (e.g., "3/0/11" or "0/30")
+            // 6. Catch-all for standalone raw ports (e.g., "3/0/11")
             const catchAllRawRegex = /\b(\d+(?:\/\d+)+)\b/gi;
             let matchCatchAll;
             while ((matchCatchAll = catchAllRawRegex.exec(processedLine)) !== null) {
                 let parts = matchCatchAll[1].split('/');
                 let isValid = parts.every(num => parseInt(num, 10) < 150);
-                if (isValid) {
-                    let ifaceStr = matchCatchAll[1];
-                    // If it is a 2-tuple (e.g., 0/30), dynamically prepend the closest stack module
-                    if (parts.length === 2) {
-                        ifaceStr = `${currentSwitchObj.stack}/${ifaceStr}`;
-                    }
-                    const iface = rawPrefix + ifaceStr;
+                // Require strict 3-tuple format to avoid false positives (e.g. 3/0/11)
+                if (isValid && parts.length >= 3) {
+                    const iface = rawPrefix + matchCatchAll[1];
                     addPortToMap(currentSwitchForLine, iface);
                 }
             }
