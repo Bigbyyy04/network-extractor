@@ -211,7 +211,7 @@
             font-family: "Segoe UI", Roboto, monospace;
         }
 
-        /* Top Right Controls */
+        /* Top Right Controls (Zoom + Theme) */
         .header-controls {
             display: flex;
             align-items: center;
@@ -651,24 +651,19 @@
         input:checked + .ios-slider { background-color: var(--accent-green); border-color: var(--accent-green); }
         input:checked + .ios-slider:before { transform: translateX(16px); background-color: #fff; }
 
-        /* --- SETTINGS & MODALS --- */
+        /* --- INVALID PORTS MODAL --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center;
             z-index: 2000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
         }
         .modal-overlay.visible { opacity: 1; visibility: visible; }
         .modal-box {
-            background: var(--card-bg); border: 1px solid var(--border-color); padding: 30px; border-radius: 8px; max-width: 500px; width: 100%; box-shadow: 0 0 25px rgba(0, 0, 0, 0.5); color: var(--text-main); font-size: 13px; line-height: 1.6;
+            background: var(--card-bg); border: 1px solid var(--accent-red); padding: 30px; border-radius: 8px; max-width: 500px; box-shadow: 0 0 25px rgba(248, 81, 73, 0.2); color: var(--text-main); font-size: 13px; line-height: 1.6;
             transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         .modal-overlay.visible .modal-box { transform: scale(1); }
-        .modal-box h3 { color: var(--accent-blue); margin-top: 0; font-family: "Courier New", Courier, monospace; font-size: 16px; }
+        .modal-box h3 { color: var(--accent-red); margin-top: 0; font-family: "Courier New", Courier, monospace; font-size: 16px; text-shadow: 0 0 8px rgba(248, 81, 73, 0.4); }
         .modal-buttons { margin-top: 25px; display: flex; justify-content: flex-end; gap: 12px; }
-
-        .hotkey-input {
-            background: rgba(0,0,0,0.3); border: 1px solid var(--accent-blue); color: var(--neon-green); font-family: monospace; font-weight: bold; text-align: center; width: 150px; padding: 6px; border-radius: 4px; cursor: pointer;
-        }
-        .hotkey-input:focus { border-color: var(--neon-green); box-shadow: 0 0 8px rgba(57, 255, 20, 0.3); outline: none;}
 
         /* --- LOCAL DB STYLES --- */
         .bottom-actions { text-align: center; margin-top: 30px; margin-bottom: 20px; display: flex; justify-content: center; gap: 15px; }
@@ -725,37 +720,15 @@
     </div>
 </div>
 
-<div id="settingsModal" class="modal-overlay">
-    <div class="modal-box">
-        <h3>⚙️ PREFERENCES</h3>
-        <p>Because browser security sandboxing strictly blocks websites from using global (OS-level) hotkeys, standard web pages cannot be summoned via keyboard shortcuts while you are working in other tabs or apps.</p>
-        
-        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 4px; margin-top: 15px; border-left: 3px solid var(--accent-blue);">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <strong style="color: var(--accent-blue);">Local Hotkey (Focus Input Box)</strong><br>
-                    <span style="font-size: 11px; opacity: 0.7;">Instantly clears and focuses the text box (Only works when this tab is active).</span>
-                </div>
-                <input type="text" id="hotkeyInput" class="hotkey-input" placeholder="Click to bind..." readonly>
-            </div>
-        </div>
-
-        <div class="modal-buttons">
-            <button class="cyber-btn" onclick="closeSettingsModal()">Close</button>
-        </div>
-    </div>
-</div>
-
 <div class="container">
     
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v8.2 [Automated Port Extractor]</span>
+            <span class="version-tag">// v8.3 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
-            <button class="theme-toggle-btn" onclick="openSettingsModal()" title="Preferences">⚙️ SETTINGS</button>
             <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Cycle Theme">☀️ LIGHT</button>
             
             <div class="zoom-controls">
@@ -880,63 +853,13 @@
     let currentHudFilter = null;
     let lastInvalidPorts = [];
 
-    // --- HOTKEY LOGIC ---
-    const hotkeyInput = document.getElementById('hotkeyInput');
-    let savedHotkey = localStorage.getItem('nocape_hotkey') || "Alt+Q";
-    hotkeyInput.value = savedHotkey;
-
-    hotkeyInput.addEventListener('keydown', (e) => {
-        e.preventDefault();
-        if (e.key === "Escape" || e.key === "Backspace" || e.key === "Delete") {
-            hotkeyInput.value = "";
-            localStorage.removeItem('nocape_hotkey');
-            savedHotkey = "";
-            return;
-        }
-        
-        let keys = [];
-        if (e.ctrlKey) keys.push("Ctrl");
-        if (e.altKey) keys.push("Alt");
-        if (e.shiftKey) keys.push("Shift");
-        if (e.metaKey) keys.push("Meta");
-        
-        if (e.key !== "Control" && e.key !== "Alt" && e.key !== "Shift" && e.key !== "Meta") {
-            keys.push(e.key.toUpperCase());
-            const finalKey = keys.join("+");
-            hotkeyInput.value = finalKey;
-            localStorage.setItem('nocape_hotkey', finalKey);
-            savedHotkey = finalKey;
-            hotkeyInput.blur();
-        }
-    });
-
-    document.addEventListener('keydown', (e) => {
-        if (!savedHotkey) return;
-        
-        let keys = [];
-        if (e.ctrlKey) keys.push("Ctrl");
-        if (e.altKey) keys.push("Alt");
-        if (e.shiftKey) keys.push("Shift");
-        if (e.metaKey) keys.push("Meta");
-        if (e.key !== "Control" && e.key !== "Alt" && e.key !== "Shift" && e.key !== "Meta") {
-            keys.push(e.key.toUpperCase());
-        }
-        
-        if (keys.join("+") === savedHotkey) {
-            e.preventDefault(); // Prevent default browser behaviors if any
-            clearText();
-            document.getElementById('configInput').focus();
-        }
-    });
-
-    function openSettingsModal() {
-        document.getElementById('settingsModal').classList.add('visible');
-    }
-    function closeSettingsModal() {
-        document.getElementById('settingsModal').classList.remove('visible');
-    }
-
     // The Master Regex for identifying invalid port formats, typos, and missing tuples.
+    // 1. Catches garbled prefixes: 612/0/1, G!/0/1, G0/0/1
+    // 2. Catches trailing slash: Gi1/0/
+    // 3. Catches missing first tuple: Gi/12/3
+    // 4. Catches missing middle tuple: Gi12/3
+    // 5. Catches missing stack module: 0/30
+    // 6. Catches missing slashes entirely: Gi101
     const invalidPortRegex = /(^|[^a-zA-Z0-9\/])((?:(?:G1|61|6i|G[l\|!]|G(?=\d))\d*(?:\/\d+)*\/?|(?:Gi|Te|Fa|Eth)\d*\/\d*\/(?!\d)|(?:Gi|Te|Fa|Eth)\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d+\/\d+(?!\/)|(?:Gi|Te|Fa|Eth)?0\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d{3,}))\b/gi;
 
     function syncLiveHighlights() {
@@ -944,9 +867,11 @@
         const view = document.getElementById('configHighlightView');
         let text = textarea.value;
         
+        // Escape HTML to prevent injection, then wrap invalid ports in <mark>
         let escapedText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         escapedText = escapedText.replace(invalidPortRegex, '$1<mark class="error-highlight">$2</mark>');
         
+        // Append <br> so the div matches textarea height properly when on an empty newline
         view.innerHTML = escapedText + '<br>';
     }
 
@@ -967,10 +892,12 @@
         const textarea = document.getElementById('configInput');
         const label = document.getElementById('configInputLabel');
         
+        // Force the highlight sync to ensure it's up to date
         syncLiveHighlights();
         
         label.innerHTML = `01 // Config Input <span style="color: var(--accent-red); margin-left: 10px;">[ LIVE HIGHLIGHT MODE ]</span>`;
         
+        // Transform the main button to a Re-Scan mechanism
         const execBtn = document.getElementById('executeBtn');
         execBtn.innerText = "Re-Scan & Run";
         execBtn.style.background = "var(--accent-red)";
@@ -978,6 +905,22 @@
         
         document.getElementById('statusMsg').innerText = `STATUS: HIGHLIGHT_MODE_ACTIVE | Edit the red text directly in the box above.`;
         textarea.focus();
+    }
+
+    function exitHighlightMode() {
+        const label = document.getElementById('configInputLabel');
+        
+        label.innerHTML = `01 // Config Input`;
+        
+        const execBtn = document.getElementById('executeBtn');
+        execBtn.innerText = "Execute_Run";
+        execBtn.style.background = "var(--accent-green)";
+        execBtn.style.borderColor = "var(--neon-green)";
+        
+        document.getElementById('statusMsg').innerText = `STATUS: READY_FOR_EXECUTION`;
+        document.getElementById('statusMsg').style.color = 'var(--accent-blue)';
+        
+        document.getElementById('configInput').focus();
     }
 
     function applyInvalidPortFixes() {
@@ -991,6 +934,7 @@
             let newValue = input.value.trim();
             
             if (original !== newValue && newValue !== "") {
+                // Safely escape and replace the specific bad port
                 let escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 let regex = new RegExp(`(^|[^a-zA-Z0-9\\/])(${escapeRegExp(original)})\\b`, 'gi');
                 text = text.replace(regex, `$1${newValue}`);
@@ -1000,12 +944,13 @@
 
         if (changesMade) {
             textarea.value = text;
-            handleConfigInput(); 
-            syncLiveHighlights(); 
+            handleConfigInput(); // Refresh HUD
+            syncLiveHighlights(); // Clear highlights
         }
         
         closeInvalidPortsModal();
         
+        // Slight delay before re-running extraction to ensure DOM updates gracefully
         setTimeout(() => {
             processText();
         }, 100);
@@ -1071,6 +1016,7 @@
         const currentTheme = html.getAttribute('data-theme') || 'dark';
         let newTheme;
         
+        // Cycle normal themes. If currently in Playstation, clicking it will reset to Dark
         if (currentTheme === 'dark') newTheme = 'light';
         else if (currentTheme === 'light') newTheme = 'twilight';
         else newTheme = 'dark';
@@ -1083,6 +1029,7 @@
     const savedTheme = localStorage.getItem('nocape_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeButton(savedTheme);
+
 
     // --- ZOOM LOGIC & PERSISTENCE ---
     const zoomSlider = document.getElementById('zoomSlider');
@@ -1100,6 +1047,7 @@
         document.documentElement.style.setProperty('--font-scale', 1);
         localStorage.setItem('nocape_zoom', 1);
     });
+
 
     // --- ANIMATED CANVAS ---
     const canvas = document.getElementById('bg-canvas');
@@ -1182,6 +1130,7 @@
             glowRGB = '245, 158, 11';   
             lineAlpha = 0.4; polyAlpha = 0.12;
         } else {
+            // Default dark mode (and base for PS mode)
             baseRGB = '88, 166, 255';   
             glowRGB = '57, 255, 20';    
             lineAlpha = 0.25; polyAlpha = 0.08;
@@ -1423,9 +1372,11 @@
         textarea.classList.toggle('expanded');
         btn.innerText = textarea.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
         
+        // Sync highlight view expansion if it's currently active
         if (highlightView.style.display === 'block') {
             highlightView.classList.toggle('expanded');
         } else {
+            // Keep classes in sync for when it eventually shows
             if (textarea.classList.contains('expanded')) {
                 highlightView.classList.add('expanded');
             } else {
@@ -1441,6 +1392,7 @@
     }
 
     function handleConfigInput() {
+        // Reset current HUD filter gracefully whenever new inputs are actively changing
         if (currentHudFilter) {
             currentHudFilter = null;
         }
@@ -1474,19 +1426,25 @@
         btn.innerText = wrapper.classList.contains('expanded') ? `[ CLOSE_${name} ]` : `[ ${name} ]`;
     }
 
+    // --- HUD CLICK-FILTER HANDLER ---
     function setHudFilter(clickedHostName) {
+        // Toggle off if clicking the exact currently active host filter
         if (currentHudFilter && currentHudFilter.toLowerCase() === clickedHostName.toLowerCase()) {
             currentHudFilter = null;
         } else {
             currentHudFilter = clickedHostName;
         }
+        
+        // Re-render layout UI to refresh matching interface targets
         renderOutput();
     }
 
+    // Universal Switch Hostname Sanitizer (Fixes CASO / ACCO typos)
     function sanitizeHostname(sw) {
         return sw.toUpperCase().replace(/(ACC|CAS)O/g, '$10');
     }
 
+    // --- DYNAMIC HUD SCANNER ---
     function updateDynamicHUD() {
         const text = document.getElementById('configInput').value;
         const deviceHud = document.getElementById('deviceHud');
@@ -1497,6 +1455,7 @@
             return;
         }
 
+        // Auto-Learn IPs dynamically for the HUD
         const autoLearnRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)\s*[\(\[-]?\s*(\b(?:\d{1,3}\.){3}\d{1,3}\b)/gi;
         let autoMatch;
         while ((autoMatch = autoLearnRegex.exec(text)) !== null) {
@@ -1506,12 +1465,14 @@
 
         const uniqueHosts = new Set();
         
+        // Hostnames scanner
         const switchRegex = /\b[a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*/gi;
         let match;
         while ((match = switchRegex.exec(text)) !== null) { 
             uniqueHosts.add(sanitizeHostname(match[0])); 
         }
 
+        // Table scanner (including FQDN support)
         const fqdnTableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(\d+(?:\/\d+)+)/gi;
         while ((match = fqdnTableRegex.exec(text)) !== null) {
             uniqueHosts.add(sanitizeHostname(match[1]));
@@ -1522,16 +1483,19 @@
             uniqueHosts.add(sanitizeHostname(match[1]));
         }
 
+        // Hyphen scanner
         const hyphenRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)-(\d+)[\s\t]+(\d+)/gi;
         while ((match = hyphenRegex.exec(text)) !== null) {
             uniqueHosts.add(sanitizeHostname(match[1]));
         }
         
+        // Attached format scanner (e.g. CO-ESP-ACC02M02-2/0/38)
         const attachedRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)\s*-\s*(\d+(?:\/\d+)+)/gi;
         while ((match = attachedRegex.exec(text)) !== null) {
             uniqueHosts.add(sanitizeHostname(match[1]));
         }
 
+        // Reverse Table scanner
         const reverseTableRegex = /\b(\d+)[\s\t]+([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(?:SW)?(\d+)\b/gi;
         while ((match = reverseTableRegex.exec(text)) !== null) {
             uniqueHosts.add(sanitizeHostname(match[2]));
@@ -1547,6 +1511,7 @@
                 let targetIp = switchDB[lowerHost] ? switchDB[lowerHost] : "NOT_IN_DB";
                 let ipColor = targetIp === 'NOT_IN_DB' ? 'var(--hl-orange)' : 'var(--neon-green)';
                 
+                // Identify dynamic highlight formatting for HUD targets when an active filter is running
                 let stateClass = "";
                 if (currentHudFilter) {
                     if (currentHudFilter.toLowerCase() === lowerHost) {
@@ -1571,6 +1536,49 @@
     let globalSwitches = [];
     let globalInterfaces = [];
 
+    function clearText() {
+        if (document.getElementById('configHighlightView').style.display === 'block') {
+            exitHighlightMode();
+        }
+
+        const textarea = document.getElementById('configInput');
+        const view = document.getElementById('configHighlightView');
+        
+        textarea.value = '';
+        view.innerHTML = '';
+        textarea.dataset.manualCollapse = ""; 
+        
+        if(textarea.classList.contains('expanded')) {
+             textarea.classList.remove('expanded');
+             view.classList.remove('expanded');
+             document.getElementById('expandBtn').innerText = "[ EXPAND ]";
+        }
+
+        document.getElementById('output').innerHTML = `<div style="font-family: 'Courier New', Courier, monospace; color: var(--line-num-text); font-size: calc(13px * var(--font-scale));">-- system_idle --</div>`;
+        document.getElementById('filterInput').style.display = 'none';
+        document.getElementById('filterInput').value = '';
+        document.getElementById('statusMsg').style.display = 'none';
+        document.getElementById('deviceHud').classList.remove('visible');
+        
+        currentHudFilter = null;
+        globalSwitches = [];
+        globalInterfaces = [];
+        lastInvalidPorts = [];
+    }
+
+    function copyContent(hiddenElementId, btnElement) {
+        const textToCopy = document.getElementById(hiddenElementId).value;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const originalText = btnElement.innerText;
+            btnElement.innerText = "COPIED";
+            btnElement.style.background = "var(--accent-green)"; 
+            setTimeout(() => {
+                btnElement.innerText = originalText;
+                btnElement.style.background = ""; 
+            }, 2000);
+        }).catch(err => alert("Failed to copy text."));
+    }
+
     function processText() {
         if (typeof triggerExecuteEffect === 'function') triggerExecuteEffect();
 
@@ -1589,9 +1597,10 @@
         }
         
         if (invalidPortsFound.length > 0) {
-            invalidPortsFound = [...new Set(invalidPortsFound)]; 
+            invalidPortsFound = [...new Set(invalidPortsFound)]; // Deduplicate
             lastInvalidPorts = invalidPortsFound;
             
+            // If they click re-scan while in highlight mode and there are STILL errors, we just re-sync and warn
             if (execBtn.innerText === "Re-Scan & Run") {
                 syncLiveHighlights();
                 document.getElementById('statusMsg').innerText = `STATUS: HIGHLIGHT_MODE_ACTIVE | Still found ${invalidPortsFound.length} invalid port(s). Fix the red marks above.`;
@@ -1611,13 +1620,15 @@
             document.getElementById('invalidPortsList').innerHTML = htmlList;
             document.getElementById('invalidPortsModal').classList.add('visible');
             
+            // Halt and reset outputs
             document.getElementById('output').innerHTML = `<div style="font-family: 'Courier New', Courier, monospace; color: var(--accent-red); font-size: calc(13px * var(--font-scale)); font-weight: bold;">-- EXECUTION HALTED DUE TO INVALID PORTS --</div>`;
             document.getElementById('statusMsg').style.display = 'block';
             document.getElementById('statusMsg').innerText = `STATUS: 0 MAPPINGS_EXTRACTED | HALTED_BY_VALIDATION`;
             document.getElementById('statusMsg').style.color = 'var(--accent-red)';
             
-            return; 
+            return; // Prevent extraction completely
         } else {
+            // Validation Passed! Restore UI if we were in highlight mode
             if (execBtn.innerText === "Re-Scan & Run") {
                 exitHighlightMode();
             }
@@ -1627,6 +1638,7 @@
         const rawPrefix = document.getElementById('rawPortPrefix').value;
         const isDeepScan = document.getElementById('deepScanToggle') && document.getElementById('deepScanToggle').checked;
         
+        // Auto-Learn IPs dynamically
         const autoLearnRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)\s*[\(\[-]?\s*(\b(?:\d{1,3}\.){3}\d{1,3}\b)/gi;
         let autoMatch;
         while ((autoMatch = autoLearnRegex.exec(text)) !== null) {
@@ -1638,7 +1650,9 @@
         const switchesSet = new Set();
         const interfaceCounts = new Map(); 
 
+        // Map all switch occurrences and their line numbers for distance mapping
         const switchLines = [];
+        // Capture Switch Name and optional Stack module (e.g., SW1 -> 1)
         const switchRegexGlobal = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\s+SW(\d+))?/gi;
         
         lines.forEach((line, idx) => {
@@ -1653,6 +1667,7 @@
             }
         });
 
+        // Function to find the nearest switch hostname for a given line index
         function getClosestSwitch(lineIndex) {
             if (switchLines.length === 0) return { name: "[ SWITCH_NOT_FOUND ]", stack: "1" };
             let closest = switchLines[0];
@@ -1663,6 +1678,7 @@
                     minDiff = diff;
                     closest = switchLines[k];
                 } else if (diff === minDiff) {
+                    // Prefer the switch above if equidistant
                     if (switchLines[k].line < closest.line) {
                         closest = switchLines[k];
                     }
@@ -1693,11 +1709,15 @@
 
             let processedLine = line;
 
+            // 0. OCR Typo Sanitization (Run before any matching)
+            // Fixes silent auto-corrects for common typos like G12/0/30 -> Gi2/0/30
             processedLine = processedLine.replace(/(^|[^a-zA-Z0-9\/])(G1|61|6i|G[l\|!])(?=\d+(?:\/\d+)+)/gi, '$1Gi');
 
+            // Remove IPs and 4-digit Dates to prevent false port matches
             processedLine = processedLine.replace(/\b(?:\d{1,3}\.){3}\d{1,3}(?:\/\d+)?\b/gi, '');
             processedLine = processedLine.replace(/\b\d{1,2}\/\d{1,2}\/\d{4}\b/gi, '');
 
+            // 1. Scan for FQDN/Domain table formats (uses rawPrefix)
             const fqdnRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(\d+(?:\/\d+)+)/gi;
             let matchFqdn;
             while ((matchFqdn = fqdnRegex.exec(processedLine)) !== null) {
@@ -1708,6 +1728,7 @@
             }
             processedLine = processedLine.replace(fqdnRegex, '');
 
+            // 1.5 Scan for direct Attached Format (uses rawPrefix)
             const attachedRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)\s*-\s*(\d+(?:\/\d+)+)/gi;
             let matchAttached;
             while ((matchAttached = attachedRegex.exec(processedLine)) !== null) {
@@ -1724,6 +1745,7 @@
                                        .replace(/^(tengigabitethernet|te)/i, 'Te');
                 cleanType = cleanType.charAt(0).toUpperCase() + cleanType.slice(1).toLowerCase();
                 
+                // Auto-correct 2-tuple (e.g., "0/") to 3-tuple ("1/0/") based on closest switch stack
                 if (/^\d+\/$/.test(prefix)) {
                     prefix = `${currentSwitchObj.stack}/${prefix}`;
                 }
@@ -1732,6 +1754,7 @@
                 addPortToMap(currentSwitchForLine, iface);
             }
 
+            // 2. Scan for Full Port Ranges 
             const fullRangeRegex = /\b(gi|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)(\d+)\s*[-–—]\s*(?:gi|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(?:\d+(?:\/\d+)+\/)(\d+)/gi;
             let matchFull;
             while ((matchFull = fullRangeRegex.exec(processedLine)) !== null) {
@@ -1748,6 +1771,7 @@
             }
             processedLine = processedLine.replace(fullRangeRegex, ''); 
 
+            // 3. Scan for Standard, Commas, and Shorthand Ranges 
             const shortHandRegex = /\b(gi|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)([\d\s,\-–—]+)/gi;
             let matchShort;
             while ((matchShort = shortHandRegex.exec(processedLine)) !== null) { 
@@ -1781,6 +1805,7 @@
             }
             processedLine = processedLine.replace(shortHandRegex, '');
 
+            // 4. Scan for table formats (uses rawPrefix)
             const tableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
             let matchTable;
             while ((matchTable = tableRegex.exec(processedLine)) !== null) {
@@ -1790,6 +1815,7 @@
             }
             processedLine = processedLine.replace(tableRegex, '');
 
+            // 4.5 Scan for Reverse Table Formats (e.g. 29   PH-LZL-CAS201 2 OR 13 PH-LSP-ACC0503 SW3)
             const reverseTableRegex = /\b(\d+)[\s\t]+([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(?:SW)?(\d+)\b/gi;
             let matchReverseTable;
             while ((matchReverseTable = reverseTableRegex.exec(processedLine)) !== null) {
@@ -1804,6 +1830,7 @@
             }
             processedLine = processedLine.replace(reverseTableRegex, '');
 
+            // 5. Scan for hyphenated formats (uses rawPrefix)
             const hyphenRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)-(\d+)[\s\t]+(\d+)/gi;
             let matchHyphen;
             while ((matchHyphen = hyphenRegex.exec(processedLine)) !== null) {
@@ -1813,15 +1840,18 @@
             }
             processedLine = processedLine.replace(hyphenRegex, '');
 
+            // 6. Catch-all for standalone raw ports (e.g., "3/0/11" or "0/30")
             const catchAllRawRegex = /\b(\d+(?:\/\d+)+)\b/gi;
             let matchCatchAll;
             while ((matchCatchAll = catchAllRawRegex.exec(processedLine)) !== null) {
                 let parts = matchCatchAll[1].split('/');
                 let isValid = parts.every(num => parseInt(num, 10) < 150);
+                // Require strict 3-tuple format to avoid false positives
                 if (isValid && parts.length >= 3) {
                     const iface = rawPrefix + matchCatchAll[1];
                     addPortToMap(currentSwitchForLine, iface);
                 } else if (isValid && parts.length === 2) {
+                    // It is a 2-tuple (e.g., 0/30), dynamically prepend the closest stack module
                     let ifaceStr = `${currentSwitchObj.stack}/${matchCatchAll[1]}`;
                     const iface = rawPrefix + ifaceStr;
                     addPortToMap(currentSwitchForLine, iface);
@@ -1829,6 +1859,7 @@
             }
             processedLine = processedLine.replace(catchAllRawRegex, '');
             
+            // 7. DEEP SCAN: Catch-all for standalone 1-2 digit ports on their own line (e.g., "31")
             if (isDeepScan) {
                 const catchAllSinglePortRegex = /^\s*(\d{1,2})\s*$/g;
                 let matchCatchAllSingle;
@@ -1870,6 +1901,11 @@
         renderOutput();
     }
 
+    function updateFilteredHUD(switches) {
+        // Redraw active state formatting directly across matching Target components
+        updateDynamicHUD();
+    }
+
     function renderOutput() {
         const rawFilterStr = document.getElementById('filterInput').value.trim().toLowerCase();
         
@@ -1878,6 +1914,7 @@
         const outputDiv = document.getElementById('output');
         let htmlOutput = "";
 
+        // Synchronize HUD Tag Click Filtering alongside Standard Real-Time Keyword Matching Logic
         const filteredSwitches = globalSwitches.filter(sw => {
             let passesManualSearch = sw.toLowerCase().includes(filterStr);
             let passesHudFilter = currentHudFilter ? (sw.toLowerCase() === currentHudFilter.toLowerCase()) : true;
@@ -1996,11 +2033,13 @@
                 shIntStatusText += `sh int ${item.iface} status${newline}`;
             });
 
+            // Strip the very last newline from shRunText if it exists so we don't copy a blank line at the bottom
             if (shRunText.endsWith('\n')) shRunText = shRunText.slice(0, -1);
             if (shIntStatusText.endsWith('\n')) shIntStatusText = shIntStatusText.slice(0, -1);
             
             let copyBothCmdsText = shRunText + "\n\n" + shIntStatusText;
 
+            // Generate Deduplicated Export Variables
             let activeSwitches = [...new Set(filteredInterfaces.map(item => item.sw))];
             activeSwitches.sort((a, b) => a.localeCompare(b));
 
@@ -2035,6 +2074,7 @@
 
             htmlOutput += `<div class="results-container">`;
             
+            // Col 1 - TARGET SW (Multi-Export Header)
             htmlOutput += `<div class="result-column">
                 <div class="script-header" style="flex-direction: column; align-items: flex-start; gap: 6px;">
                     <label>> TARGET_SW</label>
@@ -2053,18 +2093,21 @@
                 <textarea id="hidden-switches" class="hidden-copy-area">${switchesText}</textarea>
             </div>`;
 
+            // Col 2
             htmlOutput += `<div class="result-column">
                 <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> PORT_ID</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-interfaces', this)">COPY</button></div>
                 <div class="output-box">${rawInterfacesHtml}</div>
                 <textarea id="hidden-interfaces" class="hidden-copy-area">${rawInterfacesText}</textarea>
             </div>`;
 
+            // Col 3
             htmlOutput += `<div class="result-column">
                 <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> SH_RUN_CMD</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-shrun', this)">COPY</button></div>
                 <div class="output-box">${shRunHtml}</div>
                 <textarea id="hidden-shrun" class="hidden-copy-area">${shRunText}</textarea>
             </div>`;
 
+            // Col 4
             htmlOutput += `<div class="result-column">
                 <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> SH_STATUS_CMD</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-shint', this)">COPY</button></div>
                 <div class="output-box">${shIntStatusHtml}</div>
