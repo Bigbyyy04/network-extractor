@@ -239,6 +239,17 @@
             box-shadow: 0 0 10px rgba(242, 122, 34, 0.2);
         }
 
+        /* Special Styling for Detach Button */
+        #pipBtn {
+            color: var(--hl-orange);
+            border-color: rgba(255, 157, 0, 0.4);
+        }
+        #pipBtn:hover {
+            border-color: var(--hl-orange);
+            color: var(--hl-orange);
+            box-shadow: 0 0 10px rgba(255, 157, 0, 0.3);
+        }
+
         .zoom-controls {
             display: flex;
             align-items: center;
@@ -672,10 +683,11 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v8.0 [Automated Port Extractor]</span>
+            <span class="version-tag">// v8.1 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
+            <button id="pipBtn" class="theme-toggle-btn" onclick="openPiP()" title="Detach app into a minimalist floating window">⧉ DETACH</button>
             <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Cycle Theme">☀️ LIGHT</button>
             
             <div class="zoom-controls">
@@ -793,6 +805,28 @@
 </div>
 
 <script>
+    // --- PIP DETACH LOGIC ---
+    function openPiP() {
+        const url = window.location.href;
+        const pipWindow = window.open(url, "N0CAPE_PiP", "width=900,height=1000,left=100,top=100,toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes");
+        
+        if (pipWindow) {
+            document.getElementById('statusMsg').style.display = 'block';
+            document.getElementById('statusMsg').style.color = 'var(--hl-orange)';
+            document.getElementById('statusMsg').innerText = `STATUS: APP_DETACHED | Running in pop-out window.`;
+        } else {
+            alert("Pop-up blocked! Please allow pop-ups for this site to use Detach Mode.");
+        }
+    }
+
+    // Hide the Detach button if we are already inside the popup window
+    window.addEventListener('DOMContentLoaded', () => {
+        if (window.opener) {
+            const pipBtn = document.getElementById('pipBtn');
+            if (pipBtn) pipBtn.style.display = 'none';
+        }
+    });
+
     // --- ACTIVE HOSTNAME HUD FILTER VARIABLE ---
     let currentHudFilter = null;
 
@@ -1362,6 +1396,7 @@
 
     function clearText() {
         const textarea = document.getElementById('configInput');
+        
         textarea.value = '';
         textarea.dataset.manualCollapse = ""; 
         
@@ -1398,8 +1433,10 @@
         if (typeof triggerExecuteEffect === 'function') triggerExecuteEffect();
 
         const text = document.getElementById('configInput').value;
-        if (!text.trim()) return; 
+        const execBtn = document.getElementById('executeBtn');
         
+        if (!text.trim()) return; 
+
         const rawPrefix = document.getElementById('rawPortPrefix').value;
         const isDeepScan = document.getElementById('deepScanToggle') && document.getElementById('deepScanToggle').checked;
         
@@ -1625,7 +1662,6 @@
             processedLine = processedLine.replace(catchAllRawRegex, '');
             
             // 7. DEEP SCAN: Catch-all for standalone 1-2 digit ports on their own line (e.g., "31")
-            // ONLY runs if the user explicitly enables the toggle to avoid capturing random numbers
             if (isDeepScan) {
                 const catchAllSinglePortRegex = /^\s*(\d{1,2})\s*$/g;
                 let matchCatchAllSingle;
