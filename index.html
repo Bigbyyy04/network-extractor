@@ -446,8 +446,28 @@
             border-bottom: 2px solid var(--accent-red); color: transparent; padding: 0; margin: 0;
         }
 
-        input[type="text"] { margin-bottom: 15px; color: var(--hl-orange); }
-        input[type="text"]::placeholder { color: var(--line-num-text); }
+        /* Specifically style the filter input so it overrides default browser white backgrounds */
+        #filterInput {
+            width: 100%;
+            background-color: var(--code-bg) !important;
+            color: var(--neon-green) !important;
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: calc(13px * var(--font-scale));
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            outline: none;
+            transition: 0.3s;
+        }
+        #filterInput:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(88, 166, 255, 0.2);
+        }
+        #filterInput::placeholder {
+            color: var(--line-num-text);
+        }
 
         /* Highlight View Layer */
         #configHighlightView {
@@ -725,7 +745,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v8.4 [Automated Port Extractor]</span>
+            <span class="version-tag">// v8.5 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -792,7 +812,7 @@
         <div class="header-row" style="margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <label style="margin-bottom: 0;">02 // Extracted Data</label>
-                <button class="copy-btn" style="background: var(--accent-blue); padding: 4px 8px; font-size: 10px;" onclick="copyContent('hidden-both-cmds', this)" title="Copy both SH RUN and SH STATUS commands across all switches at once">COPY ALL CMDS</button>
+                <button class="copy-btn" style="background: var(--accent-blue); padding: 4px 12px; font-size: 11px;" onclick="copyContent('hidden-both-cmds', this)" title="Copy both SH RUN and SH STATUS commands across all switches at once">COPY ALL CMDS</button>
                 <textarea id="hidden-both-cmds" class="hidden-copy-area"></textarea>
             </div>
             
@@ -801,13 +821,6 @@
                     <span>SEPARATE HOSTS</span>
                     <label class="ios-switch">
                         <input type="checkbox" id="separateToggle" onchange="renderOutput()">
-                        <span class="ios-slider"></span>
-                    </label>
-                </div>
-                <div class="ios-toggle-wrapper" title="Extracts isolated numbers on their own line (e.g., '31') as ports. Turn ON if your logs are heavily fractured.">
-                    <span>DEEP SCAN</span>
-                    <label class="ios-switch">
-                        <input type="checkbox" id="deepScanToggle" onchange="processText()">
                         <span class="ios-slider"></span>
                     </label>
                 </div>
@@ -1644,7 +1657,6 @@
         // --- END VALIDATION SHIELD ---
         
         const rawPrefix = document.getElementById('rawPortPrefix').value;
-        const isDeepScan = document.getElementById('deepScanToggle') && document.getElementById('deepScanToggle').checked;
         const isSeparated = document.getElementById('separateToggle') && document.getElementById('separateToggle').checked;
         
         // Auto-Learn IPs dynamically
@@ -1867,21 +1879,6 @@
                 }
             }
             processedLine = processedLine.replace(catchAllRawRegex, '');
-            
-            // 7. DEEP SCAN: Catch-all for standalone 1-2 digit ports on their own line (e.g., "31")
-            // ONLY runs if the user explicitly enables the toggle to avoid capturing random numbers
-            if (isDeepScan) {
-                const catchAllSinglePortRegex = /^\s*(\d{1,2})\s*$/g;
-                let matchCatchAllSingle;
-                while ((matchCatchAllSingle = catchAllSinglePortRegex.exec(processedLine)) !== null) {
-                    let portNum = parseInt(matchCatchAllSingle[1], 10);
-                    if (portNum > 0 && portNum <= 99) {
-                        let iface = `${rawPrefix}${currentSwitchObj.stack}/0/${portNum}`;
-                        addPortToMap(currentSwitchForLine, iface);
-                    }
-                }
-                processedLine = processedLine.replace(catchAllSinglePortRegex, '');
-            }
         });
 
         globalSwitches = Array.from(switchesSet).sort();
@@ -1906,6 +1903,7 @@
         document.getElementById('filterInput').style.display = 'block';
         document.getElementById('filterInput').value = '';
         
+        document.getElementById('statusMsg').style.display = 'block';
         document.getElementById('statusMsg').style.color = 'var(--accent-blue)';
         renderOutput();
     }
