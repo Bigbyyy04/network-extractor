@@ -407,7 +407,7 @@
         .readme-content p { margin: 0 0 10px 0; }
 
         /* --- CLEAN NATIVE TEXTAREA & INPUTS --- */
-        textarea, input[type="text"] {
+        textarea {
             width: 100%;
             background: var(--code-bg);
             backdrop-filter: blur(4px);
@@ -423,9 +423,10 @@
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             scrollbar-width: thin;
             scrollbar-color: var(--border-color) transparent;
+            height: calc(140px * var(--font-scale));
+            resize: none;
         }
-        textarea { height: calc(140px * var(--font-scale)); resize: none; }
-        textarea:focus, input[type="text"]:focus { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(148, 74, 49, 0.2); }
+        textarea:focus { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(148, 74, 49, 0.2); }
         textarea.expanded { height: calc(400px * var(--font-scale)); }
         
         textarea::-webkit-scrollbar, .output-box::-webkit-scrollbar { width: 10px; height: 10px;}
@@ -692,7 +693,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v8.6 [Automated Port Extractor]</span>
+            <span class="version-tag">// v8.7 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -718,7 +719,7 @@
                 <h3>> Instructions (01)</h3>
                 <p>Provide the engine with raw data (Ticket descriptions, CDP/LLDP outputs, or Inventory tables). As long as the text contains a Switch Hostname (e.g., <code>CO-ESP-ACC02M02</code>) and Port Numbers (e.g., <code>gi1/0/3</code>), the tool will map them.</p>
                 <p><strong>Supported Formats:</strong> It supports single ports, comma-separated shorthand (<code>Gi3/0/1,3,5</code>), dashed ranges (<code>Gi2/0/23 - Gi2/0/27</code>), reverse tables (<code>29  SW-NAME  2</code>), and direct-attached formatting (<code>SW-NAME - 1/0/2</code>). It gracefully auto-corrects Hostname typos (e.g., <code>CASO702</code> -> <code>CAS0702</code>) and silently fixes common port prefix typos like <code>61</code> or <code>Gl</code>.</p>
-                <p><strong>Smart Proximity Mapping & FQDNs:</strong> The engine maps your ports to the absolute closest Switch Hostname it can find, resolving issues with logs where ports are listed <em>before</em> the switch or isolated entirely on separate lines. It also automatically strips Domains/FQDNs from hostnames (e.g., <code>SW01.CORP.LOCAL</code> -> <code>SW01</code>).</p>
+                <p><strong>Smart Proximity Mapping & FQDNs:</strong> The engine uses a Top-Down Boundary scanner to reliably map long lists of ports to the correct switch, resolving issues with logs where ports are listed <em>before</em> the switch or isolated entirely on separate lines. It also automatically strips Domains/FQDNs from hostnames (e.g., <code>SW01.CORP.LOCAL</code> -> <code>SW01</code>).</p>
                 <p><strong>Interactive Filtering & Grouping:</strong> Click any switch tag in the top right target bar to instantly isolate its mapped interfaces! Toggle "SUMMARIZE SH RUN" to automatically group sequential port commands into a single regex format. The engine also auto-highlights layout tags (<code>Prod</code>, <code>Training</code>).</p>
             </div>
         </div>
@@ -1231,7 +1232,7 @@
         textarea.style.height = ''; 
         textarea.classList.toggle('expanded');
         btn.innerText = textarea.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
-        
+
         if (!textarea.classList.contains('expanded') && textarea.value.split('\n').length > 8) {
             textarea.dataset.manualCollapse = "true";
         } else {
@@ -1456,23 +1457,31 @@
         });
 
         // Function to find the nearest switch hostname for a given line index
+        // UPDATED: Now uses Top-Down state tracking instead of absolute proximity
+        // to prevent "Gravity Bleed" from massive port lists.
         function getClosestSwitch(lineIndex) {
             if (switchLines.length === 0) return { name: "[ SWITCH_NOT_FOUND ]", stack: "1" };
-            let closest = switchLines[0];
-            let minDiff = Math.abs(lineIndex - closest.line);
-            for(let k = 1; k < switchLines.length; k++) {
-                let diff = Math.abs(lineIndex - switchLines[k].line);
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    closest = switchLines[k];
-                } else if (diff === minDiff) {
-                    // Prefer the switch above if equidistant
-                    if (switchLines[k].line < closest.line) {
-                        closest = switchLines[k];
-                    }
+            
+            // 1. Exact Line Match (For Tables and Inline Formats)
+            let exactMatch = switchLines.find(sw => sw.line === lineIndex);
+            if (exactMatch) return exactMatch;
+
+            // 2. Top-Down Priority (Claims all ports below it until the next switch)
+            let switchAbove = null;
+            for (let i = switchLines.length - 1; i >= 0; i--) {
+                if (switchLines[i].line < lineIndex) {
+                    switchAbove = switchLines[i];
+                    break;
                 }
             }
-            return closest;
+            
+            // 3. Look-Ahead Fallback (For logs where ports are listed before the switch)
+            if (!switchAbove) {
+                let switchBelow = switchLines.find(sw => sw.line > lineIndex);
+                if (switchBelow) return switchBelow;
+            }
+            
+            return switchAbove || { name: "[ SWITCH_NOT_FOUND ]", stack: "1" };
         }
 
         lines.forEach((line, lineIndex) => {
