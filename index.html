@@ -469,6 +469,14 @@
             color: var(--line-num-text);
         }
 
+        /* Highlight View Layer */
+        #configHighlightView {
+            display: none; width: 100%; background: var(--code-bg); backdrop-filter: blur(4px); color: var(--input-text);
+            border: 1px solid var(--accent-red); box-shadow: inset 0 0 15px rgba(248, 81, 73, 0.1); border-radius: 4px; padding: 12px;
+            font-family: "Courier New", Courier, monospace; box-sizing: border-box; font-size: calc(13px * var(--font-scale));
+            line-height: 1.6; overflow: auto; white-space: pre-wrap; word-wrap: break-word; scrollbar-width: thin; scrollbar-color: var(--border-color) transparent;
+        }
+
         /* --- UI CONTROLS --- */
         .controls-row { display: flex; gap: 12px; margin-top: 15px; margin-bottom: 15px; align-items: flex-end;}
         
@@ -863,10 +871,9 @@
 </div>
 
 <script>
-    // --- STATE MANAGEMENT ---
+    // --- ACTIVE HOSTNAME HUD FILTER VARIABLE ---
     let currentHudFilter = null;
     let lastInvalidPorts = [];
-    let isHighlightModeActive = false; // Bulletproof flag to manage UI states
 
     // The Master Regex Factory for identifying invalid port formats, typos, and missing tuples.
     function getInvalidPortRegex() {
@@ -878,12 +885,14 @@
         const view = document.getElementById('configHighlightView');
         let text = textarea.value;
         
+        // Escape HTML to prevent injection, then wrap invalid ports in <mark>
         let escapedText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         
         // Spawn a fresh regex instance to avoid global lastIndex bugs
         const liveRegex = getInvalidPortRegex();
         escapedText = escapedText.replace(liveRegex, '$1<mark class="error-highlight">$2</mark>');
         
+        // Append <br> so the div matches textarea height properly when on an empty newline
         view.innerHTML = escapedText + '<br>';
     }
 
@@ -967,6 +976,46 @@
         setTimeout(() => {
             processText();
         }, 100);
+    }
+
+    // --- COPY CONTENT LOGIC (WITH CLIPBOARD API FALLBACK) ---
+    function copyContent(hiddenElementId, btnElement) {
+        const textarea = document.getElementById(hiddenElementId);
+        if (!textarea) return;
+        const textToCopy = textarea.value;
+
+        const successCallback = () => {
+            const originalText = btnElement.innerText;
+            const originalBg = btnElement.style.background;
+            btnElement.innerText = "COPIED";
+            btnElement.style.background = "var(--accent-green)"; 
+            setTimeout(() => {
+                btnElement.innerText = originalText;
+                btnElement.style.background = originalBg; 
+            }, 2000);
+        };
+
+        // Modern browsers often block navigator.clipboard if not running on HTTPS or localhost.
+        // This hybrid approach ensures it always copies cleanly even if executed as a local file://
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(textToCopy).then(successCallback).catch(err => {
+                fallbackCopy(textarea, successCallback);
+            });
+        } else {
+            fallbackCopy(textarea, successCallback);
+        }
+    }
+
+    function fallbackCopy(textarea, successCallback) {
+        textarea.style.display = 'block';
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            successCallback();
+        } catch (err) {
+            alert("Failed to copy text. Your browser may be blocking local clipboard access.");
+        }
+        textarea.style.display = 'none';
     }
 
     // --- SUMMARIZE TOGGLE LOGIC ---
@@ -1496,8 +1545,13 @@
         }
 
         // Table scanner (including FQDN support)
-        const fqdnTableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(?:SWITCH|SW)[\s\t]*(\d+)[\s\t]+(\d+)/gi;
+        const fqdnTableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(\d+(?:\/\d+)+)/gi;
         while ((match = fqdnTableRegex.exec(text)) !== null) {
+            uniqueHosts.add(sanitizeHostname(match[1]));
+        }
+
+        const tableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
+        while ((match = tableRegex.exec(text)) !== null) {
             uniqueHosts.add(sanitizeHostname(match[1]));
         }
 
@@ -1513,7 +1567,7 @@
             uniqueHosts.add(sanitizeHostname(match[1]));
         }
 
-        // Reverse Table scanner (e.g. 29   PH-LZL-CAS201 2 OR 13 PH-LSP-ACC0503 SW3)
+        // Reverse Table scanner
         const reverseTableRegex = /\b(\d+)[\s\t]+([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(?:SWITCH|SW)?[\s\t]*(\d+)\b/gi;
         while ((match = reverseTableRegex.exec(text)) !== null) {
             uniqueHosts.add(sanitizeHostname(match[2]));
@@ -1770,7 +1824,10 @@
             while ((matchShort = shortHandRegex.exec(processedLine)) !== null) { 
                 const type = matchShort[1]; 
                 const prefix = matchShort[2]; 
-                const listStr = matchShort[3]; 
+                let listStr = matchShort[3]; 
+                
+                // Strip trailing separators to prevent mangling "Port - Switch" formats
+                listStr = listStr.replace(/[\s,\-–—]+$/, '');
                 
                 const parts = listStr.split(','); 
                 parts.forEach(part => {
@@ -1808,7 +1865,7 @@
             }
             processedLine = processedLine.replace(tableRegex, '');
 
-            // 4.5 Scan for Reverse Table Formats (e.g. 29   PH-LZL-CAS201 SWITCH 2 OR 13 PH-LSP-ACC0503 SW3)
+            // 4.5 Scan for Reverse Table Formats (e.g. 29   PH-LZL-CAS201 2 OR 13 PH-LSP-ACC0503 SW3)
             const reverseTableRegex = /\b(\d+)[\s\t]+([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(?:SWITCH|SW)?[\s\t]*(\d+)\b/gi;
             let matchReverseTable;
             while ((matchReverseTable = reverseTableRegex.exec(processedLine)) !== null) {
@@ -2015,9 +2072,6 @@
             let globalShRunText = processedData.map(d => d.shRunTextLine).filter(Boolean).join('\n');
             let globalShIntStatusText = processedData.map(d => d.shIntStatusTextLine).join('\n');
             let globalCopyBoth = globalShRunText + (globalShRunText && globalShIntStatusText ? "\n\n" : "") + globalShIntStatusText;
-
-            // Ensure the main hidden element gets the global copy data directly
-            document.getElementById('hidden-both-cmds').value = globalCopyBoth;
 
             if (isSeparated) {
                 // --- SEPARATED HOST LAYOUT ---
