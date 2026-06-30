@@ -407,53 +407,36 @@
         .readme-content p { margin: 0 0 10px 0; }
 
         /* --- CLEAN NATIVE TEXTAREA & INPUTS --- */
-        textarea, input[type="text"] {
-            width: 100%;
-            background: var(--code-bg);
-            backdrop-filter: blur(4px);
-            color: var(--input-text);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 12px;
-            font-family: "Courier New", Courier, monospace;
-            box-sizing: border-box;
-            outline: none;
-            font-size: calc(13px * var(--font-scale));
-            line-height: 1.6;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            scrollbar-width: thin;
-            scrollbar-color: var(--border-color) transparent;
-            resize: none;
-        }
-        textarea:focus, input[type="text"]:focus { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(148, 74, 49, 0.2); }
-        
-        textarea::-webkit-scrollbar, .output-box::-webkit-scrollbar, #configHighlightView::-webkit-scrollbar { width: 10px; height: 10px;}
-        textarea::-webkit-scrollbar-track, .output-box::-webkit-scrollbar-track, #configHighlightView::-webkit-scrollbar-track { background: transparent; }
-        textarea::-webkit-scrollbar-thumb, .output-box::-webkit-scrollbar-thumb, #configHighlightView::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
-        textarea::selection, .output-box::selection { background: rgba(148, 74, 49, 0.2); }
-
-        /* Setup for the specific configInput and its Live Highlighter Overlay */
         .input-container { position: relative; width: 100%; display: block; }
         
-        textarea#configInput {
-            background: transparent !important; 
-            color: var(--input-text); caret-color: var(--input-text);
-            position: relative; z-index: 2;
-            height: calc(140px * var(--font-scale));
-            overflow-y: auto; overflow-x: hidden;
-        }
-        textarea#configInput.expanded { height: calc(400px * var(--font-scale)); }
-
-        .backdrop-highlighter {
-            position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none;
-            color: transparent; background: var(--code-bg); border: 1px solid transparent; 
+        textarea#configInput, .backdrop-highlighter {
             width: 100%; height: calc(140px * var(--font-scale));
             padding: 12px; font-family: "Courier New", Courier, monospace;
             font-size: calc(13px * var(--font-scale)); line-height: 1.6;
             box-sizing: border-box; border-radius: 4px;
             white-space: pre-wrap; word-wrap: break-word;
+            transition: height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        /* The real textarea sits on top, transparent, accepting inputs */
+        textarea#configInput {
+            resize: none; background: transparent !important; color: var(--input-text); caret-color: var(--input-text);
+            border: 1px solid var(--border-color); outline: none; position: relative; z-index: 2;
+            scrollbar-width: thin; scrollbar-color: var(--border-color) transparent; overflow-y: auto; overflow-x: hidden;
+        }
+        textarea#configInput:focus { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(148, 74, 49, 0.2); }
+        textarea#configInput.expanded { height: calc(400px * var(--font-scale)); }
+        
+        textarea#configInput::-webkit-scrollbar { width: 10px; height: 10px;}
+        textarea#configInput::-webkit-scrollbar-track { background: transparent; }
+        textarea#configInput::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        textarea#configInput::selection { background: rgba(148, 74, 49, 0.2); }
+
+        /* The highlighter div sits behind it, rendering red marks exactly where the text aligns */
+        .backdrop-highlighter {
+            position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none;
+            color: transparent; background: var(--code-bg); border: 1px solid transparent; 
             overflow-y: auto; overflow-x: hidden; scrollbar-width: none;
-            transition: height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         .backdrop-highlighter::-webkit-scrollbar { display: none; }
         .backdrop-highlighter.expanded { height: calc(400px * var(--font-scale)); }
@@ -463,14 +446,27 @@
             border-bottom: 2px solid var(--accent-red); color: transparent; padding: 0; margin: 0;
         }
 
-        /* Filter Input Override */
+        /* Specifically style the filter input so it overrides default browser white backgrounds */
         #filterInput {
+            width: 100%;
             background-color: var(--code-bg) !important;
             color: var(--neon-green) !important;
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: calc(13px * var(--font-scale));
+            box-sizing: border-box;
             margin-bottom: 15px;
+            outline: none;
+            transition: 0.3s;
         }
         #filterInput:focus {
+            border-color: var(--accent-blue);
             box-shadow: 0 0 10px rgba(88, 166, 255, 0.2);
+        }
+        #filterInput::placeholder {
+            color: var(--line-num-text);
         }
 
         /* --- UI CONTROLS --- */
@@ -741,7 +737,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v8.9 [Automated Port Extractor]</span>
+            <span class="version-tag">// v9.0 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -936,6 +932,9 @@
         
         document.getElementById('statusMsg').innerText = `STATUS: READY_FOR_EXECUTION`;
         document.getElementById('statusMsg').style.color = 'var(--accent-blue)';
+        
+        // Clear the backdrop highlight view internally just in case
+        document.getElementById('configHighlightView').innerHTML = '';
         
         document.getElementById('configInput').focus();
     }
@@ -1390,15 +1389,10 @@
         btn.innerText = textarea.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
         
         // Sync highlight view expansion if it's currently active
-        if (highlightView.style.display === 'block') {
-            highlightView.classList.toggle('expanded');
+        if (textarea.classList.contains('expanded')) {
+            highlightView.classList.add('expanded');
         } else {
-            // Keep classes in sync for when it eventually shows
-            if (textarea.classList.contains('expanded')) {
-                highlightView.classList.add('expanded');
-            } else {
-                highlightView.classList.remove('expanded');
-            }
+            highlightView.classList.remove('expanded');
         }
 
         if (!textarea.classList.contains('expanded') && textarea.value.split('\n').length > 8) {
@@ -1565,7 +1559,8 @@
     let globalInterfaces = [];
 
     function clearText() {
-        if (document.getElementById('configHighlightView').style.display === 'block') {
+        const execBtn = document.getElementById('executeBtn');
+        if (execBtn.innerText === "Re-Scan & Run") {
             exitHighlightMode();
         }
 
@@ -2070,9 +2065,6 @@
             let globalShIntStatusText = processedData.map(d => d.shIntStatusTextLine).join('\n');
             let globalCopyBoth = globalShRunText + (globalShRunText && globalShIntStatusText ? "\n\n" : "") + globalShIntStatusText;
 
-            // Ensure the main hidden element gets the global copy data directly
-            document.getElementById('hidden-both-cmds').value = globalCopyBoth;
-
             if (isSeparated) {
                 // --- SEPARATED HOST LAYOUT ---
                 let activeSwitches = [...new Set(filteredInterfaces.map(item => item.sw))];
@@ -2219,6 +2211,9 @@
                 htmlOutput += `</div>`; 
             }
             
+            // Append the global copy payload for the master button regardless of layout
+            htmlOutput += `<textarea id="hidden-both-cmds" class="hidden-copy-area">${globalCopyBoth}</textarea>`;
+
             document.getElementById('statusMsg').style.display = 'block';
             document.getElementById('statusMsg').innerText = `STATUS: ${filteredInterfaces.length} MAPPINGS_EXTRACTED | ${filteredSwitches.length} HOSTNAMES_FOUND`;
         } else {
