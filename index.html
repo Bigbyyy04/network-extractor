@@ -407,36 +407,55 @@
         .readme-content p { margin: 0 0 10px 0; }
 
         /* --- CLEAN NATIVE TEXTAREA & INPUTS --- */
+        textarea {
+            width: 100%;
+            background: var(--code-bg);
+            backdrop-filter: blur(4px);
+            color: var(--input-text);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 12px;
+            font-family: "Courier New", Courier, monospace;
+            box-sizing: border-box;
+            outline: none;
+            font-size: calc(13px * var(--font-scale));
+            line-height: 1.6;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color) transparent;
+            height: calc(140px * var(--font-scale));
+            resize: none;
+        }
+        textarea:focus { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(148, 74, 49, 0.2); }
+        textarea.expanded { height: calc(400px * var(--font-scale)); }
+        
+        textarea::-webkit-scrollbar, .output-box::-webkit-scrollbar, #configHighlightView::-webkit-scrollbar { width: 10px; height: 10px;}
+        textarea::-webkit-scrollbar-track, .output-box::-webkit-scrollbar-track, #configHighlightView::-webkit-scrollbar-track { background: transparent; }
+        textarea::-webkit-scrollbar-thumb, .output-box::-webkit-scrollbar-thumb, #configHighlightView::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        textarea::selection, .output-box::selection { background: rgba(148, 74, 49, 0.2); }
+
+        /* Setup for the specific configInput and its Live Highlighter Overlay */
         .input-container { position: relative; width: 100%; display: block; }
         
-        textarea#configInput, .backdrop-highlighter {
+        textarea#configInput {
+            background: transparent !important; 
+            color: var(--input-text); caret-color: var(--input-text);
+            position: relative; z-index: 2;
+            height: calc(140px * var(--font-scale));
+            overflow-y: auto; overflow-x: hidden;
+        }
+        textarea#configInput.expanded { height: calc(400px * var(--font-scale)); }
+
+        .backdrop-highlighter {
+            position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none;
+            color: transparent; background: var(--code-bg); border: 1px solid transparent; 
             width: 100%; height: calc(140px * var(--font-scale));
             padding: 12px; font-family: "Courier New", Courier, monospace;
             font-size: calc(13px * var(--font-scale)); line-height: 1.6;
             box-sizing: border-box; border-radius: 4px;
             white-space: pre-wrap; word-wrap: break-word;
-            transition: height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s, box-shadow 0.3s;
-        }
-        
-        /* The real textarea sits on top, transparent, accepting inputs */
-        textarea#configInput {
-            resize: none; background: transparent !important; color: var(--input-text); caret-color: var(--input-text);
-            border: 1px solid var(--border-color); outline: none; position: relative; z-index: 2;
-            scrollbar-width: thin; scrollbar-color: var(--border-color) transparent; overflow-y: auto; overflow-x: hidden;
-        }
-        textarea#configInput:focus { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(148, 74, 49, 0.2); }
-        textarea#configInput.expanded { height: calc(400px * var(--font-scale)); }
-        
-        textarea#configInput::-webkit-scrollbar { width: 10px; height: 10px;}
-        textarea#configInput::-webkit-scrollbar-track { background: transparent; }
-        textarea#configInput::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
-        textarea#configInput::selection { background: rgba(148, 74, 49, 0.2); }
-
-        /* The highlighter div sits behind it, rendering red marks exactly where the text aligns */
-        .backdrop-highlighter {
-            position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none;
-            color: transparent; background: var(--code-bg); border: 1px solid transparent; 
             overflow-y: auto; overflow-x: hidden; scrollbar-width: none;
+            transition: height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         .backdrop-highlighter::-webkit-scrollbar { display: none; }
         .backdrop-highlighter.expanded { height: calc(400px * var(--font-scale)); }
@@ -467,14 +486,6 @@
         }
         #filterInput::placeholder {
             color: var(--line-num-text);
-        }
-
-        /* Highlight View Layer */
-        #configHighlightView {
-            display: none; width: 100%; background: var(--code-bg); backdrop-filter: blur(4px); color: var(--input-text);
-            border: 1px solid var(--accent-red); box-shadow: inset 0 0 15px rgba(248, 81, 73, 0.1); border-radius: 4px; padding: 12px;
-            font-family: "Courier New", Courier, monospace; box-sizing: border-box; font-size: calc(13px * var(--font-scale));
-            line-height: 1.6; overflow: auto; white-space: pre-wrap; word-wrap: break-word; scrollbar-width: thin; scrollbar-color: var(--border-color) transparent;
         }
 
         /* --- UI CONTROLS --- */
@@ -746,7 +757,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v9.2 [Automated Port Extractor]</span>
+            <span class="version-tag">// v9.3 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -871,9 +882,10 @@
 </div>
 
 <script>
-    // --- ACTIVE HOSTNAME HUD FILTER VARIABLE ---
+    // --- STATE MANAGEMENT ---
     let currentHudFilter = null;
     let lastInvalidPorts = [];
+    let isHighlightModeActive = false; // Bulletproof flag to manage UI states
 
     // The Master Regex Factory for identifying invalid port formats, typos, and missing tuples.
     function getInvalidPortRegex() {
@@ -885,7 +897,6 @@
         const view = document.getElementById('configHighlightView');
         let text = textarea.value;
         
-        // Escape HTML to prevent injection, then wrap invalid ports in <mark>
         let escapedText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         
         // Spawn a fresh regex instance to avoid global lastIndex bugs
@@ -978,13 +989,10 @@
         }, 100);
     }
 
-    // --- COPY CONTENT LOGIC (WITH CLIPBOARD API FALLBACK) ---
+    // --- COPY CONTENT LOGIC (REVERTED TO NATIVE GITHUB PAGES COMPATIBLE METHOD) ---
     function copyContent(hiddenElementId, btnElement) {
-        const textarea = document.getElementById(hiddenElementId);
-        if (!textarea) return;
-        const textToCopy = textarea.value;
-
-        const successCallback = () => {
+        const textToCopy = document.getElementById(hiddenElementId).value;
+        navigator.clipboard.writeText(textToCopy).then(() => {
             const originalText = btnElement.innerText;
             const originalBg = btnElement.style.background;
             btnElement.innerText = "COPIED";
@@ -993,29 +1001,7 @@
                 btnElement.innerText = originalText;
                 btnElement.style.background = originalBg; 
             }, 2000);
-        };
-
-        // Modern browsers often block navigator.clipboard if not running on HTTPS or localhost.
-        // This hybrid approach ensures it always copies cleanly even if executed as a local file://
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(textToCopy).then(successCallback).catch(err => {
-                fallbackCopy(textarea, successCallback);
-            });
-        } else {
-            fallbackCopy(textarea, successCallback);
-        }
-    }
-
-    function fallbackCopy(textarea, successCallback) {
-        textarea.style.display = 'block';
-        textarea.select();
-        try {
-            document.execCommand('copy');
-            successCallback();
-        } catch (err) {
-            alert("Failed to copy text. Your browser may be blocking local clipboard access.");
-        }
-        textarea.style.display = 'none';
+        }).catch(err => alert("Failed to copy text."));
     }
 
     // --- SUMMARIZE TOGGLE LOGIC ---
@@ -2072,6 +2058,9 @@
             let globalShRunText = processedData.map(d => d.shRunTextLine).filter(Boolean).join('\n');
             let globalShIntStatusText = processedData.map(d => d.shIntStatusTextLine).join('\n');
             let globalCopyBoth = globalShRunText + (globalShRunText && globalShIntStatusText ? "\n\n" : "") + globalShIntStatusText;
+
+            // Ensure the main hidden element gets the global copy data directly
+            document.getElementById('hidden-both-cmds').value = globalCopyBoth;
 
             if (isSeparated) {
                 // --- SEPARATED HOST LAYOUT ---
