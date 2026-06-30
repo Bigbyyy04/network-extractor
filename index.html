@@ -701,10 +701,11 @@
         }
 
         .db-box textarea { 
-            height: calc(150px * var(--font-scale)); 
-            margin-bottom: 10px; 
-            border-color: rgba(242, 122, 34, 0.5); 
+            background: var(--code-bg); color: var(--input-text); font-family: "Courier New", Courier, monospace;
+            height: calc(150px * var(--font-scale)); margin-bottom: 10px; border-color: rgba(242, 122, 34, 0.5); 
+            width: 100%; padding: 12px; border-radius: 4px; box-sizing: border-box; outline: none; transition: 0.3s;
         }
+        .db-box textarea:focus { border-color: var(--accent-green); box-shadow: 0 0 8px rgba(35, 134, 54, 0.3); }
         .db-controls { display: flex; justify-content: space-between; align-items: center; }
         .db-status { font-size: calc(11px * var(--font-scale)); color: var(--accent-green); font-family: monospace; font-weight: bold;}
 
@@ -737,7 +738,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v9.0 [Automated Port Extractor]</span>
+            <span class="version-tag">// v9.1 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -862,29 +863,27 @@
 </div>
 
 <script>
-    // --- ACTIVE HOSTNAME HUD FILTER VARIABLE ---
+    // --- STATE MANAGEMENT ---
     let currentHudFilter = null;
     let lastInvalidPorts = [];
+    let isHighlightModeActive = false; // Bulletproof flag to manage UI states
 
-    // The Master Regex for identifying invalid port formats, typos, and missing tuples.
-    // 1. Catches garbled prefixes: 612/0/1, G!/0/1, G0/0/1
-    // 2. Catches trailing slash: Gi1/0/
-    // 3. Catches missing first tuple: Gi/12/3
-    // 4. Catches missing middle tuple: Gi12/3
-    // 5. Catches missing stack module: 0/30
-    // 6. Catches missing slashes entirely: Gi101
-    const invalidPortRegex = /(^|[^a-zA-Z0-9\/])((?:(?:G1|61|6i|G[l\|!]|G(?=\d))\d*(?:\/\d+)*\/?|(?:Gi|Te|Fa|Eth)\d*\/\d*\/(?!\d)|(?:Gi|Te|Fa|Eth)\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d+\/\d+(?!\/)|(?:Gi|Te|Fa|Eth)?0\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d{3,}))\b/gi;
+    // The Master Regex Factory for identifying invalid port formats, typos, and missing tuples.
+    function getInvalidPortRegex() {
+        return /(^|[^a-zA-Z0-9\/])((?:(?:G1|61|6i|G[l\|!]|G(?=\d))\d*(?:\/\d+)*\/?|(?:Gi|Te|Fa|Eth)\d*\/\d*\/(?!\d)|(?:Gi|Te|Fa|Eth)\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d+\/\d+(?!\/)|(?:Gi|Te|Fa|Eth)?0\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d{3,}))\b/gi;
+    }
 
     function syncLiveHighlights() {
         const textarea = document.getElementById('configInput');
         const view = document.getElementById('configHighlightView');
         let text = textarea.value;
         
-        // Escape HTML to prevent injection, then wrap invalid ports in <mark>
         let escapedText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        escapedText = escapedText.replace(invalidPortRegex, '$1<mark class="error-highlight">$2</mark>');
         
-        // Append <br> so the div matches textarea height properly when on an empty newline
+        // Spawn a fresh regex instance to avoid global lastIndex bugs
+        const liveRegex = getInvalidPortRegex();
+        escapedText = escapedText.replace(liveRegex, '$1<mark class="error-highlight">$2</mark>');
+        
         view.innerHTML = escapedText + '<br>';
     }
 
@@ -901,16 +900,15 @@
 
     function activateHighlightMode() {
         closeInvalidPortsModal();
+        isHighlightModeActive = true;
         
         const textarea = document.getElementById('configInput');
         const label = document.getElementById('configInputLabel');
         
-        // Force the highlight sync to ensure it's up to date
         syncLiveHighlights();
         
         label.innerHTML = `01 // Config Input <span style="color: var(--accent-red); margin-left: 10px;">[ LIVE HIGHLIGHT MODE ]</span>`;
         
-        // Transform the main button to a Re-Scan mechanism
         const execBtn = document.getElementById('executeBtn');
         execBtn.innerText = "Re-Scan & Run";
         execBtn.style.background = "var(--accent-red)";
@@ -921,6 +919,7 @@
     }
 
     function exitHighlightMode() {
+        isHighlightModeActive = false;
         const label = document.getElementById('configInputLabel');
         
         label.innerHTML = `01 // Config Input`;
@@ -933,7 +932,7 @@
         document.getElementById('statusMsg').innerText = `STATUS: READY_FOR_EXECUTION`;
         document.getElementById('statusMsg').style.color = 'var(--accent-blue)';
         
-        // Clear the backdrop highlight view internally just in case
+        // Clear the backdrop highlight view internally
         document.getElementById('configHighlightView').innerHTML = '';
         
         document.getElementById('configInput').focus();
@@ -950,7 +949,6 @@
             let newValue = input.value.trim();
             
             if (original !== newValue && newValue !== "") {
-                // Safely escape and replace the specific bad port
                 let escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 let regex = new RegExp(`(^|[^a-zA-Z0-9\\/])(${escapeRegExp(original)})\\b`, 'gi');
                 text = text.replace(regex, `$1${newValue}`);
@@ -960,13 +958,12 @@
 
         if (changesMade) {
             textarea.value = text;
-            handleConfigInput(); // Refresh HUD
-            syncLiveHighlights(); // Clear highlights
+            handleConfigInput(); 
+            syncLiveHighlights(); 
         }
         
         closeInvalidPortsModal();
         
-        // Slight delay before re-running extraction to ensure DOM updates gracefully
         setTimeout(() => {
             processText();
         }, 100);
@@ -1032,7 +1029,6 @@
         const currentTheme = html.getAttribute('data-theme') || 'dark';
         let newTheme;
         
-        // Cycle normal themes. If currently in Playstation, clicking it will reset to Dark
         if (currentTheme === 'dark') newTheme = 'light';
         else if (currentTheme === 'light') newTheme = 'twilight';
         else newTheme = 'dark';
@@ -1389,10 +1385,15 @@
         btn.innerText = textarea.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
         
         // Sync highlight view expansion if it's currently active
-        if (textarea.classList.contains('expanded')) {
-            highlightView.classList.add('expanded');
+        if (highlightView.style.display === 'block') {
+            highlightView.classList.toggle('expanded');
         } else {
-            highlightView.classList.remove('expanded');
+            // Keep classes in sync for when it eventually shows
+            if (textarea.classList.contains('expanded')) {
+                highlightView.classList.add('expanded');
+            } else {
+                highlightView.classList.remove('expanded');
+            }
         }
 
         if (!textarea.classList.contains('expanded') && textarea.value.split('\n').length > 8) {
@@ -1559,8 +1560,7 @@
     let globalInterfaces = [];
 
     function clearText() {
-        const execBtn = document.getElementById('executeBtn');
-        if (execBtn.innerText === "Re-Scan & Run") {
+        if (isHighlightModeActive) {
             exitHighlightMode();
         }
 
@@ -1606,16 +1606,14 @@
         if (typeof triggerExecuteEffect === 'function') triggerExecuteEffect();
 
         const text = document.getElementById('configInput').value;
-        const execBtn = document.getElementById('executeBtn');
-        const label = document.getElementById('configInputLabel');
         
         if (!text.trim()) return; 
 
         // --- STRICT TYPO VALIDATION SHIELD ---
         let invalidPortsFound = [];
         let invalidMatch;
-        invalidPortRegex.lastIndex = 0;
-        while ((invalidMatch = invalidPortRegex.exec(text)) !== null) {
+        const freshRegex = getInvalidPortRegex();
+        while ((invalidMatch = freshRegex.exec(text)) !== null) {
             invalidPortsFound.push(invalidMatch[2]);
         }
         
@@ -1624,7 +1622,7 @@
             lastInvalidPorts = invalidPortsFound;
             
             // If they click re-scan while in highlight mode and there are STILL errors, we just re-sync and warn
-            if (execBtn.innerText === "Re-Scan & Run") {
+            if (isHighlightModeActive) {
                 syncLiveHighlights();
                 document.getElementById('statusMsg').innerText = `STATUS: HIGHLIGHT_MODE_ACTIVE | Still found ${invalidPortsFound.length} invalid port(s). Fix the red marks above.`;
                 return;
@@ -1652,7 +1650,7 @@
             return; // Prevent extraction completely
         } else {
             // Validation Passed! Restore UI if we were in highlight mode
-            if (execBtn.innerText === "Re-Scan & Run") {
+            if (isHighlightModeActive) {
                 exitHighlightMode();
             }
         }
@@ -2064,6 +2062,9 @@
             let globalShRunText = processedData.map(d => d.shRunTextLine).filter(Boolean).join('\n');
             let globalShIntStatusText = processedData.map(d => d.shIntStatusTextLine).join('\n');
             let globalCopyBoth = globalShRunText + (globalShRunText && globalShIntStatusText ? "\n\n" : "") + globalShIntStatusText;
+
+            // Ensure the main hidden element gets the global copy data directly
+            document.getElementById('hidden-both-cmds').value = globalCopyBoth;
 
             if (isSeparated) {
                 // --- SEPARATED HOST LAYOUT ---
