@@ -738,7 +738,7 @@
     <div class="app-header">
         <h2>
             <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v9.1 [Automated Port Extractor]</span>
+            <span class="version-tag">// v9.2 [Automated Port Extractor]</span>
         </h2>
         
         <div class="header-controls">
@@ -1496,13 +1496,8 @@
         }
 
         // Table scanner (including FQDN support)
-        const fqdnTableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(\d+(?:\/\d+)+)/gi;
+        const fqdnTableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(?:SWITCH|SW)[\s\t]*(\d+)[\s\t]+(\d+)/gi;
         while ((match = fqdnTableRegex.exec(text)) !== null) {
-            uniqueHosts.add(sanitizeHostname(match[1]));
-        }
-
-        const tableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
-        while ((match = tableRegex.exec(text)) !== null) {
             uniqueHosts.add(sanitizeHostname(match[1]));
         }
 
@@ -1518,8 +1513,8 @@
             uniqueHosts.add(sanitizeHostname(match[1]));
         }
 
-        // Reverse Table scanner
-        const reverseTableRegex = /\b(\d+)[\s\t]+([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(?:SW)?(\d+)\b/gi;
+        // Reverse Table scanner (e.g. 29   PH-LZL-CAS201 2 OR 13 PH-LSP-ACC0503 SW3)
+        const reverseTableRegex = /\b(\d+)[\s\t]+([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(?:SWITCH|SW)?[\s\t]*(\d+)\b/gi;
         while ((match = reverseTableRegex.exec(text)) !== null) {
             uniqueHosts.add(sanitizeHostname(match[2]));
         }
@@ -1559,53 +1554,12 @@
     let globalSwitches = [];
     let globalInterfaces = [];
 
-    function clearText() {
-        if (isHighlightModeActive) {
-            exitHighlightMode();
-        }
-
-        const textarea = document.getElementById('configInput');
-        const view = document.getElementById('configHighlightView');
-        
-        textarea.value = '';
-        view.innerHTML = '';
-        textarea.dataset.manualCollapse = ""; 
-        
-        if(textarea.classList.contains('expanded')) {
-             textarea.classList.remove('expanded');
-             view.classList.remove('expanded');
-             document.getElementById('expandBtn').innerText = "[ EXPAND ]";
-        }
-
-        document.getElementById('output').innerHTML = `<div style="font-family: 'Courier New', Courier, monospace; color: var(--line-num-text); font-size: calc(13px * var(--font-scale));">-- system_idle --</div>`;
-        document.getElementById('filterInput').style.display = 'none';
-        document.getElementById('filterInput').value = '';
-        document.getElementById('statusMsg').style.display = 'none';
-        document.getElementById('deviceHud').classList.remove('visible');
-        
-        currentHudFilter = null;
-        globalSwitches = [];
-        globalInterfaces = [];
-        lastInvalidPorts = [];
-    }
-
-    function copyContent(hiddenElementId, btnElement) {
-        const textToCopy = document.getElementById(hiddenElementId).value;
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            const originalText = btnElement.innerText;
-            btnElement.innerText = "COPIED";
-            btnElement.style.background = "var(--accent-green)"; 
-            setTimeout(() => {
-                btnElement.innerText = originalText;
-                btnElement.style.background = ""; 
-            }, 2000);
-        }).catch(err => alert("Failed to copy text."));
-    }
-
     function processText() {
         if (typeof triggerExecuteEffect === 'function') triggerExecuteEffect();
 
         const text = document.getElementById('configInput').value;
+        const execBtn = document.getElementById('executeBtn');
+        const label = document.getElementById('configInputLabel');
         
         if (!text.trim()) return; 
 
@@ -1684,8 +1638,8 @@
 
         // Map all switch occurrences and their line numbers for distance mapping
         const switchLines = [];
-        // Capture Switch Name and optional Stack module (e.g., SW1 -> 1)
-        const switchRegexGlobal = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\s+SW(\d+))?/gi;
+        // Capture Switch Name and optional Stack module (e.g., SWITCH 2 -> 2)
+        const switchRegexGlobal = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\s+(?:SWITCH|SW)[\s\t]*(\d+))?/gi;
         
         lines.forEach((line, idx) => {
             let match;
@@ -1700,8 +1654,7 @@
         });
 
         // Function to find the nearest switch hostname for a given line index
-        // UPDATED: Now uses Top-Down state tracking instead of absolute proximity
-        // to prevent "Gravity Bleed" from massive port lists.
+        // Uses Top-Down state tracking instead of absolute proximity to prevent "Gravity Bleed" 
         function getClosestSwitch(lineIndex) {
             if (switchLines.length === 0) return { name: "[ SWITCH_NOT_FOUND ]", stack: "1" };
             
@@ -1846,7 +1799,7 @@
             processedLine = processedLine.replace(shortHandRegex, '');
 
             // 4. Scan for table formats (uses rawPrefix)
-            const tableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)[\s\t]+SW(\d+)[\s\t]+(\d+)/gi;
+            const tableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)[\s\t]+(?:SWITCH|SW)[\s\t]*(\d+)[\s\t]+(\d+)/gi;
             let matchTable;
             while ((matchTable = tableRegex.exec(processedLine)) !== null) {
                 const sw = sanitizeHostname(matchTable[1]);
@@ -1855,8 +1808,8 @@
             }
             processedLine = processedLine.replace(tableRegex, '');
 
-            // 4.5 Scan for Reverse Table Formats (e.g. 29   PH-LZL-CAS201 2 OR 13 PH-LSP-ACC0503 SW3)
-            const reverseTableRegex = /\b(\d+)[\s\t]+([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(?:SW)?(\d+)\b/gi;
+            // 4.5 Scan for Reverse Table Formats (e.g. 29   PH-LZL-CAS201 SWITCH 2 OR 13 PH-LSP-ACC0503 SW3)
+            const reverseTableRegex = /\b(\d+)[\s\t]+([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(?:SWITCH|SW)?[\s\t]*(\d+)\b/gi;
             let matchReverseTable;
             while ((matchReverseTable = reverseTableRegex.exec(processedLine)) !== null) {
                 const portNum = matchReverseTable[1];
