@@ -173,6 +173,15 @@
             margin-bottom: 25px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             transition: all 0.3s ease;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         h2 {
@@ -209,6 +218,22 @@
             letter-spacing: 2px;
             font-weight: normal;
             font-family: "Segoe UI", Roboto, monospace;
+        }
+
+        .live-viewers {
+            font-size: 0.75rem;
+            color: var(--neon-green);
+            background: rgba(57, 255, 20, 0.1);
+            border: 1px solid var(--neon-green);
+            padding: 3px 8px;
+            border-radius: 4px;
+            box-shadow: 0 0 8px rgba(57, 255, 20, 0.2);
+            font-family: "Courier New", Courier, monospace;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
         }
 
         /* Top Right Controls (Zoom + Theme) */
@@ -736,10 +761,13 @@
 <div class="container">
     
     <div class="app-header">
-        <h2>
-            <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-            <span class="version-tag">// v9.5 [Automated Port Extractor]</span>
-        </h2>
+        <div class="header-left">
+            <h2>
+                <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
+                <span class="version-tag">// v9.7 [Automated Port Extractor]</span>
+            </h2>
+            <span id="liveViewers" class="live-viewers" title="Real-Time Active Users">👁️ ONLINE: ...</span>
+        </div>
         
         <div class="header-controls">
             <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Cycle Theme">☀️ LIGHT</button>
@@ -862,7 +890,64 @@
 
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
+    // --- REAL-TIME LIVE VIEWERS (FIREBASE) ---
+    // PASTE YOUR FIREBASE CONFIGURATION HERE:
+    const firebaseConfig = {
+        apiKey: "AIzaSyB0OaQA-A6t6cSGYYCd1-BfstBI9mPeyb8",
+        authDomain: "n0cape-db.firebaseapp.com",
+        databaseURL: "https://n0cape-db-default-rtdb.firebaseio.com",
+        projectId: "n0cape-db",
+        storageBucket: "n0cape-db.firebasestorage.app",
+        messagingSenderId: "987676674320",
+        appId: "1:987676674320:web:9a74fbf14c0c6cd877bd95"
+    };
+
+    const viewerElement = document.getElementById('liveViewers');
+
+    // Only initialize if the user has updated their config keys
+    if (typeof firebase !== 'undefined' && firebaseConfig.apiKey !== "YOUR_API_KEY_HERE") {
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
+        // This is where we store the list of active users
+        const listRef = db.ref('viewers');
+        // Create a unique temporary reference for this specific user's browser tab
+        const userRef = listRef.push(); 
+        
+        // Listen to Firebase's native "Am I connected to the server?" state
+        const connectedRef = db.ref('.info/connected');
+
+        connectedRef.on('value', (snap) => {
+            if (snap.val() === true) {
+                // If I close my tab or lose internet, tell the server to instantly delete my userRef!
+                userRef.onDisconnect().remove();
+                
+                // Add myself to the list
+                userRef.set(true);
+            }
+        });
+
+        // Listen to the total number of children inside the "viewers" list
+        listRef.on('value', (snap) => {
+            const viewerCount = snap.numChildren();
+            viewerElement.innerText = `👁️ ONLINE: ${viewerCount}`;
+            viewerElement.style.textShadow = "0 0 10px var(--neon-green)";
+            viewerElement.style.color = "#fff";
+            
+            setTimeout(() => {
+                viewerElement.style.textShadow = "none";
+                viewerElement.style.color = "var(--neon-green)";
+            }, 1500);
+        });
+    } else {
+        viewerElement.innerText = `👁️ ONLINE: ?`;
+        viewerElement.title = "Firebase config missing! Add keys to the script.";
+    }
+
     // --- STATE MANAGEMENT ---
     let currentHudFilter = null;
     let lastInvalidPorts = [];
@@ -1400,10 +1485,15 @@
         btn.innerText = textarea.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
         
         // Sync highlight view expansion if it's currently active
-        if (textarea.classList.contains('expanded')) {
-            highlightView.classList.add('expanded');
+        if (highlightView.style.display === 'block') {
+            highlightView.classList.toggle('expanded');
         } else {
-            highlightView.classList.remove('expanded');
+            // Keep classes in sync for when it eventually shows
+            if (textarea.classList.contains('expanded')) {
+                highlightView.classList.add('expanded');
+            } else {
+                highlightView.classList.remove('expanded');
+            }
         }
 
         if (!textarea.classList.contains('expanded') && textarea.value.split('\n').length > 8) {
