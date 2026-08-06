@@ -764,7 +764,7 @@
         <div class="header-left">
             <h2>
                 <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-                <span class="version-tag">// v9.7 [Automated Port Extractor]</span>
+                <span class="version-tag">// v9.8 [Automated Port Extractor]</span>
             </h2>
             <span id="liveViewers" class="live-viewers" title="Real-Time Active Users">👁️ ONLINE: ...</span>
         </div>
@@ -897,13 +897,14 @@
     // --- REAL-TIME LIVE VIEWERS (FIREBASE) ---
     // PASTE YOUR FIREBASE CONFIGURATION HERE:
     const firebaseConfig = {
-        apiKey: "AIzaSyB0OaQA-A6t6cSGYYCd1-BfstBI9mPeyb8",
+        apiKey: "AIzaSyB0OaQA-A6t6cSGYyCd1-BfstBI9mPeyb8",
         authDomain: "n0cape-db.firebaseapp.com",
         databaseURL: "https://n0cape-db-default-rtdb.firebaseio.com",
         projectId: "n0cape-db",
         storageBucket: "n0cape-db.firebasestorage.app",
         messagingSenderId: "987676674320",
-        appId: "1:987676674320:web:9a74fbf14c0c6cd877bd95"
+        appId: "1:987676674320:web:9a74fbf14c0c6cd877bd95",
+        measurementId: "G-T5PK7001EX"
     };
 
     const viewerElement = document.getElementById('liveViewers');
@@ -1658,36 +1659,6 @@
     // --- CORE LOGIC ---
     let globalSwitches = [];
     let globalInterfaces = [];
-
-    function clearText() {
-        if (isHighlightModeActive) {
-            exitHighlightMode();
-        }
-
-        const textarea = document.getElementById('configInput');
-        const view = document.getElementById('configHighlightView');
-        
-        textarea.value = '';
-        view.innerHTML = '';
-        textarea.dataset.manualCollapse = ""; 
-        
-        if(textarea.classList.contains('expanded')) {
-             textarea.classList.remove('expanded');
-             view.classList.remove('expanded');
-             document.getElementById('expandBtn').innerText = "[ EXPAND ]";
-        }
-
-        document.getElementById('output').innerHTML = `<div style="font-family: 'Courier New', Courier, monospace; color: var(--line-num-text); font-size: calc(13px * var(--font-scale));">-- system_idle --</div>`;
-        document.getElementById('filterInput').style.display = 'none';
-        document.getElementById('filterInput').value = '';
-        document.getElementById('statusMsg').style.display = 'none';
-        document.getElementById('deviceHud').classList.remove('visible');
-        
-        currentHudFilter = null;
-        globalSwitches = [];
-        globalInterfaces = [];
-        lastInvalidPorts = [];
-    }
 
     function processText() {
         if (typeof triggerExecuteEffect === 'function') triggerExecuteEffect();
