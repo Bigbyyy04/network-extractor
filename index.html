@@ -764,7 +764,7 @@
         <div class="header-left">
             <h2>
                 <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-                <span class="version-tag">// v9.8 [Automated Port Extractor]</span>
+                <span class="version-tag">// v9.9 [Automated Port Extractor]</span>
             </h2>
             <span id="liveViewers" class="live-viewers" title="Real-Time Active Users">👁️ ONLINE: ...</span>
         </div>
@@ -895,44 +895,41 @@
 
 <script>
     // --- REAL-TIME LIVE VIEWERS (FIREBASE) ---
-    // PASTE YOUR FIREBASE CONFIGURATION HERE:
-    const firebaseConfig = {
-        apiKey: "AIzaSyB0OaQA-A6t6cSGYyCd1-BfstBI9mPeyb8",
-        authDomain: "n0cape-db.firebaseapp.com",
-        databaseURL: "https://n0cape-db-default-rtdb.firebaseio.com",
-        projectId: "n0cape-db",
-        storageBucket: "n0cape-db.firebasestorage.app",
-        messagingSenderId: "987676674320",
-        appId: "1:987676674320:web:9a74fbf14c0c6cd877bd95",
-        measurementId: "G-T5PK7001EX"
-    };
+    // Ensure the entire DOM and external scripts are fully loaded before firing Firebase
+    window.addEventListener('load', () => {
+        const viewerElement = document.getElementById('liveViewers');
 
-    const viewerElement = document.getElementById('liveViewers');
+        if (typeof firebase === 'undefined') {
+            viewerElement.innerText = `👁️ ONLINE: BLOCKED`;
+            viewerElement.title = "Firebase SDK blocked by Adblocker, VPN, or Firewall.";
+            return;
+        }
 
-    // Only initialize if the user has updated their config keys
-    if (typeof firebase !== 'undefined' && firebaseConfig.apiKey !== "AIzaSyB0OaQA-A6t6cSGYyCd1-BfstBI9mPeyb8") {
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0OaQA-A6t6cSGYyCd1-BfstBI9mPeyb8",
+            authDomain: "n0cape-db.firebaseapp.com",
+            databaseURL: "https://n0cape-db-default-rtdb.firebaseio.com",
+            projectId: "n0cape-db",
+            storageBucket: "n0cape-db.firebasestorage.app",
+            messagingSenderId: "987676674320",
+            appId: "1:987676674320:web:9a74fbf14c0c6cd877bd95",
+            measurementId: "G-T5PK7001EX"
+        };
+
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         
-        // This is where we store the list of active users
         const listRef = db.ref('viewers');
-        // Create a unique temporary reference for this specific user's browser tab
         const userRef = listRef.push(); 
-        
-        // Listen to Firebase's native "Am I connected to the server?" state
         const connectedRef = db.ref('.info/connected');
 
         connectedRef.on('value', (snap) => {
             if (snap.val() === true) {
-                // If I close my tab or lose internet, tell the server to instantly delete my userRef!
                 userRef.onDisconnect().remove();
-                
-                // Add myself to the list
                 userRef.set(true);
             }
         });
 
-        // Listen to the total number of children inside the "viewers" list
         listRef.on('value', (snap) => {
             const viewerCount = snap.numChildren();
             viewerElement.innerText = `👁️ ONLINE: ${viewerCount}`;
@@ -944,15 +941,12 @@
                 viewerElement.style.color = "var(--neon-green)";
             }, 1500);
         });
-    } else {
-        viewerElement.innerText = `👁️ ONLINE: ?`;
-        viewerElement.title = "Firebase config missing! Add keys to the script.";
-    }
+    });
 
     // --- STATE MANAGEMENT ---
     let currentHudFilter = null;
     let lastInvalidPorts = [];
-    let isHighlightModeActive = false; // Bulletproof flag to manage UI states
+    let isHighlightModeActive = false; 
 
     // The Master Regex Factory for identifying invalid port formats, typos, and missing tuples.
     function getInvalidPortRegex() {
@@ -966,7 +960,6 @@
         
         let escapedText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         
-        // Spawn a fresh regex instance to avoid global lastIndex bugs
         const liveRegex = getInvalidPortRegex();
         escapedText = escapedText.replace(liveRegex, '$1<mark class="error-highlight">$2</mark>');
         
@@ -1018,7 +1011,6 @@
         document.getElementById('statusMsg').innerText = `STATUS: READY_FOR_EXECUTION`;
         document.getElementById('statusMsg').style.color = 'var(--accent-blue)';
         
-        // Clear the backdrop highlight view internally
         document.getElementById('configHighlightView').innerHTML = '';
         
         document.getElementById('configInput').focus();
@@ -1486,15 +1478,10 @@
         btn.innerText = textarea.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
         
         // Sync highlight view expansion if it's currently active
-        if (highlightView.style.display === 'block') {
-            highlightView.classList.toggle('expanded');
+        if (textarea.classList.contains('expanded')) {
+            highlightView.classList.add('expanded');
         } else {
-            // Keep classes in sync for when it eventually shows
-            if (textarea.classList.contains('expanded')) {
-                highlightView.classList.add('expanded');
-            } else {
-                highlightView.classList.remove('expanded');
-            }
+            highlightView.classList.remove('expanded');
         }
 
         if (!textarea.classList.contains('expanded') && textarea.value.split('\n').length > 8) {
