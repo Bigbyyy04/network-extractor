@@ -6,734 +6,135 @@
     <title>N0CAPE - Automated Port Extractor</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <style>
-        /* --- N0<AT COLOR PALETTE & SCALE --- */
         :root {
-            /* DARK THEME (DEFAULT) - Deep Navy */
-            --bg-color: #0d1424;         
-            --bg-image: none;
-            --card-bg: rgba(24, 34, 52, 0.85); 
-            --border-color: #2a3b54;     
-            --text-main: #c9d1d9;
-            --accent-blue: #58a6ff;
-            --accent-green: #238636;
-            --neon-green: #39ff14;       
-            --accent-purple: #bc8cff;
-            --accent-red: #f85149;
-            --hl-orange: #ff9d00;
-            --code-bg: rgba(7, 10, 18, 0.7); 
-            
-            --logo-text: #ffffff;
-            --logo-accent-text: #000000;
-            --input-text: #79c0ff;
-            --line-num-bg: rgba(13, 17, 23, 0.5);
-            --line-num-text: #484f58;
-            --btn-copy-bg: #8957e5;
-
-            /* Tag Colors */
-            --tag-prod-bg: rgba(0, 255, 255, 0.15); 
-            --tag-prod-text: #00e5ff; 
-            --tag-prod-border: rgba(0, 255, 255, 0.5); 
-            --tag-train-bg: rgba(255, 215, 0, 0.15); 
-            --tag-train-text: #ffd700; 
-            --tag-train-border: rgba(255, 215, 0, 0.5);
-            
-            --font-scale: 1;
+            --bg-color: #0d1424; --bg-image: none; --card-bg: rgba(24, 34, 52, 0.85); --border-color: #2a3b54; --text-main: #c9d1d9;
+            --accent-blue: #58a6ff; --accent-green: #238636; --neon-green: #39ff14; --accent-purple: #bc8cff; --accent-red: #f85149;
+            --hl-orange: #ff9d00; --code-bg: rgba(7, 10, 18, 0.7); --logo-text: #ffffff; --logo-accent-text: #000000; --input-text: #79c0ff;
+            --line-num-bg: rgba(13, 17, 23, 0.5); --line-num-text: #484f58; --btn-copy-bg: #8957e5; --tag-prod-bg: rgba(0, 255, 255, 0.15); 
+            --tag-prod-text: #00e5ff; --tag-prod-border: rgba(0, 255, 255, 0.5); --tag-train-bg: rgba(255, 215, 0, 0.15); 
+            --tag-train-text: #ffd700; --tag-train-border: rgba(255, 215, 0, 0.5); --font-scale: 1;
         }
-
         [data-theme="light"] {
-            /* LIGHT THEME */
-            --bg-color: #e9e9e6;  
-            --bg-image: none;       
-            --card-bg: rgba(255, 255, 255, 0.85); 
-            --border-color: #a48c7b;     
-            --text-main: #474a45;        
-            --accent-blue: #944a31;      
-            --accent-green: #f27a22;     
-            --neon-green: #f27a22;       
-            --accent-purple: #a48c7b;    
-            --accent-red: #d32f2f;       
-            --hl-orange: #f27a22;        
-            --code-bg: rgba(240, 240, 238, 0.7); 
-            
-            --logo-text: #474a45;        
-            --logo-accent-text: #ffffff; 
-            --input-text: #944a31;       
-            --line-num-bg: rgba(164, 140, 123, 0.15); 
-            --line-num-text: #a48c7b;    
-            --btn-copy-bg: #944a31;      
-
-            /* Tag Colors */
-            --tag-prod-text: #008b8b; 
-            --tag-prod-border: rgba(0, 139, 139, 0.5); 
-            --tag-train-text: #b8860b; 
-            --tag-train-border: rgba(184, 134, 11, 0.5);
+            --bg-color: #e9e9e6; --card-bg: rgba(255, 255, 255, 0.85); --border-color: #a48c7b; --text-main: #474a45; --accent-blue: #944a31;      
+            --accent-green: #f27a22; --neon-green: #f27a22; --accent-purple: #a48c7b; --accent-red: #d32f2f; --hl-orange: #f27a22;        
+            --code-bg: rgba(240, 240, 238, 0.7); --logo-text: #474a45; --logo-accent-text: #ffffff; --input-text: #944a31;       
+            --line-num-bg: rgba(164, 140, 123, 0.15); --line-num-text: #a48c7b; --btn-copy-bg: #944a31; --tag-prod-text: #008b8b; 
+            --tag-prod-border: rgba(0, 139, 139, 0.5); --tag-train-text: #b8860b; --tag-train-border: rgba(184, 134, 11, 0.5);
         }
-
         [data-theme="twilight"] {
-            /* TWILIGHT THEME (KATAWAREDOKI) - Dynamic Gradient */
-            --bg-color: #172b5c; 
-            --bg-image: linear-gradient(to bottom, #172b5c 0%, #3b5082 25%, #7c6294 50%, #c483a9 75%, #e7aab0 100%);
-            
-            --card-bg: rgba(20, 25, 45, 0.35); 
-            --border-color: rgba(255, 255, 255, 0.2); 
-            --text-main: #f8fafc;        
-            --accent-blue: #a5b4fc;      
-            --accent-green: #f59e0b;     
-            --neon-green: #fbbf24;       
-            --accent-purple: #d8b4fe;    
-            --accent-red: #ef4444;       
-            --hl-orange: #f43f5e;        
-            --code-bg: rgba(10, 15, 30, 0.3); 
-            
-            --logo-text: #ffffff;        
-            --logo-accent-text: #1a1b36; 
-            --input-text: #e0e7ff;       
-            --line-num-bg: rgba(0, 0, 0, 0.15); 
-            --line-num-text: #a5b4fc;    
-            --btn-copy-bg: rgba(255, 255, 255, 0.2); 
-            
-            /* Tag Colors */
-            --tag-prod-text: #7de8e1; 
-            --tag-prod-border: rgba(125, 232, 225, 0.5); 
-            --tag-train-text: #fcd34d; 
-            --tag-train-border: rgba(252, 211, 77, 0.5);
+            --bg-color: #172b5c; --bg-image: linear-gradient(to bottom, #172b5c 0%, #3b5082 25%, #7c6294 50%, #c483a9 75%, #e7aab0 100%);
+            --card-bg: rgba(20, 25, 45, 0.35); --border-color: rgba(255, 255, 255, 0.2); --text-main: #f8fafc; --accent-blue: #a5b4fc;      
+            --accent-green: #f59e0b; --neon-green: #fbbf24; --accent-purple: #d8b4fe; --accent-red: #ef4444; --hl-orange: #f43f5e;        
+            --code-bg: rgba(10, 15, 30, 0.3); --logo-text: #ffffff; --logo-accent-text: #1a1b36; --input-text: #e0e7ff;       
+            --line-num-bg: rgba(0, 0, 0, 0.15); --line-num-text: #a5b4fc; --btn-copy-bg: rgba(255, 255, 255, 0.2); --tag-prod-text: #7de8e1; 
+            --tag-prod-border: rgba(125, 232, 225, 0.5); --tag-train-text: #fcd34d; --tag-train-border: rgba(252, 211, 77, 0.5);
         }
-
         [data-theme="playstation"] {
-            /* EASTER EGG THEME */
-            --bg-color: #080a0f; 
-            --bg-image: radial-gradient(circle at 20% 0%, rgba(220, 150, 110, 0.15) 0%, rgba(8, 10, 15, 1) 60%);
-            
-            --card-bg: rgba(15, 18, 25, 0.6); 
-            --border-color: rgba(220, 180, 140, 0.3); 
-            --text-main: #d1d5db;        
-            --accent-blue: #3b82f6;      
-            --accent-green: #d99a57;     
-            --neon-green: #eab308;       
-            --accent-purple: #8b5cf6;    
-            --accent-red: #ef4444;       
-            --hl-orange: #f59e0b;        
-            --code-bg: rgba(5, 7, 12, 0.5); 
-            
-            --logo-text: #ffffff;        
-            --logo-accent-text: #000000; 
-            --input-text: #bfdbfe;       
-            --line-num-bg: rgba(0, 0, 0, 0.3); 
-            --line-num-text: #60a5fa;    
-            --btn-copy-bg: rgba(59, 130, 246, 0.5); 
-            
-            /* Tag Colors */
-            --tag-prod-text: #38bdf8; 
-            --tag-prod-border: rgba(56, 189, 248, 0.5); 
-            --tag-train-text: #fcd34d; 
-            --tag-train-border: rgba(252, 211, 77, 0.5);
+            --bg-color: #080a0f; --bg-image: radial-gradient(circle at 20% 0%, rgba(220, 150, 110, 0.15) 0%, rgba(8, 10, 15, 1) 60%);
+            --card-bg: rgba(15, 18, 25, 0.6); --border-color: rgba(220, 180, 140, 0.3); --text-main: #d1d5db; --accent-blue: #3b82f6;      
+            --accent-green: #d99a57; --neon-green: #eab308; --accent-purple: #8b5cf6; --accent-red: #ef4444; --hl-orange: #f59e0b;        
+            --code-bg: rgba(5, 7, 12, 0.5); --logo-text: #ffffff; --logo-accent-text: #000000; --input-text: #bfdbfe;       
+            --line-num-bg: rgba(0, 0, 0, 0.3); --line-num-text: #60a5fa; --btn-copy-bg: rgba(59, 130, 246, 0.5); --tag-prod-text: #38bdf8; 
+            --tag-prod-border: rgba(56, 189, 248, 0.5); --tag-train-text: #fcd34d; --tag-train-border: rgba(252, 211, 77, 0.5);
         }
-
-        body {
-            font-family: "Segoe UI", Roboto, monospace;
-            margin: 0;
-            padding: 20px;
-            background-color: var(--bg-color);
-            background-image: var(--bg-image);
-            background-attachment: fixed; 
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            overflow-x: hidden;
-            transition: background-color 0.4s ease, color 0.4s ease;
-        }
-
-        /* --- ANIMATED BACKGROUND CANVAS --- */
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1;
-            pointer-events: none;
-        }
-
+        body { font-family: "Segoe UI", Roboto, monospace; margin: 0; padding: 20px; background-color: var(--bg-color); background-image: var(--bg-image); background-attachment: fixed; color: var(--text-main); display: flex; justify-content: center; overflow-x: hidden; transition: background-color 0.4s ease, color 0.4s ease; }
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }
         .container { max-width: 1200px; width: 100%; position: relative; z-index: 1;}
-
-        /* --- FLOATING HEADER & CONTROLS --- */
-        .app-header {
-            position: sticky;
-            top: 15px;
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 12px 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        h2 {
-            color: var(--logo-text);
-            font-size: 1.7rem; 
-            margin: 0;
-            display: flex;
-            align-items: baseline;
-            gap: 12px;
-            font-family: "Courier New", Courier, monospace;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(242, 122, 34, 0.2);
-            transition: color 0.3s;
-        }
-
+        .app-header { position: sticky; top: 15px; z-index: 1000; display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 25px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: all 0.3s ease; flex-wrap: wrap; gap: 15px; }
+        .header-left { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        h2 { color: var(--logo-text); font-size: 1.7rem; margin: 0; display: flex; align-items: baseline; gap: 12px; font-family: "Courier New", Courier, monospace; font-weight: bold; text-shadow: 0 0 10px rgba(242, 122, 34, 0.2); transition: color 0.3s; }
         .logo-text { letter-spacing: 1px; display: flex; align-items: center; }
-
-        .logo-accent {
-            background-color: var(--neon-green);
-            color: var(--logo-accent-text);
-            padding: 0px 6px;
-            margin: 0 6px;
-            box-shadow: 0 0 12px rgba(242, 122, 34, 0.4);
-            display: inline-block;
-            font-weight: 900;
-            transition: all 0.3s;
-        }
-
-        .version-tag {
-            font-size: 0.8rem; 
-            color: var(--accent-blue);
-            opacity: 0.8;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: normal;
-            font-family: "Segoe UI", Roboto, monospace;
-        }
-
-        .live-viewers {
-            font-size: 0.75rem;
-            color: var(--neon-green);
-            background: rgba(57, 255, 20, 0.1);
-            border: 1px solid var(--neon-green);
-            padding: 3px 8px;
-            border-radius: 4px;
-            box-shadow: 0 0 8px rgba(57, 255, 20, 0.2);
-            font-family: "Courier New", Courier, monospace;
-            text-transform: uppercase;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s ease;
-        }
-
-        /* Top Right Controls (Zoom + Theme) */
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .theme-toggle-btn {
-            background: transparent;
-            color: var(--accent-blue);
-            border: 1px solid var(--border-color);
-            padding: 6px 12px;
-            font-size: 11px;
-            font-family: "Courier New", Courier, monospace;
-            font-weight: bold;
-            border-radius: 20px;
-            cursor: pointer;
-            backdrop-filter: blur(4px);
-            background: var(--code-bg);
-            transition: 0.3s ease;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-        }
-        .theme-toggle-btn:hover {
-            border-color: var(--accent-green);
-            color: var(--accent-green);
-            box-shadow: 0 0 10px rgba(242, 122, 34, 0.2);
-        }
-
-        .zoom-controls {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--accent-blue);
-            font-family: "Courier New", Courier, monospace;
-            background: var(--code-bg);
-            padding: 6px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            backdrop-filter: blur(4px);
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-            user-select: none; 
-            transition: all 0.3s;
-        }
-        .zoom-controls input[type="range"] {
-            -webkit-appearance: none;
-            width: 100px;
-            background: var(--card-bg);
-            height: 4px;
-            border-radius: 2px;
-            outline: none;
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-        }
-        .zoom-controls input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: var(--neon-green);
-            cursor: pointer;
-            box-shadow: 0 0 8px var(--neon-green);
-            transition: 0.2s;
-        }
-        .zoom-controls input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.3);
-        }
-
-        /* --- FORM & PANEL STYLES --- */
-        .form-group {
-            background: var(--card-bg);
-            backdrop-filter: blur(8px); 
-            -webkit-backdrop-filter: blur(8px);
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            transition: all 0.3s;
-        }
-
-        .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        label {
-            font-weight: 600;
-            display: block;
-            margin-bottom: 8px;
-            color: var(--accent-blue);
-            font-size: calc(0.75rem * var(--font-scale));
-            text-transform: uppercase;
-            opacity: 0.9;
-        }
+        .logo-accent { background-color: var(--neon-green); color: var(--logo-accent-text); padding: 0px 6px; margin: 0 6px; box-shadow: 0 0 12px rgba(242, 122, 34, 0.4); display: inline-block; font-weight: 900; transition: all 0.3s; }
+        .version-tag { font-size: 0.8rem; color: var(--accent-blue); opacity: 0.8; text-transform: uppercase; letter-spacing: 2px; font-weight: normal; font-family: "Segoe UI", Roboto, monospace; }
+        .live-viewers { font-size: 0.75rem; color: var(--neon-green); background: rgba(57, 255, 20, 0.1); border: 1px solid var(--neon-green); padding: 3px 8px; border-radius: 4px; box-shadow: 0 0 8px rgba(57, 255, 20, 0.2); font-family: "Courier New", Courier, monospace; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px; transition: all 0.3s ease; }
+        .header-controls { display: flex; align-items: center; gap: 15px; }
+        .theme-toggle-btn { background: transparent; color: var(--accent-blue); border: 1px solid var(--border-color); padding: 6px 12px; font-size: 11px; font-family: "Courier New", Courier, monospace; font-weight: bold; border-radius: 20px; cursor: pointer; backdrop-filter: blur(4px); background: var(--code-bg); transition: 0.3s ease; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
+        .theme-toggle-btn:hover { border-color: var(--accent-green); color: var(--accent-green); box-shadow: 0 0 10px rgba(242, 122, 34, 0.2); }
+        .zoom-controls { display: flex; align-items: center; gap: 12px; color: var(--accent-blue); font-family: "Courier New", Courier, monospace; background: var(--code-bg); padding: 6px 16px; border: 1px solid var(--border-color); border-radius: 20px; backdrop-filter: blur(4px); box-shadow: inset 0 0 10px rgba(0,0,0,0.1); user-select: none; transition: all 0.3s; }
+        .zoom-controls input[type="range"] { -webkit-appearance: none; width: 100px; background: var(--card-bg); height: 4px; border-radius: 2px; outline: none; border: 1px solid var(--border-color); cursor: pointer; }
+        .zoom-controls input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--neon-green); cursor: pointer; box-shadow: 0 0 8px var(--neon-green); transition: 0.2s; }
+        .zoom-controls input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+        .form-group { background: var(--card-bg); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); transition: all 0.3s; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        label { font-weight: 600; display: block; margin-bottom: 8px; color: var(--accent-blue); font-size: calc(0.75rem * var(--font-scale)); text-transform: uppercase; opacity: 0.9; }
         .header-row label { margin-bottom: 0; }
-
-        .expand-btn {
-            background: transparent;
-            color: var(--accent-purple);
-            border: 1px solid var(--border-color);
-            padding: 4px 10px;
-            font-size: calc(10px * var(--font-scale));
-            cursor: pointer;
-            border-radius: 4px;
-            transition: 0.3s ease;
-            font-family: "Courier New", Courier, monospace;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .expand-btn:hover {
-            border-color: var(--accent-purple);
-            background: rgba(188, 140, 255, 0.1);
-            box-shadow: 0 0 8px rgba(188, 140, 255, 0.3);
-            color: var(--text-main);
-        }
-
-        /* --- MULTI-TENANT DEVICE HUD --- */
-        .device-hud {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-            gap: 6px;
-            font-size: calc(11px * var(--font-scale));
-            color: var(--text-main);
-            font-family: "Courier New", Courier, monospace;
-            opacity: 0;
-            transition: opacity 0.3s;
-            max-width: 650px;
-        }
+        .expand-btn { background: transparent; color: var(--accent-purple); border: 1px solid var(--border-color); padding: 4px 10px; font-size: calc(10px * var(--font-scale)); cursor: pointer; border-radius: 4px; transition: 0.3s ease; font-family: "Courier New", Courier, monospace; text-transform: uppercase; letter-spacing: 1px; }
+        .expand-btn:hover { border-color: var(--accent-purple); background: rgba(188, 140, 255, 0.1); box-shadow: 0 0 8px rgba(188, 140, 255, 0.3); color: var(--text-main); }
+        .device-hud { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 6px; font-size: calc(11px * var(--font-scale)); color: var(--text-main); font-family: "Courier New", Courier, monospace; opacity: 0; transition: opacity 0.3s; max-width: 650px; }
         .device-hud.visible { opacity: 1; }
-        .host-tag {
-            background: rgba(148, 74, 49, 0.1);
-            border: 1px solid var(--border-color);
-            padding: 3px 8px;
-            border-radius: 4px;
-            display: inline-flex;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
+        .host-tag { background: rgba(148, 74, 49, 0.1); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; cursor: pointer; transition: all 0.2s ease; }
         .host-tag strong { color: var(--logo-text); margin-right: 5px; transition: color 0.2s; }
         .ip-highlight { font-weight: bold; text-shadow: 0 0 5px rgba(242, 122, 34, 0.3); transition: color 0.2s; }
-
-        /* Muted background state when another HUD tag filter is active */
-        .host-tag.muted {
-            opacity: 0.3;
-            border-color: transparent;
-            background: transparent;
-        }
-        /* Active Filter state */
-        .host-tag.active-filter {
-            border-color: var(--neon-green);
-            background: rgba(57, 255, 20, 0.15);
-            box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
-            transform: scale(1.05);
-        }
+        .host-tag.muted { opacity: 0.3; border-color: transparent; background: transparent; }
+        .host-tag.active-filter { border-color: var(--neon-green); background: rgba(57, 255, 20, 0.15); box-shadow: 0 0 10px rgba(57, 255, 20, 0.3); transform: scale(1.05); }
         [data-theme="light"] .host-tag.active-filter { background: rgba(242, 122, 34, 0.15); box-shadow: 0 0 10px rgba(242, 122, 34, 0.3); }
         [data-theme="twilight"] .host-tag.active-filter { background: rgba(254, 188, 171, 0.2); box-shadow: 0 0 10px rgba(254, 188, 171, 0.3); border-color: var(--accent-blue); }
         [data-theme="playstation"] .host-tag.active-filter { background: rgba(234, 179, 8, 0.2); box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); }
-
-        .host-tag:hover {
-            border-color: var(--accent-blue);
-            transform: translateY(-1px);
-        }
-
-        /* --- COLLAPSIBLE WRAPPERS --- */
-        .readme-wrapper {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.3s, margin 0.3s, border 0.3s;
-        }
-        .readme-wrapper.expanded {
-            max-height: 1000px;
-            padding-top: 15px;
-            margin-top: 10px;
-            border-top: 1px dashed var(--border-color);
-        }
-        .readme-content {
-            font-size: calc(12px * var(--font-scale));
-            line-height: 1.6;
-            color: var(--text-main);
-            opacity: 0.9;
-        }
-        .readme-content h3 {
-            color: var(--accent-purple);
-            font-size: calc(12px * var(--font-scale));
-            margin: 12px 0 6px 0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .host-tag:hover { border-color: var(--accent-blue); transform: translateY(-1px); }
+        .readme-wrapper { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.3s, margin 0.3s, border 0.3s; }
+        .readme-wrapper.expanded { max-height: 1000px; padding-top: 15px; margin-top: 10px; border-top: 1px dashed var(--border-color); }
+        .readme-content { font-size: calc(12px * var(--font-scale)); line-height: 1.6; color: var(--text-main); opacity: 0.9; }
+        .readme-content h3 { color: var(--accent-purple); font-size: calc(12px * var(--font-scale)); margin: 12px 0 6px 0; text-transform: uppercase; letter-spacing: 1px; }
         .readme-content p { margin: 0 0 10px 0; }
-
-        /* --- CLEAN NATIVE TEXTAREA & INPUTS --- */
         .input-container { position: relative; width: 100%; display: block; }
-        
-        textarea#configInput, .backdrop-highlighter {
-            width: 100%; height: calc(140px * var(--font-scale));
-            padding: 12px; font-family: "Courier New", Courier, monospace;
-            font-size: calc(13px * var(--font-scale)); line-height: 1.6;
-            box-sizing: border-box; border-radius: 4px;
-            white-space: pre-wrap; word-wrap: break-word;
-            transition: height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s, box-shadow 0.3s;
-        }
-        
-        /* The real textarea sits on top, transparent, accepting inputs */
-        textarea#configInput {
-            resize: none; background: transparent !important; color: var(--input-text); caret-color: var(--input-text);
-            border: 1px solid var(--border-color); outline: none; position: relative; z-index: 2;
-            scrollbar-width: thin; scrollbar-color: var(--border-color) transparent; overflow-y: auto; overflow-x: hidden;
-        }
+        textarea#configInput, .backdrop-highlighter { width: 100%; height: calc(140px * var(--font-scale)); padding: 12px; font-family: "Courier New", Courier, monospace; font-size: calc(13px * var(--font-scale)); line-height: 1.6; box-sizing: border-box; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; transition: height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s, box-shadow 0.3s; }
+        textarea#configInput { resize: none; background: transparent !important; color: var(--input-text); caret-color: var(--input-text); border: 1px solid var(--border-color); outline: none; position: relative; z-index: 2; scrollbar-width: thin; scrollbar-color: var(--border-color) transparent; overflow-y: auto; overflow-x: hidden; }
         textarea#configInput:focus { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(148, 74, 49, 0.2); }
         textarea#configInput.expanded { height: calc(400px * var(--font-scale)); }
-        
         textarea#configInput::-webkit-scrollbar { width: 10px; height: 10px;}
         textarea#configInput::-webkit-scrollbar-track { background: transparent; }
         textarea#configInput::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
         textarea#configInput::selection { background: rgba(148, 74, 49, 0.2); }
-
-        /* The highlighter div sits behind it, rendering red marks exactly where the text aligns */
-        .backdrop-highlighter {
-            position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none;
-            color: transparent; background: var(--code-bg); border: 1px solid transparent; 
-            overflow-y: auto; overflow-x: hidden; scrollbar-width: none;
-        }
+        .backdrop-highlighter { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; color: transparent; background: var(--code-bg); border: 1px solid transparent; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
         .backdrop-highlighter::-webkit-scrollbar { display: none; }
         .backdrop-highlighter.expanded { height: calc(400px * var(--font-scale)); }
-        
-        mark.error-highlight {
-            background-color: rgba(248, 81, 73, 0.4); border-radius: 2px;
-            border-bottom: 2px solid var(--accent-red); color: transparent; padding: 0; margin: 0;
-        }
-
-        /* Specifically style the filter input so it overrides default browser white backgrounds */
-        #filterInput {
-            width: 100%;
-            background-color: var(--code-bg) !important;
-            color: var(--neon-green) !important;
-            border: 1px solid var(--border-color);
-            padding: 10px 15px;
-            border-radius: 4px;
-            font-family: "Courier New", Courier, monospace;
-            font-size: calc(13px * var(--font-scale));
-            box-sizing: border-box;
-            margin-bottom: 15px;
-            outline: none;
-            transition: 0.3s;
-        }
-        #filterInput:focus {
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 10px rgba(88, 166, 255, 0.2);
-        }
-        #filterInput::placeholder {
-            color: var(--line-num-text);
-        }
-
-        /* --- UI CONTROLS --- */
+        mark.error-highlight { background-color: rgba(248, 81, 73, 0.4); border-radius: 2px; border-bottom: 2px solid var(--accent-red); color: transparent; padding: 0; margin: 0; }
+        #filterInput { width: 100%; background-color: var(--code-bg) !important; color: var(--neon-green) !important; border: 1px solid var(--border-color); padding: 10px 15px; border-radius: 4px; font-family: "Courier New", Courier, monospace; font-size: calc(13px * var(--font-scale)); box-sizing: border-box; margin-bottom: 15px; outline: none; transition: 0.3s; }
+        #filterInput:focus { border-color: var(--accent-blue); box-shadow: 0 0 10px rgba(88, 166, 255, 0.2); }
+        #filterInput::placeholder { color: var(--line-num-text); }
         .controls-row { display: flex; gap: 12px; margin-top: 15px; margin-bottom: 15px; align-items: flex-end;}
-        
-        .cyber-btn {
-            background: var(--accent-green);
-            color: #fff;
-            padding: 8px 20px;
-            font-size: calc(13px * var(--font-scale));
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: 1px solid var(--neon-green);
-            border-radius: 4px;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 0 10px rgba(35, 134, 54, 0.3);
-            white-space: nowrap;
-        }
+        .cyber-btn { background: var(--accent-green); color: #fff; padding: 8px 20px; font-size: calc(13px * var(--font-scale)); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border: 1px solid var(--neon-green); border-radius: 4px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 10px rgba(35, 134, 54, 0.3); white-space: nowrap; }
         .cyber-btn:hover { background: var(--accent-blue); box-shadow: 0 0 20px rgba(242, 122, 34, 0.4); border-color: var(--accent-blue); }
         .cyber-btn:active { transform: scale(0.95); }
-
-        .clear-btn {
-            background: transparent;
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-            padding: 6px 20px;
-            font-size: calc(12px * var(--font-scale));
-            text-transform: uppercase;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: 0.2s;
-            opacity: 0.8;
-        }
-        .clear-btn:hover {
-            opacity: 1;
-            border-color: var(--accent-purple);
-            color: var(--accent-purple);
-            background: rgba(148, 74, 49, 0.05);
-        }
-
-        /* --- 4-COLUMN OUTPUT STYLES --- */
-        .results-container {
-            display: flex;
-            gap: 12px; 
-        }
-        .result-column {
-            flex: 1; 
-            display: flex;
-            flex-direction: column;
-            min-width: 0; 
-        }
-        .script-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-        .copy-btn {
-            background: var(--btn-copy-bg);
-            color: white;
-            border: none;
-            padding: 4px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: calc(10px * var(--font-scale));
-            font-weight: bold;
-            text-transform: uppercase;
-            font-family: "Courier New", Courier, monospace;
-            transition: 0.2s;
-        }
+        .clear-btn { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 20px; font-size: calc(12px * var(--font-scale)); text-transform: uppercase; cursor: pointer; border-radius: 4px; transition: 0.2s; opacity: 0.8; }
+        .clear-btn:hover { opacity: 1; border-color: var(--accent-purple); color: var(--accent-purple); background: rgba(148, 74, 49, 0.05); }
+        .results-container { display: flex; gap: 12px; }
+        .result-column { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .script-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .copy-btn { background: var(--btn-copy-bg); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: calc(10px * var(--font-scale)); font-weight: bold; text-transform: uppercase; font-family: "Courier New", Courier, monospace; transition: 0.2s; }
         .copy-btn:hover { filter: brightness(1.2); }
-
-        .output-box {
-            width: 100%;
-            height: calc(400px * Math.min(var(--font-scale), 1.5)); 
-            font-family: "Courier New", Courier, monospace;
-            font-size: calc(12px * var(--font-scale));
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            box-sizing: border-box;
-            padding: 10px 0; 
-            overflow: auto; 
-            background-color: var(--code-bg); 
-            backdrop-filter: blur(4px);
-            color: var(--input-text); 
-            cursor: text;
-            counter-reset: linenumber; 
-            line-height: 1.6;
-            resize: none;
-            transition: all 0.3s;
-        }
-
-        .line-item {
-            display: block;
-            padding-left: calc(35px * var(--font-scale)); 
-            padding-right: 10px;
-            position: relative;
-            white-space: pre; 
-        }
-
-        .line-item::before {
-            counter-increment: linenumber;
-            content: counter(linenumber);
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: calc(20px * var(--font-scale));
-            text-align: right;
-            color: var(--line-num-text); 
-            background-color: var(--line-num-bg); 
-            border-right: 1px solid var(--border-color);
-            padding-right: calc(6px * var(--font-scale));
-            height: 100%;
-            user-select: none; 
-            -webkit-user-select: none;
-            transition: all 0.3s;
-        }
-
-        /* Keyword Tags UI */
-        .tag-badge {
-            padding: 2px 5px; 
-            border-radius: 4px; 
-            font-size: calc(9.5px * var(--font-scale)); 
-            font-weight: bold; 
-            text-shadow: none; 
-            font-family: "Segoe UI", Roboto, sans-serif; 
-            letter-spacing: 0.5px;
-            margin-left: 6px;
-            display: inline-block;
-            vertical-align: middle;
-        }
+        .output-box { width: 100%; height: calc(400px * Math.min(var(--font-scale), 1.5)); font-family: "Courier New", Courier, monospace; font-size: calc(12px * var(--font-scale)); border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; padding: 10px 0; overflow: auto; background-color: var(--code-bg); backdrop-filter: blur(4px); color: var(--input-text); cursor: text; counter-reset: linenumber; line-height: 1.6; resize: none; transition: all 0.3s; }
+        .line-item { display: block; padding-left: calc(35px * var(--font-scale)); padding-right: 10px; position: relative; white-space: pre; }
+        .line-item::before { counter-increment: linenumber; content: counter(linenumber); position: absolute; left: 0; top: 0; width: calc(20px * var(--font-scale)); text-align: right; color: var(--line-num-text); background-color: var(--line-num-bg); border-right: 1px solid var(--border-color); padding-right: calc(6px * var(--font-scale)); height: 100%; user-select: none; -webkit-user-select: none; transition: all 0.3s; }
+        .tag-badge { padding: 2px 5px; border-radius: 4px; font-size: calc(9.5px * var(--font-scale)); font-weight: bold; text-shadow: none; font-family: "Segoe UI", Roboto, sans-serif; letter-spacing: 0.5px; margin-left: 6px; display: inline-block; vertical-align: middle; }
         .tag-prod { background: var(--tag-prod-bg); color: var(--tag-prod-text); border: 1px solid var(--tag-prod-border); }
         .tag-train { background: var(--tag-train-bg); color: var(--tag-train-text); border: 1px solid var(--tag-train-border); }
-
-        /* Duplicate Warning Styles */
-        .highlight-dup {
-            background-color: rgba(248, 81, 73, 0.15); 
-            color: var(--accent-red); 
-        }
-        .highlight-dup::before {
-            background-color: rgba(248, 81, 73, 0.05); 
-            color: var(--accent-red);
-            border-right-color: var(--accent-red);
-        }
-
-        .warning-box {
-            background: rgba(248, 81, 73, 0.08);
-            border: 1px dashed var(--accent-red);
-            color: var(--accent-red);
-            padding: 10px 15px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            font-family: "Courier New", Courier, monospace;
-            font-size: calc(11.5px * var(--font-scale));
-            text-align: center;
-            line-height: 1.5;
-            backdrop-filter: blur(4px);
-        }
+        .highlight-dup { background-color: rgba(248, 81, 73, 0.15); color: var(--accent-red); }
+        .highlight-dup::before { background-color: rgba(248, 81, 73, 0.05); color: var(--accent-red); border-right-color: var(--accent-red); }
+        .warning-box { background: rgba(248, 81, 73, 0.08); border: 1px dashed var(--accent-red); color: var(--accent-red); padding: 10px 15px; border-radius: 4px; margin-bottom: 15px; font-family: "Courier New", Courier, monospace; font-size: calc(11.5px * var(--font-scale)); text-align: center; line-height: 1.5; backdrop-filter: blur(4px); }
         .warning-box strong { font-size: calc(12.5px * var(--font-scale)); letter-spacing: 1px; }
-
         .hidden-copy-area { display: none; }
-        #statusMsg { 
-            font-size: calc(11px * var(--font-scale)); 
-            color: var(--accent-blue); 
-            margin-top: 15px; 
-            font-family: "Courier New", Courier, monospace;
-        }
-
-        /* --- IOS STYLE TOGGLE SWITCH --- */
-        .ios-toggle-wrapper {
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            font-size: calc(10px * var(--font-scale)); 
-            font-weight: bold; 
-            color: var(--accent-blue);
-            font-family: "Courier New", Courier, monospace;
-            letter-spacing: 1px;
-        }
+        #statusMsg { font-size: calc(11px * var(--font-scale)); color: var(--accent-blue); margin-top: 15px; font-family: "Courier New", Courier, monospace; }
+        .ios-toggle-wrapper { display: flex; align-items: center; gap: 8px; font-size: calc(10px * var(--font-scale)); font-weight: bold; color: var(--accent-blue); font-family: "Courier New", Courier, monospace; letter-spacing: 1px; }
         .ios-switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .ios-switch input { opacity: 0; width: 0; height: 0; }
-        .ios-slider { 
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; 
-            background-color: var(--code-bg); border: 1px solid var(--border-color); 
-            transition: .3s; border-radius: 20px; box-shadow: inset 0 0 5px rgba(0,0,0,0.3); 
-        }
-        .ios-slider:before { 
-            position: absolute; content: ""; height: 12px; width: 12px; left: 2px; bottom: 2px; 
-            background-color: var(--text-main); transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1); 
-            border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.4); 
-        }
+        .ios-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--code-bg); border: 1px solid var(--border-color); transition: .3s; border-radius: 20px; box-shadow: inset 0 0 5px rgba(0,0,0,0.3); }
+        .ios-slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 2px; bottom: 2px; background-color: var(--text-main); transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1); border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
         input:checked + .ios-slider { background-color: var(--accent-green); border-color: var(--accent-green); }
         input:checked + .ios-slider:before { transform: translateX(16px); background-color: #fff; }
-
-        /* --- INVALID PORTS MODAL --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center;
-            z-index: 2000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
         .modal-overlay.visible { opacity: 1; visibility: visible; }
-        .modal-box {
-            background: var(--card-bg); border: 1px solid var(--accent-red); padding: 30px; border-radius: 8px; max-width: 500px; box-shadow: 0 0 25px rgba(248, 81, 73, 0.2); color: var(--text-main); font-size: 13px; line-height: 1.6;
-            transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
+        .modal-box { background: var(--card-bg); border: 1px solid var(--accent-red); padding: 30px; border-radius: 8px; max-width: 500px; box-shadow: 0 0 25px rgba(248, 81, 73, 0.2); color: var(--text-main); font-size: 13px; line-height: 1.6; transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
         .modal-overlay.visible .modal-box { transform: scale(1); }
         .modal-box h3 { color: var(--accent-red); margin-top: 0; font-family: "Courier New", Courier, monospace; font-size: 16px; text-shadow: 0 0 8px rgba(248, 81, 73, 0.4); }
         .modal-buttons { margin-top: 25px; display: flex; justify-content: flex-end; gap: 12px; }
-
-        /* --- LOCAL DB STYLES --- */
         .bottom-actions { text-align: center; margin-top: 30px; margin-bottom: 20px; display: flex; justify-content: center; gap: 15px; }
-        
-        .db-box {
-            background: var(--card-bg);
-            backdrop-filter: blur(8px);
-            border: 1px solid var(--accent-green);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.1), 0 10px 30px rgba(0,0,0,0.1);
-        }
-        
-        .db-security-note {
-            background: rgba(242, 122, 34, 0.1);
-            border-left: 3px solid var(--accent-green);
-            padding: 8px 12px;
-            margin-bottom: 12px;
-            font-size: calc(11px * var(--font-scale));
-            color: var(--text-main);
-            line-height: 1.5;
-            border-radius: 0 4px 4px 0;
-        }
-
-        .db-box textarea { 
-            background: var(--code-bg); color: var(--input-text); font-family: "Courier New", Courier, monospace;
-            height: calc(150px * var(--font-scale)); margin-bottom: 10px; border-color: rgba(242, 122, 34, 0.5); 
-            width: 100%; padding: 12px; border-radius: 4px; box-sizing: border-box; outline: none; transition: 0.3s;
-        }
+        .db-box { background: var(--card-bg); backdrop-filter: blur(8px); border: 1px solid var(--accent-green); padding: 15px; border-radius: 8px; box-shadow: inset 0 0 20px rgba(0,0,0,0.1), 0 10px 30px rgba(0,0,0,0.1); }
+        .db-security-note { background: rgba(242, 122, 34, 0.1); border-left: 3px solid var(--accent-green); padding: 8px 12px; margin-bottom: 12px; font-size: calc(11px * var(--font-scale)); color: var(--text-main); line-height: 1.5; border-radius: 0 4px 4px 0; }
+        .db-box textarea { background: var(--code-bg); color: var(--input-text); font-family: "Courier New", Courier, monospace; height: calc(150px * var(--font-scale)); margin-bottom: 10px; border-color: rgba(242, 122, 34, 0.5); width: 100%; padding: 12px; border-radius: 4px; box-sizing: border-box; outline: none; transition: 0.3s; }
         .db-box textarea:focus { border-color: var(--accent-green); box-shadow: 0 0 8px rgba(35, 134, 54, 0.3); }
         .db-controls { display: flex; justify-content: space-between; align-items: center; }
         .db-status { font-size: calc(11px * var(--font-scale)); color: var(--accent-green); font-family: monospace; font-weight: bold;}
-
     </style>
 </head>
 <body>
@@ -759,19 +160,17 @@
 </div>
 
 <div class="container">
-    
     <div class="app-header">
         <div class="header-left">
             <h2>
                 <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-                <span class="version-tag">// v9.9 [Automated Port Extractor]</span>
+                <span class="version-tag">// v10.0 [Automated Port Extractor]</span>
             </h2>
             <span id="liveViewers" class="live-viewers" title="Real-Time Active Users">👁️ ONLINE: ...</span>
         </div>
         
         <div class="header-controls">
             <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Cycle Theme">☀️ LIGHT</button>
-            
             <div class="zoom-controls">
                 <span style="font-size: 11px;">A-</span>
                 <input type="range" id="zoomSlider" min="0.8" max="1.6" step="0.05" value="1" title="Adjust Text Size (Double-click to reset)">
@@ -788,7 +187,6 @@
         <div id="readmeWrapper" class="readme-wrapper expanded">
             <div class="readme-content">
                 <p>Welcome to <strong>N0CAPE</strong>. This utility dynamically extracts and pairs network interfaces with their respective switch hostnames from raw data.</p>
-                
                 <h3>> Instructions (01)</h3>
                 <p>Provide the engine with raw data (Ticket descriptions, CDP/LLDP outputs, or Inventory tables). As long as the text contains a Switch Hostname (e.g., <code>CO-ESP-ACC02M02</code>) and Port Numbers (e.g., <code>gi1/0/3</code>), the tool will map them.</p>
                 <p><strong>Supported Formats:</strong> It supports single ports, comma-separated shorthand (<code>Gi3/0/1,3,5</code>), dashed ranges (<code>Gi2/0/23 - Gi2/0/27</code>), reverse tables (<code>29  SW-NAME  2</code>), and direct-attached formatting (<code>SW-NAME - 1/0/2</code>). It gracefully auto-corrects Hostname typos (e.g., <code>CASO702</code> -> <code>CAS0702</code>) and silently fixes common port prefix typos like <code>61</code> or <code>Gl</code>.</p>
@@ -871,11 +269,9 @@
     <div id="dbWrapper" class="readme-wrapper">
         <div class="db-box">
             <label style="color: var(--accent-green); margin-bottom: 10px;">> ZERO-TRUST_LOCAL_DB</label>
-            
             <div class="db-security-note">
-                <strong>🔒 SECURITY NOTE:</strong> This database is completely offline and Zero-Trust. Your data is saved directly into your browser's local cache (localStorage). It is <strong>never</strong> transmitted to GitHub, any external server, or the public internet.
+                <strong>🔒 SECURITY NOTE:</strong> This database is completely offline and Zero-Trust. Your data is saved directly into your browser's local cache (localStorage).
             </div>
-
             <p style="font-size: calc(11.5px * var(--font-scale)); color: var(--text-main); opacity: 0.8; margin-top: 0;">Any new data pasted here is <strong>MERGED</strong> into your existing local database. To remove old switches, click 'Clear Memory' and paste a fresh master list.</p>
             <textarea id="dbInput" placeholder="-- Formats Accepted --&#10;PH-NOC-ACC0101, 10.20.30.40&#10;CO-ARN-CAS0302   10.30.40.50   Access Switch" spellcheck="false"></textarea>
             <div class="db-controls">
@@ -887,21 +283,50 @@
             </div>
         </div>
     </div>
-
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-    // --- REAL-TIME LIVE VIEWERS (FIREBASE) ---
-    // Ensure the entire DOM and external scripts are fully loaded before firing Firebase
+    // --- REAL-TIME LIVE VIEWERS (FIREBASE FALLBACK ENGINE) ---
     window.addEventListener('load', () => {
         const viewerElement = document.getElementById('liveViewers');
+        let fallbackTriggered = false;
+
+        // Function to launch the Simulated Viewer Engine if Firebase gets blocked
+        const triggerFallback = () => {
+            if (fallbackTriggered) return;
+            fallbackTriggered = true;
+            viewerElement.title = "Firebase blocked. Using simulated data.";
+            
+            let baseUsers = Math.floor(Math.random() * 2) + 1;
+            const updateSim = () => {
+                const chance = Math.random();
+                if (chance > 0.85 && baseUsers < 5) baseUsers++;
+                else if (chance < 0.15 && baseUsers > 1) baseUsers--;
+                
+                viewerElement.innerText = `👁️ ONLINE: ${baseUsers}`;
+                viewerElement.style.textShadow = "0 0 10px var(--hl-orange)";
+                viewerElement.style.color = "#fff";
+                
+                setTimeout(() => {
+                    viewerElement.style.textShadow = "none";
+                    viewerElement.style.color = "var(--hl-orange)";
+                }, 500);
+                setTimeout(updateSim, Math.floor(Math.random() * 25000) + 10000);
+            };
+            updateSim();
+        };
+
+        // Set a strict 3-second timeout. If Firebase doesn't connect by then, launch the fallback.
+        const fallbackTimer = setTimeout(() => {
+            triggerFallback();
+        }, 3000);
 
         if (typeof firebase === 'undefined') {
-            viewerElement.innerText = `👁️ ONLINE: BLOCKED`;
-            viewerElement.title = "Firebase SDK blocked by Adblocker, VPN, or Firewall.";
+            clearTimeout(fallbackTimer);
+            triggerFallback();
             return;
         }
 
@@ -916,31 +341,37 @@
             measurementId: "G-T5PK7001EX"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        
-        const listRef = db.ref('viewers');
-        const userRef = listRef.push(); 
-        const connectedRef = db.ref('.info/connected');
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.database();
+            const connectedRef = db.ref('.info/connected');
 
-        connectedRef.on('value', (snap) => {
-            if (snap.val() === true) {
-                userRef.onDisconnect().remove();
-                userRef.set(true);
-            }
-        });
+            connectedRef.on('value', (snap) => {
+                if (snap.val() === true) {
+                    // Successful connection! Cancel the 3-second fallback timer
+                    clearTimeout(fallbackTimer);
+                    
+                    const listRef = db.ref('viewers');
+                    const userRef = listRef.push(); 
+                    userRef.onDisconnect().remove();
+                    userRef.set(true);
 
-        listRef.on('value', (snap) => {
-            const viewerCount = snap.numChildren();
-            viewerElement.innerText = `👁️ ONLINE: ${viewerCount}`;
-            viewerElement.style.textShadow = "0 0 10px var(--neon-green)";
-            viewerElement.style.color = "#fff";
-            
-            setTimeout(() => {
-                viewerElement.style.textShadow = "none";
-                viewerElement.style.color = "var(--neon-green)";
-            }, 1500);
-        });
+                    listRef.on('value', (s) => {
+                        if (fallbackTriggered) return; // Prevent interference if fallback already ran
+                        viewerElement.innerText = `👁️ ONLINE: ${s.numChildren()}`;
+                        viewerElement.style.textShadow = "0 0 10px var(--neon-green)";
+                        viewerElement.style.color = "#fff";
+                        setTimeout(() => {
+                            viewerElement.style.textShadow = "none";
+                            viewerElement.style.color = "var(--neon-green)";
+                        }, 1500);
+                    });
+                }
+            });
+        } catch(e) {
+            clearTimeout(fallbackTimer);
+            triggerFallback();
+        }
     });
 
     // --- STATE MANAGEMENT ---
@@ -948,7 +379,6 @@
     let lastInvalidPorts = [];
     let isHighlightModeActive = false; 
 
-    // The Master Regex Factory for identifying invalid port formats, typos, and missing tuples.
     function getInvalidPortRegex() {
         return /(^|[^a-zA-Z0-9\/])((?:(?:G1|61|6i|G[l\|!]|G(?=\d))\d*(?:\/\d+)*\/?|(?:Gi|Te|Fa|Eth)\d*\/\d*\/(?!\d)|(?:Gi|Te|Fa|Eth)\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d+\/\d+(?!\/)|(?:Gi|Te|Fa|Eth)?0\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d{3,}))\b/gi;
     }
@@ -957,12 +387,9 @@
         const textarea = document.getElementById('configInput');
         const view = document.getElementById('configHighlightView');
         let text = textarea.value;
-        
         let escapedText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        
         const liveRegex = getInvalidPortRegex();
         escapedText = escapedText.replace(liveRegex, '$1<mark class="error-highlight">$2</mark>');
-        
         view.innerHTML = escapedText + '<br>';
     }
 
@@ -980,19 +407,14 @@
     function activateHighlightMode() {
         closeInvalidPortsModal();
         isHighlightModeActive = true;
-        
         const textarea = document.getElementById('configInput');
         const label = document.getElementById('configInputLabel');
-        
         syncLiveHighlights();
-        
         label.innerHTML = `01 // Config Input <span style="color: var(--accent-red); margin-left: 10px;">[ LIVE HIGHLIGHT MODE ]</span>`;
-        
         const execBtn = document.getElementById('executeBtn');
         execBtn.innerText = "Re-Scan & Run";
         execBtn.style.background = "var(--accent-red)";
         execBtn.style.borderColor = "var(--accent-red)";
-        
         document.getElementById('statusMsg').innerText = `STATUS: HIGHLIGHT_MODE_ACTIVE | Edit the red text directly in the box above.`;
         textarea.focus();
     }
@@ -1000,19 +422,14 @@
     function exitHighlightMode() {
         isHighlightModeActive = false;
         const label = document.getElementById('configInputLabel');
-        
         label.innerHTML = `01 // Config Input`;
-        
         const execBtn = document.getElementById('executeBtn');
         execBtn.innerText = "Execute_Run";
         execBtn.style.background = "var(--accent-green)";
         execBtn.style.borderColor = "var(--neon-green)";
-        
         document.getElementById('statusMsg').innerText = `STATUS: READY_FOR_EXECUTION`;
         document.getElementById('statusMsg').style.color = 'var(--accent-blue)';
-        
         document.getElementById('configHighlightView').innerHTML = '';
-        
         document.getElementById('configInput').focus();
     }
 
@@ -1025,7 +442,6 @@
         edits.forEach(input => {
             let original = input.getAttribute('data-original');
             let newValue = input.value.trim();
-            
             if (original !== newValue && newValue !== "") {
                 let escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 let regex = new RegExp(`(^|[^a-zA-Z0-9\\/])(${escapeRegExp(original)})\\b`, 'gi');
@@ -1039,15 +455,10 @@
             handleConfigInput(); 
             syncLiveHighlights(); 
         }
-        
         closeInvalidPortsModal();
-        
-        setTimeout(() => {
-            processText();
-        }, 100);
+        setTimeout(() => { processText(); }, 100);
     }
 
-    // --- COPY CONTENT LOGIC (NATIVE SECURE ENVIRONMENT IMPLEMENTATION) ---
     function copyContent(hiddenElementId, btnElement) {
         const textToCopy = document.getElementById(hiddenElementId).value;
         navigator.clipboard.writeText(textToCopy).then(() => {
@@ -1062,38 +473,28 @@
         }).catch(err => alert("Failed to copy text. Please ensure you are running this securely over HTTPS on GitHub Pages."));
     }
 
-    // --- SUMMARIZE TOGGLE LOGIC ---
     function toggleSummarize() {
         const isChecked = document.getElementById('summarizeToggle').checked;
-        
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            
+            osc.connect(gain); gain.connect(ctx.destination);
             osc.type = 'sine';
             osc.frequency.setValueAtTime(isChecked ? 800 : 400, ctx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(isChecked ? 1200 : 200, ctx.currentTime + 0.1);
-            
             gain.gain.setValueAtTime(0.1, ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-            
-            osc.start(ctx.currentTime);
-            osc.stop(ctx.currentTime + 0.1);
+            osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
         } catch(e) {}
-
         renderOutput();
     }
 
-    // --- EASTER EGG LISTENER (PLAYSTATION) ---
     let psCheatCode = ['p','l','a','y','s','t','a','t','i','o','n'];
     let keyBuffer = [];
     document.addEventListener('keydown', (e) => {
         keyBuffer.push(e.key.toLowerCase());
         if (keyBuffer.length > psCheatCode.length) keyBuffer.shift();
-        
         if (keyBuffer.join('') === psCheatCode.join('')) {
             document.documentElement.setAttribute('data-theme', 'playstation');
             localStorage.setItem('nocape_theme', 'playstation');
@@ -1103,29 +504,18 @@
         }
     });
 
-    // --- THEME TOGGLE LOGIC ---
     function updateThemeButton(theme) {
         const btn = document.getElementById('themeToggleBtn');
-        if (theme === 'dark') {
-            btn.innerText = '☀️ LIGHT';
-        } else if (theme === 'light') {
-            btn.innerText = '🌅 TWILIGHT';
-        } else if (theme === 'twilight') {
-            btn.innerText = '🌙 DARK';
-        } else if (theme === 'playstation') {
-            btn.innerText = '🎮 PLAYSTATION';
-        }
+        if (theme === 'dark') btn.innerText = '☀️ LIGHT';
+        else if (theme === 'light') btn.innerText = '🌅 TWILIGHT';
+        else if (theme === 'twilight') btn.innerText = '🌙 DARK';
+        else if (theme === 'playstation') btn.innerText = '🎮 PLAYSTATION';
     }
 
     function toggleTheme() {
         const html = document.documentElement;
         const currentTheme = html.getAttribute('data-theme') || 'dark';
-        let newTheme;
-        
-        if (currentTheme === 'dark') newTheme = 'light';
-        else if (currentTheme === 'light') newTheme = 'twilight';
-        else newTheme = 'dark';
-        
+        let newTheme = currentTheme === 'dark' ? 'light' : currentTheme === 'light' ? 'twilight' : 'dark';
         html.setAttribute('data-theme', newTheme);
         localStorage.setItem('nocape_theme', newTheme);
         updateThemeButton(newTheme);
@@ -1135,8 +525,6 @@
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeButton(savedTheme);
 
-
-    // --- ZOOM LOGIC & PERSISTENCE ---
     const zoomSlider = document.getElementById('zoomSlider');
     const savedZoom = localStorage.getItem('nocape_zoom') || 1;
     zoomSlider.value = savedZoom;
@@ -1153,14 +541,11 @@
         localStorage.setItem('nocape_zoom', 1);
     });
 
-
-    // --- ANIMATED CANVAS ---
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
     let width, height;
     let particles = [];
     let executeGlowIntensity = 0;
-    
     let mouse = { x: -1000, y: -1000, radius: 120 };
 
     window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
@@ -1170,24 +555,16 @@
         width = canvas.width = window.innerWidth;
         height = canvas.height = window.innerHeight;
         particles = [];
-        
         const numParticles = Math.min(85, Math.floor((width * height) / 15000)); 
         for(let i = 0; i < numParticles; i++) {
             particles.push({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                baseVx: (Math.random() - 0.5) * 0.4,
-                baseVy: (Math.random() - 0.5) * 0.4,
-                vx: 0,
-                vy: 0,
-                glow: 0,
-                shape: Math.floor(Math.random() * 4), 
-                rot: Math.random() * Math.PI * 2,
-                rotSpeed: (Math.random() - 0.5) * 0.04,
+                x: Math.random() * width, y: Math.random() * height,
+                baseVx: (Math.random() - 0.5) * 0.4, baseVy: (Math.random() - 0.5) * 0.4,
+                vx: 0, vy: 0, glow: 0, shape: Math.floor(Math.random() * 4), 
+                rot: Math.random() * Math.PI * 2, rotSpeed: (Math.random() - 0.5) * 0.04,
                 radius: Math.random() * 1.5 + 1
             });
-            particles[i].vx = particles[i].baseVx;
-            particles[i].vy = particles[i].baseVy;
+            particles[i].vx = particles[i].baseVx; particles[i].vy = particles[i].baseVy;
         }
     }
 
@@ -1196,12 +573,9 @@
 
     function triggerExecuteEffect() {
         executeGlowIntensity = 1.0;
-        const centerX = width / 2;
-        const centerY = height / 2;
-        
+        const centerX = width / 2; const centerY = height / 2;
         particles.forEach(p => {
-            let dx = p.x - centerX;
-            let dy = p.y - centerY;
+            let dx = p.x - centerX; let dy = p.y - centerY;
             let dist = Math.sqrt(dx*dx + dy*dy) || 1;
             p.vx += (dx / dist) * (Math.random() * 12 + 4);
             p.vy += (dy / dist) * (Math.random() * 12 + 4);
@@ -1218,7 +592,6 @@
 
     function animateCanvas() {
         ctx.clearRect(0, 0, width, height);
-        
         if (executeGlowIntensity > 0) {
             executeGlowIntensity -= 0.015; 
             if (executeGlowIntensity < 0) executeGlowIntensity = 0;
@@ -1226,49 +599,22 @@
 
         const theme = document.documentElement.getAttribute('data-theme') || 'dark';
         let baseRGB, glowRGB, lineAlpha, polyAlpha;
-        
-        if (theme === 'light') {
-            baseRGB = '148, 74, 49';    
-            glowRGB = '242, 122, 34';   
-            lineAlpha = 0.3; polyAlpha = 0.08;
-        } else if (theme === 'twilight') {
-            glowRGB = '245, 158, 11';   
-            lineAlpha = 0.4; polyAlpha = 0.12;
-        } else {
-            // Default dark mode (and base for PS mode)
-            baseRGB = '88, 166, 255';   
-            glowRGB = '57, 255, 20';    
-            lineAlpha = 0.25; polyAlpha = 0.08;
-        }
-
-        let currentPolyAlpha = polyAlpha; 
-        let currentLineAlpha = lineAlpha; 
+        if (theme === 'light') { baseRGB = '148, 74, 49'; glowRGB = '242, 122, 34'; lineAlpha = 0.3; polyAlpha = 0.08; } 
+        else if (theme === 'twilight') { glowRGB = '245, 158, 11'; lineAlpha = 0.4; polyAlpha = 0.12; } 
+        else { baseRGB = '88, 166, 255'; glowRGB = '57, 255, 20'; lineAlpha = 0.25; polyAlpha = 0.08; }
 
         particles.forEach(p => {
-            let dxMouse = p.x - mouse.x;
-            let dyMouse = p.y - mouse.y;
+            let dxMouse = p.x - mouse.x; let dyMouse = p.y - mouse.y;
             let distMouseSq = dxMouse * dxMouse + dyMouse * dyMouse;
-            let interactRadSq = mouse.radius * mouse.radius;
-
-            if (distMouseSq < interactRadSq) {
-                let distMouse = Math.sqrt(distMouseSq);
-                let force = (mouse.radius - distMouse) / mouse.radius; 
-                p.vx += (dxMouse / distMouse) * force * 0.6;
-                p.vy += (dyMouse / distMouse) * force * 0.6;
+            if (distMouseSq < mouse.radius * mouse.radius) {
+                let force = (mouse.radius - Math.sqrt(distMouseSq)) / mouse.radius; 
+                p.vx += (dxMouse / Math.sqrt(distMouseSq)) * force * 0.6;
+                p.vy += (dyMouse / Math.sqrt(distMouseSq)) * force * 0.6;
                 p.glow = Math.max(p.glow, force);
             }
-
-            if (p.glow > 0) {
-                p.glow -= 0.02;
-                if (p.glow < 0) p.glow = 0;
-            }
-
-            p.x += p.vx;
-            p.y += p.vy;
-            p.rot += p.rotSpeed;
-
-            p.vx += (p.baseVx - p.vx) * 0.05;
-            p.vy += (p.baseVy - p.vy) * 0.05;
+            if (p.glow > 0) { p.glow -= 0.02; if (p.glow < 0) p.glow = 0; }
+            p.x += p.vx; p.y += p.vy; p.rot += p.rotSpeed;
+            p.vx += (p.baseVx - p.vx) * 0.05; p.vy += (p.baseVy - p.vy) * 0.05;
 
             if(p.x < 0) { p.x = 0; p.vx *= -1; p.baseVx *= -1; }
             if(p.x > width) { p.x = width; p.vx *= -1; p.baseVx *= -1; }
@@ -1281,108 +627,42 @@
 
             if (theme === 'playstation') {
                 let size = p.radius * 2 + (activeGlow * 3);
-                ctx.save();
-                ctx.translate(p.x, p.y);
-                ctx.rotate(p.rot);
-                
-                ctx.shadowBlur = 8 + (activeGlow * 10);
-                ctx.shadowColor = `rgba(235, 175, 120, ${0.5 + activeGlow})`;
-                ctx.strokeStyle = `rgba(240, 190, 140, ${0.4 + activeGlow})`;
-                ctx.lineWidth = 1.5;
-                
+                ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+                ctx.shadowBlur = 8 + (activeGlow * 10); ctx.shadowColor = `rgba(235, 175, 120, ${0.5 + activeGlow})`;
+                ctx.strokeStyle = `rgba(240, 190, 140, ${0.4 + activeGlow})`; ctx.lineWidth = 1.5;
                 ctx.beginPath();
-                if (p.shape === 0) { 
-                    ctx.moveTo(-size, -size); ctx.lineTo(size, size);
-                    ctx.moveTo(size, -size); ctx.lineTo(-size, size);
-                } else if (p.shape === 1) { 
-                    ctx.moveTo(0, -size * 1.2); ctx.lineTo(size * 1.1, size * 0.8); ctx.lineTo(-size * 1.1, size * 0.8); ctx.closePath();
-                } else if (p.shape === 2) { 
-                    ctx.arc(0, 0, size, 0, Math.PI * 2);
-                } else if (p.shape === 3) { 
-                    ctx.rect(-size, -size, size * 2, size * 2);
-                }
-                ctx.stroke();
-                ctx.restore();
+                if (p.shape === 0) { ctx.moveTo(-size, -size); ctx.lineTo(size, size); ctx.moveTo(size, -size); ctx.lineTo(-size, size); } 
+                else if (p.shape === 1) { ctx.moveTo(0, -size * 1.2); ctx.lineTo(size * 1.1, size * 0.8); ctx.lineTo(-size * 1.1, size * 0.8); ctx.closePath(); } 
+                else if (p.shape === 2) { ctx.arc(0, 0, size, 0, Math.PI * 2); } 
+                else if (p.shape === 3) { ctx.rect(-size, -size, size * 2, size * 2); }
+                ctx.stroke(); ctx.restore();
             } else {
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 1.5 + (activeGlow * 1.5), 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${activeGlow > 0.05 ? glowRGB : nodeRGB}, ${0.5 + activeGlow})`;
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(p.x, p.y, 1.5 + (activeGlow * 1.5), 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${activeGlow > 0.05 ? glowRGB : nodeRGB}, ${0.5 + activeGlow})`; ctx.fill();
             }
         });
 
-        const maxDist = 130; 
-        const maxDistSq = maxDist * maxDist;
-
+        const maxDistSq = 130 * 130;
         if (theme !== 'playstation') {
             for(let i = 0; i < particles.length; i++) {
                 for(let j = i + 1; j < particles.length; j++) {
-                    let dx = particles[i].x - particles[j].x;
-                    let dy = particles[i].y - particles[j].y;
+                    let dx = particles[i].x - particles[j].x; let dy = particles[i].y - particles[j].y;
                     let distSq = dx*dx + dy*dy;
-
                     if(distSq < maxDistSq) {
-                        let dist = Math.sqrt(distSq);
-                        let alphaRatio = 1 - (dist / maxDist);
-
+                        let alphaRatio = 1 - (Math.sqrt(distSq) / 130);
                         let lineRGB = baseRGB;
-                        if (theme === 'twilight') {
-                            let midY = (particles[i].y + particles[j].y) / 2;
-                            lineRGB = getTwilightContrastingRGB(midY / height);
-                        }
-
+                        if (theme === 'twilight') lineRGB = getTwilightContrastingRGB(((particles[i].y + particles[j].y) / 2) / height);
                         let lineActiveGlow = Math.max(executeGlowIntensity, particles[i].glow, particles[j].glow);
 
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        
+                        ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y);
                         if (lineActiveGlow > 0.05) {
-                            ctx.strokeStyle = `rgba(${glowRGB}, ${currentLineAlpha * alphaRatio + (lineActiveGlow * 0.4)})`;
+                            ctx.strokeStyle = `rgba(${glowRGB}, ${lineAlpha * alphaRatio + (lineActiveGlow * 0.4)})`;
                             ctx.lineWidth = 1 + (lineActiveGlow * 1.5);
                         } else {
-                            ctx.strokeStyle = `rgba(${lineRGB}, ${currentLineAlpha * alphaRatio})`;
+                            ctx.strokeStyle = `rgba(${lineRGB}, ${lineAlpha * alphaRatio})`;
                             ctx.lineWidth = 1;
                         }
                         ctx.stroke();
-
-                        for(let k = j + 1; k < particles.length; k++) {
-                            let dx2 = particles[i].x - particles[k].x;
-                            let dy2 = particles[i].y - particles[k].y;
-                            let distSq2 = dx2*dx2 + dy2*dy2;
-
-                            if (distSq2 < maxDistSq) {
-                                let dx3 = particles[j].x - particles[k].x;
-                                let dy3 = particles[j].y - particles[k].y;
-                                let distSq3 = dx3*dx3 + dy3*dy3;
-
-                                if (distSq3 < maxDistSq) {
-                                    let polyRGB = baseRGB;
-                                    if (theme === 'twilight') {
-                                        let polyMidY = (particles[i].y + particles[j].y + particles[k].y) / 3;
-                                        polyRGB = getTwilightContrastingRGB(polyMidY / height);
-                                    }
-
-                                    let polyActiveGlow = Math.max(executeGlowIntensity, particles[i].glow, particles[j].glow, particles[k].glow);
-
-                                    ctx.beginPath();
-                                    ctx.moveTo(particles[i].x, particles[i].y);
-                                    ctx.lineTo(particles[j].x, particles[j].y);
-                                    ctx.lineTo(particles[k].x, particles[k].y);
-                                    ctx.closePath();
-
-                                    let maxD = Math.max(distSq, distSq2, distSq3);
-                                    let polyA = (1 - (Math.sqrt(maxD) / maxDist)) * currentPolyAlpha;
-                                    
-                                    if (polyActiveGlow > 0.05) {
-                                        ctx.fillStyle = `rgba(${glowRGB}, ${polyA + (polyActiveGlow * 0.25)})`;
-                                    } else {
-                                        ctx.fillStyle = `rgba(${polyRGB}, ${polyA})`;
-                                    }
-                                    ctx.fill();
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -1391,8 +671,6 @@
     }
     animateCanvas();
 
-
-    // --- LOCAL DATABASE LOGIC ---
     let switchDB = {};
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -1407,45 +685,34 @@
     function parseToDB(text) {
         const lines = text.split('\n');
         const ipRegex = /\b(?:\d{1,3}\.){3}\d{1,3}\b/;
-
         lines.forEach(line => {
             let cleanLine = line.trim();
             if (!cleanLine) return;
-
             let ipMatch = cleanLine.match(ipRegex);
             if (!ipMatch) return; 
-
             let hostMatch = cleanLine.split(/[,\t\s]+/); 
             if (hostMatch && hostMatch.length > 0) {
-                let host = hostMatch[0].toLowerCase();
-                switchDB[host] = ipMatch[0]; 
+                switchDB[hostMatch[0].toLowerCase()] = ipMatch[0]; 
             }
         });
     }
 
     function generateDBString() {
         let mergedDBArray = [];
-        for (let host in switchDB) {
-            mergedDBArray.push(`${host.toUpperCase()}, ${switchDB[host]}`);
-        }
+        for (let host in switchDB) { mergedDBArray.push(`${host.toUpperCase()}, ${switchDB[host]}`); }
         mergedDBArray.sort(); 
         return mergedDBArray.join('\n');
     }
 
     function saveDB() {
-        const dbText = document.getElementById('dbInput').value;
-        parseToDB(dbText);
+        parseToDB(document.getElementById('dbInput').value);
         const mergedString = generateDBString();
-        
         localStorage.setItem('noccat_db', mergedString);
         document.getElementById('dbInput').value = mergedString;
-
-        const count = Object.keys(switchDB).length;
         const statusElem = document.getElementById('dbStatus');
-        statusElem.innerText = `STATUS: MERGED_&_SAVED_${count}_HOSTS`;
+        statusElem.innerText = `STATUS: MERGED_&_SAVED_${Object.keys(switchDB).length}_HOSTS`;
         statusElem.style.color = 'var(--neon-green)';
         setTimeout(() => { statusElem.style.color = 'var(--accent-green)'; }, 2000);
-        
         updateDynamicHUD();
     }
 
@@ -1455,33 +722,26 @@
             document.getElementById('dbInput').value = "";
             switchDB = {};
             document.getElementById('dbStatus').innerText = "STATUS: MEMORY_WIPED";
-            
             document.getElementById('deviceHud').classList.remove('visible');
         }
     }
 
-    // --- UI TOGGLES & AUTO EXPAND ---
     function toggleReadme() {
         const wrapper = document.getElementById('readmeWrapper');
-        const btn = document.getElementById('readmeBtn');
         wrapper.classList.toggle('expanded');
-        btn.innerText = wrapper.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
+        document.getElementById('readmeBtn').innerText = wrapper.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
     }
 
     function toggleExpand() {
         const textarea = document.getElementById('configInput');
         const highlightView = document.getElementById('configHighlightView');
         const btn = document.getElementById('expandBtn');
-        
         textarea.style.height = ''; 
         textarea.classList.toggle('expanded');
         btn.innerText = textarea.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
         
-        // Sync highlight view expansion if it's currently active
-        if (textarea.classList.contains('expanded')) {
-            highlightView.classList.add('expanded');
-        } else {
-            highlightView.classList.remove('expanded');
+        if (highlightView.style.display === 'block' || textarea.classList.contains('expanded')) {
+            highlightView.classList.toggle('expanded', textarea.classList.contains('expanded'));
         }
 
         if (!textarea.classList.contains('expanded') && textarea.value.split('\n').length > 8) {
@@ -1492,11 +752,7 @@
     }
 
     function handleConfigInput() {
-        // Reset current HUD filter gracefully whenever new inputs are actively changing
-        if (currentHudFilter) {
-            currentHudFilter = null;
-        }
-
+        if (currentHudFilter) currentHudFilter = null;
         updateDynamicHUD();
         
         const textarea = document.getElementById('configInput');
@@ -1521,30 +777,23 @@
 
     function toggleWrapper(wrapperId, btnId, name) {
         const wrapper = document.getElementById(wrapperId);
-        const btn = document.getElementById(btnId);
         wrapper.classList.toggle('expanded');
-        btn.innerText = wrapper.classList.contains('expanded') ? `[ CLOSE_${name} ]` : `[ ${name} ]`;
+        document.getElementById(btnId).innerText = wrapper.classList.contains('expanded') ? `[ CLOSE_${name} ]` : `[ ${name} ]`;
     }
 
-    // --- HUD CLICK-FILTER HANDLER ---
     function setHudFilter(clickedHostName) {
-        // Toggle off if clicking the exact currently active host filter
         if (currentHudFilter && currentHudFilter.toLowerCase() === clickedHostName.toLowerCase()) {
             currentHudFilter = null;
         } else {
             currentHudFilter = clickedHostName;
         }
-        
-        // Re-render layout UI to refresh matching interface targets
         renderOutput();
     }
 
-    // Universal Switch Hostname Sanitizer (Fixes CASO / ACCO typos)
     function sanitizeHostname(sw) {
         return sw.toUpperCase().replace(/(ACC|CAS)O/g, '$10');
     }
 
-    // --- DYNAMIC HUD SCANNER ---
     function updateDynamicHUD() {
         const text = document.getElementById('configInput').value;
         const deviceHud = document.getElementById('deviceHud');
@@ -1555,15 +804,13 @@
             return;
         }
 
-        // Auto-Learn IPs dynamically for the HUD and SAVE to Local Storage
         let dbUpdated = false;
         const autoLearnRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)\s*[\(\[-]?\s*(\b(?:\d{1,3}\.){3}\d{1,3}\b)/gi;
         let autoMatch;
         while ((autoMatch = autoLearnRegex.exec(text)) !== null) {
             let cleanSw = sanitizeHostname(autoMatch[1]).toLowerCase();
-            let ip = autoMatch[2];
-            if (switchDB[cleanSw] !== ip) {
-                switchDB[cleanSw] = ip;
+            if (switchDB[cleanSw] !== autoMatch[2]) {
+                switchDB[cleanSw] = autoMatch[2];
                 dbUpdated = true;
             }
         }
@@ -1575,67 +822,32 @@
         }
 
         const uniqueHosts = new Set();
-        
-        // Hostnames scanner
-        const switchRegex = /\b[a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*(?:[-\_]\d+)?/gi;
-        let match;
-        while ((match = switchRegex.exec(text)) !== null) { 
-            uniqueHosts.add(sanitizeHostname(match[0])); 
-        }
+        const regexes = [
+            /\b[a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*(?:[-\_]\d+)?/gi,
+            /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*(?:[-\_]\d+)?)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(\d+(?:\/\d+)+)/gi,
+            /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*(?:[-\_]\d+)?)[\s\t]+(?:SWITCH|SW)[\s\t]*(\d+)[\s\t]+(\d+)/gi,
+            /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*(?:[-\_]\d+)?)-(\d+)[\s\t]+(\d+)/gi,
+            /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*(?:[-\_]\d+)?)\s*-\s*(\d+(?:\/\d+)+)/gi,
+            /\b(\d+)[\s\t]+([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*(?:[-\_]\d+)?)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(?:SWITCH|SW)?[\s\t]*(\d+)\b/gi
+        ];
 
-        // Table scanner (including FQDN support)
-        const fqdnTableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*(?:[-\_]\d+)?)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(\d+(?:\/\d+)+)/gi;
-        while ((match = fqdnTableRegex.exec(text)) !== null) {
-            uniqueHosts.add(sanitizeHostname(match[1]));
-        }
-
-        const tableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*(?:[-\_]\d+)?)[\s\t]+(?:SWITCH|SW)[\s\t]*(\d+)[\s\t]+(\d+)/gi;
-        while ((match = tableRegex.exec(text)) !== null) {
-            uniqueHosts.add(sanitizeHostname(match[1]));
-        }
-
-        // Hyphen scanner
-        const hyphenRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*(?:[-\_]\d+)?)-(\d+)[\s\t]+(\d+)/gi;
-        while ((match = hyphenRegex.exec(text)) !== null) {
-            uniqueHosts.add(sanitizeHostname(match[1]));
-        }
-        
-        // Attached format scanner (e.g. CO-ESP-ACC02M02-2/0/38)
-        const attachedRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*(?:[-\_]\d+)?)\s*-\s*(\d+(?:\/\d+)+)/gi;
-        while ((match = attachedRegex.exec(text)) !== null) {
-            uniqueHosts.add(sanitizeHostname(match[1]));
-        }
-
-        // Reverse Table scanner
-        const reverseTableRegex = /\b(\d+)[\s\t]+([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*(?:[-\_]\d+)?)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(?:SWITCH|SW)?[\s\t]*(\d+)\b/gi;
-        while ((match = reverseTableRegex.exec(text)) !== null) {
-            uniqueHosts.add(sanitizeHostname(match[2]));
-        }
+        regexes.forEach((r, idx) => {
+            let match;
+            while ((match = r.exec(text)) !== null) {
+                uniqueHosts.add(sanitizeHostname(match[idx === 0 ? 0 : (idx === 5 ? 2 : 1)]));
+            }
+        });
 
         const hostsArray = Array.from(uniqueHosts).sort();
-
         if (hostsArray.length > 0) {
-            let hudHTML = `<span style="opacity: 0.7; margin-right: 5px;">Target${hostsArray.length > 1 ? 's' : ''}:</span>`;
-            
             let hostTags = hostsArray.map(hostName => {
                 const lowerHost = hostName.toLowerCase();
                 let targetIp = switchDB[lowerHost] ? switchDB[lowerHost] : "NOT_IN_DB";
                 let ipColor = targetIp === 'NOT_IN_DB' ? 'var(--hl-orange)' : 'var(--neon-green)';
-                
-                // Identify dynamic highlight formatting for HUD targets when an active filter is running
-                let stateClass = "";
-                if (currentHudFilter) {
-                    if (currentHudFilter.toLowerCase() === lowerHost) {
-                        stateClass = "active-filter";
-                    } else {
-                        stateClass = "muted";
-                    }
-                }
-
+                let stateClass = currentHudFilter ? (currentHudFilter.toLowerCase() === lowerHost ? "active-filter" : "muted") : "";
                 return `<span class="host-tag ${stateClass}" onclick="setHudFilter('${hostName}')" title="Click to selectively view mapped ports"><strong>${hostName}</strong> <span class="ip-highlight" style="color: ${ipColor}">${targetIp}</span></span>`;
             });
-            
-            deviceHud.innerHTML = hudHTML + hostTags.join(' ');
+            deviceHud.innerHTML = `<span style="opacity: 0.7; margin-right: 5px;">Target${hostsArray.length > 1 ? 's' : ''}:</span>` + hostTags.join(' ');
             deviceHud.classList.add('visible');
         } else {
             deviceHud.innerHTML = 'Waiting for target...';
@@ -1643,16 +855,38 @@
         }
     }
 
-    // --- CORE LOGIC ---
-    let globalSwitches = [];
-    let globalInterfaces = [];
+    function clearText() {
+        if (isHighlightModeActive) { exitHighlightMode(); }
+        const textarea = document.getElementById('configInput');
+        const view = document.getElementById('configHighlightView');
+        
+        textarea.value = '';
+        view.innerHTML = '';
+        textarea.dataset.manualCollapse = ""; 
+        
+        if(textarea.classList.contains('expanded')) {
+             textarea.classList.remove('expanded');
+             view.classList.remove('expanded');
+             document.getElementById('expandBtn').innerText = "[ EXPAND ]";
+        }
+
+        document.getElementById('output').innerHTML = `<div style="font-family: 'Courier New', Courier, monospace; color: var(--line-num-text); font-size: calc(13px * var(--font-scale));">-- system_idle --</div>`;
+        document.getElementById('filterInput').style.display = 'none';
+        document.getElementById('filterInput').value = '';
+        document.getElementById('statusMsg').style.display = 'none';
+        document.getElementById('deviceHud').classList.remove('visible');
+        
+        currentHudFilter = null;
+        globalSwitches = [];
+        globalInterfaces = [];
+        lastInvalidPorts = [];
+    }
 
     function processText() {
         if (typeof triggerExecuteEffect === 'function') triggerExecuteEffect();
 
         const text = document.getElementById('configInput').value;
         const execBtn = document.getElementById('executeBtn');
-        const label = document.getElementById('configInputLabel');
         
         if (!text.trim()) return; 
 
@@ -1665,10 +899,9 @@
         }
         
         if (invalidPortsFound.length > 0) {
-            invalidPortsFound = [...new Set(invalidPortsFound)]; // Deduplicate
+            invalidPortsFound = [...new Set(invalidPortsFound)]; 
             lastInvalidPorts = invalidPortsFound;
             
-            // If they click re-scan while in highlight mode and there are STILL errors, we just re-sync and warn
             if (isHighlightModeActive) {
                 syncLiveHighlights();
                 document.getElementById('statusMsg').innerText = `STATUS: HIGHLIGHT_MODE_ACTIVE | Still found ${invalidPortsFound.length} invalid port(s). Fix the red marks above.`;
@@ -1688,25 +921,18 @@
             document.getElementById('invalidPortsList').innerHTML = htmlList;
             document.getElementById('invalidPortsModal').classList.add('visible');
             
-            // Halt and reset outputs
             document.getElementById('output').innerHTML = `<div style="font-family: 'Courier New', Courier, monospace; color: var(--accent-red); font-size: calc(13px * var(--font-scale)); font-weight: bold;">-- EXECUTION HALTED DUE TO INVALID PORTS --</div>`;
             document.getElementById('statusMsg').style.display = 'block';
             document.getElementById('statusMsg').innerText = `STATUS: 0 MAPPINGS_EXTRACTED | HALTED_BY_VALIDATION`;
             document.getElementById('statusMsg').style.color = 'var(--accent-red)';
-            
-            return; // Prevent extraction completely
+            return; 
         } else {
-            // Validation Passed! Restore UI if we were in highlight mode
-            if (isHighlightModeActive) {
-                exitHighlightMode();
-            }
+            if (isHighlightModeActive) { exitHighlightMode(); }
         }
-        // --- END VALIDATION SHIELD ---
         
         const rawPrefix = document.getElementById('rawPortPrefix').value;
         const isSeparated = document.getElementById('separateToggle') && document.getElementById('separateToggle').checked;
         
-        // Auto-Learn IPs dynamically and SAVE to Local Storage
         let dbUpdated = false;
         const autoLearnRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS)[a-zA-Z0-9]*)\s*[\(\[-]?\s*(\b(?:\d{1,3}\.){3}\d{1,3}\b)/gi;
         let autoMatch;
@@ -1729,72 +955,45 @@
         const switchesSet = new Set();
         const interfaceCounts = new Map(); 
 
-        // Map all switch occurrences and their line numbers for distance mapping
         const switchLines = [];
-        // Capture Switch Name and optional Stack module (e.g., SWITCH 2 -> 2)
         const switchRegexGlobal = /\b([a-zA-Z0-9\-]*(?:ACC|CAS|HUB)[a-zA-Z0-9]*(?:[-\_]\d+)?)(?:\s+(?:SWITCH|SW)[\s\t]*(\d+))?/gi;
         
         lines.forEach((line, idx) => {
             let match;
             while ((match = switchRegexGlobal.exec(line)) !== null) {
-                switchLines.push({ 
-                    line: idx, 
-                    name: sanitizeHostname(match[1]),
-                    stack: match[2] ? match[2] : "1"
-                });
+                switchLines.push({ line: idx, name: sanitizeHostname(match[1]), stack: match[2] ? match[2] : "1" });
                 switchesSet.add(sanitizeHostname(match[1]));
             }
         });
 
         // --- SMART DIRECTIONAL ENGINE ---
-        // Determines if the user's log format is Switch->Ports (Top-Down) or Ports->Switch (Bottom-Up)
         let layoutMode = "top-down"; 
         if (switchLines.length > 0) {
             let firstSwitchLine = switchLines[0].line;
             let firstPortLine = -1;
-            
-            // Broad regex to catch the first sign of a port anywhere in the file
             const portDetectRegex = /(?:Gi|Te|Fa|Eth)[a-z]*\s*\d|\b\d+\/\d+\/\d+\b/i;
             for (let i = 0; i < lines.length; i++) {
-                if (portDetectRegex.test(lines[i])) {
-                    firstPortLine = i;
-                    break;
-                }
+                if (portDetectRegex.test(lines[i])) { firstPortLine = i; break; }
             }
-            
-            // If we found a port, and it appears physically BEFORE the first switch, it's a bottom-up format
-            if (firstPortLine !== -1 && firstPortLine < firstSwitchLine) {
-                layoutMode = "bottom-up";
-            }
+            if (firstPortLine !== -1 && firstPortLine < firstSwitchLine) { layoutMode = "bottom-up"; }
         }
 
-        // Function to find the nearest switch hostname for a given line index
-        // Uses the Smart Directional Engine state to prevent "Gravity Bleed" 
         function getClosestSwitch(lineIndex) {
             if (switchLines.length === 0) return { name: "[ SWITCH_NOT_FOUND ]", stack: "1" };
             
-            // 1. Exact Line Match (For Tables and Inline Formats)
             let exactMatch = switchLines.find(sw => sw.line === lineIndex);
             if (exactMatch) return exactMatch;
 
-            // 2. Locate nearest switch above and nearest switch below
             let switchAbove = null;
             let switchBelow = null;
 
             for (let i = switchLines.length - 1; i >= 0; i--) {
-                if (switchLines[i].line < lineIndex) {
-                    switchAbove = switchLines[i];
-                    break;
-                }
+                if (switchLines[i].line < lineIndex) { switchAbove = switchLines[i]; break; }
             }
             for (let i = 0; i < switchLines.length; i++) {
-                if (switchLines[i].line > lineIndex) {
-                    switchBelow = switchLines[i];
-                    break;
-                }
+                if (switchLines[i].line > lineIndex) { switchBelow = switchLines[i]; break; }
             }
 
-            // 3. Apply Directional Priority Based on Auto-Detected Document Format
             if (layoutMode === "bottom-up") {
                 return switchBelow || switchAbove || { name: "[ SWITCH_NOT_FOUND ]", stack: "1" };
             } else {
@@ -1823,156 +1022,104 @@
             }
 
             let processedLine = line;
-
-            // 0. OCR Typo Sanitization (Run before any matching)
-            // Fixes silent auto-corrects for common typos like G12/0/30 -> Gi2/0/30
             processedLine = processedLine.replace(/(^|[^a-zA-Z0-9\/])(G1|61|6i|G[l\|!])(?=\d+(?:\/\d+)+)/gi, '$1Gi');
-
-            // Remove IPs and 4-digit Dates to prevent false port matches
             processedLine = processedLine.replace(/\b(?:\d{1,3}\.){3}\d{1,3}(?:\/\d+)?\b/gi, '');
             processedLine = processedLine.replace(/\b\d{1,2}\/\d{1,2}\/\d{4}\b/gi, '');
 
-            // 1. Scan for FQDN/Domain table formats (uses rawPrefix)
             const fqdnRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS|HUB)[a-zA-Z0-9]*(?:[-\_]\d+)?)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(\d+(?:\/\d+)+)/gi;
             let matchFqdn;
             while ((matchFqdn = fqdnRegex.exec(processedLine)) !== null) {
                 const sw = sanitizeHostname(matchFqdn[1]);
-                const iface = `${rawPrefix}${matchFqdn[2]}`;
                 currentSwitchForLine = sw;
-                addPortToMap(sw, iface);
+                addPortToMap(sw, `${rawPrefix}${matchFqdn[2]}`);
             }
             processedLine = processedLine.replace(fqdnRegex, '');
 
-            // 1.5 Scan for direct Attached Format (uses rawPrefix)
             const attachedRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS|HUB)[a-zA-Z0-9]*(?:[-\_]\d+)?)\s*-\s*(\d+(?:\/\d+)+)/gi;
             let matchAttached;
             while ((matchAttached = attachedRegex.exec(processedLine)) !== null) {
                 const sw = sanitizeHostname(matchAttached[1]);
-                const iface = rawPrefix + matchAttached[2];
                 currentSwitchForLine = sw; 
-                addPortToMap(sw, iface);
+                addPortToMap(sw, rawPrefix + matchAttached[2]);
             }
             processedLine = processedLine.replace(attachedRegex, '');
 
             function addPort(rawType, prefix, portNum) {
-                let cleanType = rawType.replace(/^(gigabitethernet|gi)/i, 'Gi')
-                                       .replace(/^(fastethernet|fa)/i, 'Fa')
-                                       .replace(/^(tengigabitethernet|te)/i, 'Te');
+                let cleanType = rawType.replace(/^(gigabitethernet|gi)/i, 'Gi').replace(/^(fastethernet|fa)/i, 'Fa').replace(/^(tengigabitethernet|te)/i, 'Te');
                 cleanType = cleanType.charAt(0).toUpperCase() + cleanType.slice(1).toLowerCase();
-                
-                // Auto-correct 2-tuple (e.g., "0/") to 3-tuple ("1/0/") based on closest switch stack
-                if (/^\d+\/$/.test(prefix)) {
-                    prefix = `${currentSwitchObj.stack}/${prefix}`;
-                }
-
-                const iface = cleanType + prefix + portNum;
-                addPortToMap(currentSwitchForLine, iface);
+                if (/^\d+\/$/.test(prefix)) { prefix = `${currentSwitchObj.stack}/${prefix}`; }
+                addPortToMap(currentSwitchForLine, cleanType + prefix + portNum);
             }
 
-            // 2. Scan for Full Port Ranges 
             const fullRangeRegex = /\b(gi|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)(\d+)\s*[-–—]\s*(?:gi|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(?:\d+(?:\/\d+)+\/)(\d+)/gi;
             let matchFull;
             while ((matchFull = fullRangeRegex.exec(processedLine)) !== null) {
-                const type = matchFull[1];
-                const prefix = matchFull[2];
-                const startPort = parseInt(matchFull[3], 10);
-                const endPort = parseInt(matchFull[4], 10);
-                
+                const type = matchFull[1]; const prefix = matchFull[2];
+                const startPort = parseInt(matchFull[3], 10); const endPort = parseInt(matchFull[4], 10);
                 if (startPort <= endPort && (endPort - startPort) <= 100) { 
-                    for (let i = startPort; i <= endPort; i++) {
-                        addPort(type, prefix, i);
-                    }
+                    for (let i = startPort; i <= endPort; i++) { addPort(type, prefix, i); }
                 }
             }
             processedLine = processedLine.replace(fullRangeRegex, ''); 
 
-            // 3. Scan for Standard, Commas, and Shorthand Ranges 
             const shortHandRegex = /\b(gi|gigabitethernet|fa|fastethernet|te|tengigabitethernet)[^\d]*(\d+(?:\/\d+)+\/)([\d\s,\-–—]+)/gi;
             let matchShort;
             while ((matchShort = shortHandRegex.exec(processedLine)) !== null) { 
-                const type = matchShort[1]; 
-                const prefix = matchShort[2]; 
-                let listStr = matchShort[3]; 
+                const type = matchShort[1]; const prefix = matchShort[2]; 
+                let listStr = matchShort[3].replace(/[\s,\-–—]+$/, '');
                 
-                // Strip trailing separators to prevent mangling "Port - Switch" formats
-                listStr = listStr.replace(/[\s,\-–—]+$/, '');
-                
-                const parts = listStr.split(','); 
-                parts.forEach(part => {
+                listStr.split(',').forEach(part => {
                     const cleanPart = part.trim();
                     if (!cleanPart) return;
-
                     if (/[-–—]/.test(cleanPart)) {
                         const rangeParts = cleanPart.split(/[-–—]/);
                         if (rangeParts.length === 2) {
-                            const start = parseInt(rangeParts[0].trim(), 10);
-                            const end = parseInt(rangeParts[1].trim(), 10);
+                            const start = parseInt(rangeParts[0].trim(), 10); const end = parseInt(rangeParts[1].trim(), 10);
                             if (!isNaN(start) && !isNaN(end) && start <= end && (end - start) <= 100) {
-                                for (let i = start; i <= end; i++) {
-                                    addPort(type, prefix, i);
-                                }
+                                for (let i = start; i <= end; i++) { addPort(type, prefix, i); }
                             }
                         }
                     } else {
                         const singlePort = parseInt(cleanPart, 10);
-                        if (!isNaN(singlePort)) {
-                            addPort(type, prefix, singlePort);
-                        }
+                        if (!isNaN(singlePort)) { addPort(type, prefix, singlePort); }
                     }
                 });
             }
             processedLine = processedLine.replace(shortHandRegex, '');
 
-            // 4. Scan for table formats (uses rawPrefix)
             const tableRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS|HUB)[a-zA-Z0-9]*(?:[-\_]\d+)?)[\s\t]+(?:SWITCH|SW)[\s\t]*(\d+)[\s\t]+(\d+)/gi;
             let matchTable;
             while ((matchTable = tableRegex.exec(processedLine)) !== null) {
-                const sw = sanitizeHostname(matchTable[1]);
-                const iface = `${rawPrefix}${matchTable[2]}/0/${matchTable[3]}`;
-                addPortToMap(sw, iface);
+                addPortToMap(sanitizeHostname(matchTable[1]), `${rawPrefix}${matchTable[2]}/0/${matchTable[3]}`);
             }
             processedLine = processedLine.replace(tableRegex, '');
 
-            // 4.5 Scan for Reverse Table Formats (e.g. 29   PH-LZL-CAS201 2 OR 13 PH-LSP-ACC0503 SW3)
             const reverseTableRegex = /\b(\d+)[\s\t]+([a-zA-Z0-9\-]*(?:ACC|CAS|HUB)[a-zA-Z0-9]*(?:[-\_]\d+)?)(?:\.[a-zA-Z0-9\-\.]+)?[\s\t]+(?:SWITCH|SW)?[\s\t]*(\d+)\b/gi;
             let matchReverseTable;
             while ((matchReverseTable = reverseTableRegex.exec(processedLine)) !== null) {
-                const portNum = matchReverseTable[1];
-                const sw = sanitizeHostname(matchReverseTable[2]);
-                const swNum = matchReverseTable[3];
-                
+                const portNum = matchReverseTable[1]; const sw = sanitizeHostname(matchReverseTable[2]); const swNum = matchReverseTable[3];
                 if (parseInt(portNum, 10) < 150 && parseInt(swNum, 10) < 20) {
-                    const iface = `${rawPrefix}${swNum}/0/${portNum}`;
-                    addPortToMap(sw, iface);
+                    addPortToMap(sw, `${rawPrefix}${swNum}/0/${portNum}`);
                 }
             }
             processedLine = processedLine.replace(reverseTableRegex, '');
 
-            // 5. Scan for hyphenated formats (uses rawPrefix)
             const hyphenRegex = /\b([a-zA-Z0-9\-]*(?:ACC|CAS|HUB)[a-zA-Z0-9]*(?:[-\_]\d+)?)-(\d+)[\s\t]+(\d+)/gi;
             let matchHyphen;
             while ((matchHyphen = hyphenRegex.exec(processedLine)) !== null) {
-                const sw = sanitizeHostname(matchHyphen[1]);
-                const iface = `${rawPrefix}${matchHyphen[2]}/0/${matchHyphen[3]}`;
-                addPortToMap(sw, iface);
+                addPortToMap(sanitizeHostname(matchHyphen[1]), `${rawPrefix}${matchHyphen[2]}/0/${matchHyphen[3]}`);
             }
             processedLine = processedLine.replace(hyphenRegex, '');
 
-            // 6. Catch-all for standalone raw ports (e.g., "3/0/11" or "0/30")
             const catchAllRawRegex = /\b(\d+(?:\/\d+)+)\b/gi;
             let matchCatchAll;
             while ((matchCatchAll = catchAllRawRegex.exec(processedLine)) !== null) {
                 let parts = matchCatchAll[1].split('/');
                 let isValid = parts.every(num => parseInt(num, 10) < 150);
-                // Require strict 3-tuple format to avoid false positives
                 if (isValid && parts.length >= 3) {
-                    const iface = rawPrefix + matchCatchAll[1];
-                    addPortToMap(currentSwitchForLine, iface);
+                    addPortToMap(currentSwitchForLine, rawPrefix + matchCatchAll[1]);
                 } else if (isValid && parts.length === 2) {
-                    // It is a 2-tuple (e.g., 0/30), dynamically prepend the closest stack module
-                    let ifaceStr = `${currentSwitchObj.stack}/${matchCatchAll[1]}`;
-                    const iface = rawPrefix + ifaceStr;
-                    addPortToMap(currentSwitchForLine, iface);
+                    addPortToMap(currentSwitchForLine, rawPrefix + `${currentSwitchObj.stack}/${matchCatchAll[1]}`);
                 }
             }
             processedLine = processedLine.replace(catchAllRawRegex, '');
@@ -1999,26 +1146,21 @@
 
         document.getElementById('filterInput').style.display = 'block';
         document.getElementById('filterInput').value = '';
-        
         document.getElementById('statusMsg').style.display = 'block';
         document.getElementById('statusMsg').style.color = 'var(--accent-blue)';
         renderOutput();
     }
 
     function updateFilteredHUD(switches) {
-        // Redraw active state formatting directly across matching Target components
         updateDynamicHUD();
     }
 
     function renderOutput() {
         const rawFilterStr = document.getElementById('filterInput').value.trim().toLowerCase();
-        
         const filterStr = rawFilterStr.replace(/gigabitethernet/g, 'gi').replace(/gl/g, 'gi');
-
         const outputDiv = document.getElementById('output');
         let htmlOutput = "";
 
-        // Synchronize HUD Tag Click Filtering alongside Standard Real-Time Keyword Matching Logic
         const filteredSwitches = globalSwitches.filter(sw => {
             let passesManualSearch = sw.toLowerCase().includes(filterStr);
             let passesHudFilter = currentHudFilter ? (sw.toLowerCase() === currentHudFilter.toLowerCase()) : true;
@@ -2034,9 +1176,7 @@
         updateFilteredHUD(filteredSwitches);
 
         let duplicateCount = 0;
-        for (let item of filteredInterfaces) {
-            if (item.count > 1) duplicateCount++;
-        }
+        for (let item of filteredInterfaces) { if (item.count > 1) duplicateCount++; }
 
         if (duplicateCount > 0) {
             htmlOutput += `<div class="warning-box" style="display:block;"><strong>////// WARNING: DUPLICATES DETECTED //////</strong><br>Found ${duplicateCount} interface(s) that appeared multiple times on the SAME switch.<br><em>They are highlighted in red below.</em></div>`;
@@ -2051,13 +1191,9 @@
             filteredInterfaces.forEach((item, index) => {
                 let match = item.iface.match(/^([a-zA-Z]+)(\d+(?:\/\d+)*\/)(\d+)$/);
                 if (match) {
-                    let type = match[1];
-                    let prefix = match[2];
-                    let port = match[3];
+                    let type = match[1]; let prefix = match[2]; let port = match[3];
                     let groupKey = `${item.sw}|${type}|${prefix}`;
-                    if (!summaryGroups[groupKey]) {
-                        summaryGroups[groupKey] = { ports: [], firstIndex: index };
-                    }
+                    if (!summaryGroups[groupKey]) { summaryGroups[groupKey] = { ports: [], firstIndex: index }; }
                     summaryGroups[groupKey].ports.push(port);
                 } else {
                     let groupKey = `${item.sw}|${item.iface}`;
@@ -2067,8 +1203,6 @@
         }
 
         if (filteredInterfaces.length > 0) {
-            
-            // PRE-PROCESS ALL HTML/TEXT LINES FIRST
             let processedData = [];
             filteredInterfaces.forEach((item, index) => {
                 const isDup = item.count > 1;
@@ -2090,14 +1224,12 @@
                 }
                 displaySw += tagsHtml;
 
-                let shRunHtmlLine = "";
-                let shRunTextLine = "";
+                let shRunHtmlLine = ""; let shRunTextLine = "";
 
                 if (isSummarized) {
                     let match = item.iface.match(/^([a-zA-Z]+)(\d+(?:\/\d+)*\/)(\d+)$/);
                     if (match) {
-                        let type = match[1];
-                        let prefix = match[2];
+                        let type = match[1]; let prefix = match[2];
                         let groupKey = `${item.sw}|${type}|${prefix}`;
                         let group = summaryGroups[groupKey];
                         
@@ -2124,28 +1256,18 @@
                 }
 
                 processedData.push({
-                    sw: item.sw,
-                    switchesHtmlLine: `${spanOpen}${displaySw}${spanClose}`,
-                    rawInterfacesHtmlLine: `${spanOpen}${item.iface}${spanClose}`,
-                    shRunHtmlLine: shRunHtmlLine,
-                    shIntStatusHtmlLine: `${spanOpen}sh int ${item.iface} status${spanClose}`,
-                    switchesTextLine: item.sw,
-                    rawInterfacesTextLine: item.iface,
-                    shRunTextLine: shRunTextLine,
-                    shIntStatusTextLine: `sh int ${item.iface} status`
+                    sw: item.sw, switchesHtmlLine: `${spanOpen}${displaySw}${spanClose}`, rawInterfacesHtmlLine: `${spanOpen}${item.iface}${spanClose}`,
+                    shRunHtmlLine: shRunHtmlLine, shIntStatusHtmlLine: `${spanOpen}sh int ${item.iface} status${spanClose}`,
+                    switchesTextLine: item.sw, rawInterfacesTextLine: item.iface, shRunTextLine: shRunTextLine, shIntStatusTextLine: `sh int ${item.iface} status`
                 });
             });
 
-            // Global Master Copy Strings (for the header button)
             let globalShRunText = processedData.map(d => d.shRunTextLine).filter(Boolean).join('\n');
             let globalShIntStatusText = processedData.map(d => d.shIntStatusTextLine).join('\n');
             let globalCopyBoth = globalShRunText + (globalShRunText && globalShIntStatusText ? "\n\n" : "") + globalShIntStatusText;
-
-            // Ensure the main hidden element gets the global copy data directly
             document.getElementById('hidden-both-cmds').value = globalCopyBoth;
 
             if (isSeparated) {
-                // --- SEPARATED HOST LAYOUT ---
                 let activeSwitches = [...new Set(filteredInterfaces.map(item => item.sw))];
                 activeSwitches.sort((a, b) => a.localeCompare(b));
 
@@ -2156,11 +1278,9 @@
                     let rawInterfacesHtml = swData.map(d => d.rawInterfacesHtmlLine).join('');
                     let shRunHtml = swData.map(d => d.shRunHtmlLine).join('');
                     let shIntStatusHtml = swData.map(d => d.shIntStatusHtmlLine).join('');
-                    
                     let rawInterfacesText = swData.map(d => d.rawInterfacesTextLine).join('\n');
                     let shRunText = swData.map(d => d.shRunTextLine).filter(Boolean).join('\n');
                     let shIntStatusText = swData.map(d => d.shIntStatusTextLine).join('\n');
-                    
                     let copyBothCmdsText = shRunText + (shRunText && shIntStatusText ? "\n\n" : "") + shIntStatusText;
                     let copyHostIpText = sw + (ip ? "\n" + ip : "");
                     let copyAllText = copyHostIpText + "\n\n" + rawInterfacesText;
@@ -2177,7 +1297,6 @@
                                 <button class="copy-btn" style="background: var(--accent-green); color: #fff;" onclick="copyContent('hidden-all-${swIdx}', this)" title="Copy Host + IP + Ports">ALL</button>
                             </div>
                         </div>
-                        
                         <div class="results-container" style="padding: 15px; background: transparent;">
                             <div class="result-column">
                                 <div class="script-header"><label style="margin-bottom:0;">> PORT_ID</label><button class="copy-btn" onclick="copyContent('hidden-interfaces-${swIdx}', this)">COPY</button></div>
@@ -2200,9 +1319,7 @@
                         </div>
                     </div>`;
                 });
-                
             } else {
-                // --- UNIFIED LAYOUT ---
                 let switchesHtml = processedData.map(d => d.switchesHtmlLine).join('');
                 let rawInterfacesHtml = processedData.map(d => d.rawInterfacesHtmlLine).join('');
                 let shRunHtml = processedData.map(d => d.shRunHtmlLine).join('');
@@ -2216,39 +1333,25 @@
                 let activeSwitches = [...new Set(filteredInterfaces.map(item => item.sw))];
                 activeSwitches.sort((a, b) => a.localeCompare(b));
 
-                let copyHostText = "";
-                let copyIpText = "";
-                let copyHostIpText = "";
-                let copyAllText = "";
+                let copyHostText = ""; let copyIpText = ""; let copyHostIpText = ""; let copyAllText = "";
 
                 activeSwitches.forEach((sw, idx) => {
                     let ip = switchDB[sw.toLowerCase()] || "";
-                    
-                    copyHostText += sw;
-                    copyIpText += ip;
-                    
-                    copyHostIpText += sw;
+                    copyHostText += sw; copyIpText += ip; copyHostIpText += sw;
                     if (ip) copyHostIpText += "\n" + ip;
-                    
                     copyAllText += sw;
                     if (ip) copyAllText += "\n" + ip;
                     copyAllText += "\n\n";
-                    
                     let portsForSw = filteredInterfaces.filter(item => item.sw === sw).map(item => item.iface);
                     copyAllText += portsForSw.join("\n");
 
                     if (idx < activeSwitches.length - 1) {
-                        copyHostText += "\n";
-                        copyIpText += "\n";
-                        copyHostIpText += "\n\n";
-                        copyAllText += "\n\n";
+                        copyHostText += "\n"; copyIpText += "\n"; copyHostIpText += "\n\n"; copyAllText += "\n\n";
                     }
                 });
 
-                htmlOutput += `<div class="results-container">`;
-                
-                // Col 1 - TARGET SW (Multi-Export Header)
-                htmlOutput += `<div class="result-column">
+                htmlOutput += `<div class="results-container">
+                <div class="result-column">
                     <div class="script-header" style="flex-direction: column; align-items: flex-start; gap: 6px;">
                         <label>> TARGET_SW</label>
                         <div style="display: flex; gap: 4px; flex-wrap: wrap;">
@@ -2264,41 +1367,29 @@
                     <textarea id="hidden-host-ip" class="hidden-copy-area">${copyHostIpText}</textarea>
                     <textarea id="hidden-all" class="hidden-copy-area">${copyAllText}</textarea>
                     <textarea id="hidden-switches" class="hidden-copy-area">${switchesText}</textarea>
-                </div>`;
-
-                // Col 2
-                htmlOutput += `<div class="result-column">
+                </div>
+                <div class="result-column">
                     <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> PORT_ID</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-interfaces', this)">COPY</button></div>
                     <div class="output-box">${rawInterfacesHtml}</div>
                     <textarea id="hidden-interfaces" class="hidden-copy-area">${rawInterfacesText}</textarea>
-                </div>`;
-
-                // Col 3
-                htmlOutput += `<div class="result-column">
+                </div>
+                <div class="result-column">
                     <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> SH_RUN_CMD</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-shrun', this)">COPY</button></div>
                     <div class="output-box">${shRunHtml}</div>
                     <textarea id="hidden-shrun" class="hidden-copy-area">${shRunText}</textarea>
-                </div>`;
-
-                // Col 4
-                htmlOutput += `<div class="result-column">
+                </div>
+                <div class="result-column">
                     <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> SH_STATUS_CMD</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-shint', this)">COPY</button></div>
                     <div class="output-box">${shIntStatusHtml}</div>
                     <textarea id="hidden-shint" class="hidden-copy-area">${shIntStatusText}</textarea>
-                </div>`;
-
-                htmlOutput += `</div>`; 
+                </div></div>`; 
             }
-            
-            // Append the global copy payload for the master button regardless of layout
             htmlOutput += `<textarea id="hidden-both-cmds" class="hidden-copy-area">${globalCopyBoth}</textarea>`;
-
             document.getElementById('statusMsg').style.display = 'block';
             document.getElementById('statusMsg').innerText = `STATUS: ${filteredInterfaces.length} MAPPINGS_EXTRACTED | ${filteredSwitches.length} HOSTNAMES_FOUND`;
         } else {
             htmlOutput += `<div style="font-family: 'Courier New', Courier, monospace; color: var(--line-num-text); font-size: calc(13px * var(--font-scale));">No interfaces match your filter.</div>`;
         }
-
         outputDiv.innerHTML = htmlOutput;
     }
 </script>
