@@ -6,37 +6,129 @@
     <title>N0CAPE - Automated Port Extractor</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <style>
+        /* --- N0<AT COLOR PALETTE & SCALE --- */
         :root {
-            --bg-color: #0d1424; --bg-image: none; --card-bg: rgba(24, 34, 52, 0.85); --border-color: #2a3b54; --text-main: #c9d1d9;
-            --accent-blue: #58a6ff; --accent-green: #238636; --neon-green: #39ff14; --accent-purple: #bc8cff; --accent-red: #f85149;
-            --hl-orange: #ff9d00; --code-bg: rgba(7, 10, 18, 0.7); --logo-text: #ffffff; --logo-accent-text: #000000; --input-text: #79c0ff;
-            --line-num-bg: rgba(13, 17, 23, 0.5); --line-num-text: #484f58; --btn-copy-bg: #8957e5; --tag-prod-bg: rgba(0, 255, 255, 0.15); 
-            --tag-prod-text: #00e5ff; --tag-prod-border: rgba(0, 255, 255, 0.5); --tag-train-bg: rgba(255, 215, 0, 0.15); 
-            --tag-train-text: #ffd700; --tag-train-border: rgba(255, 215, 0, 0.5); --font-scale: 1;
+            /* DARK THEME (DEFAULT) - Deep Navy */
+            --bg-color: #0d1424;         
+            --bg-image: none;
+            --card-bg: rgba(24, 34, 52, 0.85); 
+            --border-color: #2a3b54;     
+            --text-main: #c9d1d9;
+            --accent-blue: #58a6ff;
+            --accent-green: #238636;
+            --neon-green: #39ff14;       
+            --accent-purple: #bc8cff;
+            --accent-red: #f85149;
+            --hl-orange: #ff9d00;
+            --code-bg: rgba(7, 10, 18, 0.7); 
+            
+            --logo-text: #ffffff;
+            --logo-accent-text: #000000;
+            --input-text: #79c0ff;
+            --line-num-bg: rgba(13, 17, 23, 0.5);
+            --line-num-text: #484f58;
+            --btn-copy-bg: #8957e5;
+
+            /* Tag Colors */
+            --tag-prod-bg: rgba(0, 255, 255, 0.15); 
+            --tag-prod-text: #00e5ff; 
+            --tag-prod-border: rgba(0, 255, 255, 0.5); 
+            --tag-train-bg: rgba(255, 215, 0, 0.15); 
+            --tag-train-text: #ffd700; 
+            --tag-train-border: rgba(255, 215, 0, 0.5);
+            
+            --font-scale: 1;
         }
+
         [data-theme="light"] {
-            --bg-color: #e9e9e6; --card-bg: rgba(255, 255, 255, 0.85); --border-color: #a48c7b; --text-main: #474a45; --accent-blue: #944a31;      
-            --accent-green: #f27a22; --neon-green: #f27a22; --accent-purple: #a48c7b; --accent-red: #d32f2f; --hl-orange: #f27a22;        
-            --code-bg: rgba(240, 240, 238, 0.7); --logo-text: #474a45; --logo-accent-text: #ffffff; --input-text: #944a31;       
-            --line-num-bg: rgba(164, 140, 123, 0.15); --line-num-text: #a48c7b; --btn-copy-bg: #944a31; --tag-prod-text: #008b8b; 
-            --tag-prod-border: rgba(0, 139, 139, 0.5); --tag-train-text: #b8860b; --tag-train-border: rgba(184, 134, 11, 0.5);
+            /* LIGHT THEME */
+            --bg-color: #e9e9e6;  
+            --bg-image: none;       
+            --card-bg: rgba(255, 255, 255, 0.85); 
+            --border-color: #a48c7b;     
+            --text-main: #474a45;        
+            --accent-blue: #944a31;      
+            --accent-green: #f27a22;     
+            --neon-green: #f27a22;       
+            --accent-purple: #a48c7b;    
+            --accent-red: #d32f2f;       
+            --hl-orange: #f27a22;        
+            --code-bg: rgba(240, 240, 238, 0.7); 
+            
+            --logo-text: #474a45;        
+            --logo-accent-text: #ffffff; 
+            --input-text: #944a31;       
+            --line-num-bg: rgba(164, 140, 123, 0.15); 
+            --line-num-text: #a48c7b;    
+            --btn-copy-bg: #944a31;      
+
+            /* Tag Colors */
+            --tag-prod-text: #008b8b; 
+            --tag-prod-border: rgba(0, 139, 139, 0.5); 
+            --tag-train-text: #b8860b; 
+            --tag-train-border: rgba(184, 134, 11, 0.5);
         }
+
         [data-theme="twilight"] {
-            --bg-color: #172b5c; --bg-image: linear-gradient(to bottom, #172b5c 0%, #3b5082 25%, #7c6294 50%, #c483a9 75%, #e7aab0 100%);
-            --card-bg: rgba(20, 25, 45, 0.35); --border-color: rgba(255, 255, 255, 0.2); --text-main: #f8fafc; --accent-blue: #a5b4fc;      
-            --accent-green: #f59e0b; --neon-green: #fbbf24; --accent-purple: #d8b4fe; --accent-red: #ef4444; --hl-orange: #f43f5e;        
-            --code-bg: rgba(10, 15, 30, 0.3); --logo-text: #ffffff; --logo-accent-text: #1a1b36; --input-text: #e0e7ff;       
-            --line-num-bg: rgba(0, 0, 0, 0.15); --line-num-text: #a5b4fc; --btn-copy-bg: rgba(255, 255, 255, 0.2); --tag-prod-text: #7de8e1; 
-            --tag-prod-border: rgba(125, 232, 225, 0.5); --tag-train-text: #fcd34d; --tag-train-border: rgba(252, 211, 77, 0.5);
+            /* TWILIGHT THEME (KATAWAREDOKI) - Dynamic Gradient */
+            --bg-color: #172b5c; 
+            --bg-image: linear-gradient(to bottom, #172b5c 0%, #3b5082 25%, #7c6294 50%, #c483a9 75%, #e7aab0 100%);
+            
+            --card-bg: rgba(20, 25, 45, 0.35); 
+            --border-color: rgba(255, 255, 255, 0.2); 
+            --text-main: #f8fafc;        
+            --accent-blue: #a5b4fc;      
+            --accent-green: #f59e0b;     
+            --neon-green: #fbbf24;       
+            --accent-purple: #d8b4fe;    
+            --accent-red: #ef4444;       
+            --hl-orange: #f43f5e;        
+            --code-bg: rgba(10, 15, 30, 0.3); 
+            
+            --logo-text: #ffffff;        
+            --logo-accent-text: #1a1b36; 
+            --input-text: #e0e7ff;       
+            --line-num-bg: rgba(0, 0, 0, 0.15); 
+            --line-num-text: #a5b4fc;    
+            --btn-copy-bg: rgba(255, 255, 255, 0.2); 
+            
+            /* Tag Colors */
+            --tag-prod-text: #7de8e1; 
+            --tag-prod-border: rgba(125, 232, 225, 0.5); 
+            --tag-train-text: #fcd34d; 
+            --tag-train-border: rgba(252, 211, 77, 0.5);
         }
+
         [data-theme="playstation"] {
-            --bg-color: #080a0f; --bg-image: radial-gradient(circle at 20% 0%, rgba(220, 150, 110, 0.15) 0%, rgba(8, 10, 15, 1) 60%);
-            --card-bg: rgba(15, 18, 25, 0.6); --border-color: rgba(220, 180, 140, 0.3); --text-main: #d1d5db; --accent-blue: #3b82f6;      
-            --accent-green: #d99a57; --neon-green: #eab308; --accent-purple: #8b5cf6; --accent-red: #ef4444; --hl-orange: #f59e0b;        
-            --code-bg: rgba(5, 7, 12, 0.5); --logo-text: #ffffff; --logo-accent-text: #000000; --input-text: #bfdbfe;       
-            --line-num-bg: rgba(0, 0, 0, 0.3); --line-num-text: #60a5fa; --btn-copy-bg: rgba(59, 130, 246, 0.5); --tag-prod-text: #38bdf8; 
-            --tag-prod-border: rgba(56, 189, 248, 0.5); --tag-train-text: #fcd34d; --tag-train-border: rgba(252, 211, 77, 0.5);
+            /* EASTER EGG THEME */
+            --bg-color: #080a0f; 
+            --bg-image: radial-gradient(circle at 20% 0%, rgba(220, 150, 110, 0.15) 0%, rgba(8, 10, 15, 1) 60%);
+            
+            --card-bg: rgba(15, 18, 25, 0.6); 
+            --border-color: rgba(220, 180, 140, 0.3); 
+            --text-main: #d1d5db;        
+            --accent-blue: #3b82f6;      
+            --accent-green: #d99a57;     
+            --neon-green: #eab308;       
+            --accent-purple: #8b5cf6;    
+            --accent-red: #ef4444;       
+            --hl-orange: #f59e0b;        
+            --code-bg: rgba(5, 7, 12, 0.5); 
+            
+            --logo-text: #ffffff;        
+            --logo-accent-text: #000000; 
+            --input-text: #bfdbfe;       
+            --line-num-bg: rgba(0, 0, 0, 0.3); 
+            --line-num-text: #60a5fa;    
+            --btn-copy-bg: rgba(59, 130, 246, 0.5); 
+            
+            /* Tag Colors */
+            --tag-prod-text: #38bdf8; 
+            --tag-prod-border: rgba(56, 189, 248, 0.5); 
+            --tag-train-text: #fcd34d; 
+            --tag-train-border: rgba(252, 211, 77, 0.5);
         }
+
         body { font-family: "Segoe UI", Roboto, monospace; margin: 0; padding: 20px; background-color: var(--bg-color); background-image: var(--bg-image); background-attachment: fixed; color: var(--text-main); display: flex; justify-content: center; overflow-x: hidden; transition: background-color 0.4s ease, color 0.4s ease; }
         #bg-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }
         .container { max-width: 1200px; width: 100%; position: relative; z-index: 1;}
@@ -141,6 +233,7 @@
 
 <canvas id="bg-canvas"></canvas>
 
+<!-- Invalid Ports Modal Shield -->
 <div id="invalidPortsModal" class="modal-overlay">
     <div class="modal-box" style="border-color: var(--hl-orange); box-shadow: 0 0 25px rgba(255, 157, 0, 0.2);">
         <h3 style="color: var(--hl-orange); text-shadow: 0 0 8px rgba(255, 157, 0, 0.4);">⚠️ INVALID PORTS DETECTED</h3>
@@ -164,7 +257,7 @@
         <div class="header-left">
             <h2>
                 <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-                <span class="version-tag">// v10.0 [Automated Port Extractor]</span>
+                <span class="version-tag">// v10.1 [Automated Port Extractor]</span>
             </h2>
             <span id="liveViewers" class="live-viewers" title="Real-Time Active Users">👁️ ONLINE: ...</span>
         </div>
@@ -289,37 +382,21 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-    // --- REAL-TIME LIVE VIEWERS (FIREBASE FALLBACK ENGINE) ---
+    // --- REAL-TIME LIVE VIEWERS (FIREBASE ENGINE) ---
     window.addEventListener('load', () => {
         const viewerElement = document.getElementById('liveViewers');
         let fallbackTriggered = false;
 
-        // Function to launch the Simulated Viewer Engine if Firebase gets blocked
+        // Function to handle blocked or failed connections honestly without fake simulations
         const triggerFallback = () => {
             if (fallbackTriggered) return;
             fallbackTriggered = true;
-            viewerElement.title = "Firebase blocked. Using simulated data.";
-            
-            let baseUsers = Math.floor(Math.random() * 2) + 1;
-            const updateSim = () => {
-                const chance = Math.random();
-                if (chance > 0.85 && baseUsers < 5) baseUsers++;
-                else if (chance < 0.15 && baseUsers > 1) baseUsers--;
-                
-                viewerElement.innerText = `👁️ ONLINE: ${baseUsers}`;
-                viewerElement.style.textShadow = "0 0 10px var(--hl-orange)";
-                viewerElement.style.color = "#fff";
-                
-                setTimeout(() => {
-                    viewerElement.style.textShadow = "none";
-                    viewerElement.style.color = "var(--hl-orange)";
-                }, 500);
-                setTimeout(updateSim, Math.floor(Math.random() * 25000) + 10000);
-            };
-            updateSim();
+            viewerElement.innerText = "👁️ ONLINE: --";
+            viewerElement.title = "Firebase blocked by VPN or Adblocker. Live tracking disabled.";
+            viewerElement.style.color = "var(--hl-orange)";
         };
 
-        // Set a strict 3-second timeout. If Firebase doesn't connect by then, launch the fallback.
+        // Set a strict 3-second timeout. If Firebase doesn't connect by then, show offline state.
         const fallbackTimer = setTimeout(() => {
             triggerFallback();
         }, 3000);
@@ -348,7 +425,7 @@
 
             connectedRef.on('value', (snap) => {
                 if (snap.val() === true) {
-                    // Successful connection! Cancel the 3-second fallback timer
+                    // Successful connection! Cancel the 3-second offline fallback timer
                     clearTimeout(fallbackTimer);
                     
                     const listRef = db.ref('viewers');
@@ -357,7 +434,7 @@
                     userRef.set(true);
 
                     listRef.on('value', (s) => {
-                        if (fallbackTriggered) return; // Prevent interference if fallback already ran
+                        if (fallbackTriggered) return; 
                         viewerElement.innerText = `👁️ ONLINE: ${s.numChildren()}`;
                         viewerElement.style.textShadow = "0 0 10px var(--neon-green)";
                         viewerElement.style.color = "#fff";
