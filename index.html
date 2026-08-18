@@ -257,9 +257,9 @@
         <div class="header-left">
             <h2>
                 <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-                <span class="version-tag">// v10.1 [Automated Port Extractor]</span>
+                <span class="version-tag">// v10.2 [Automated Port Extractor]</span>
             </h2>
-            <span id="liveViewers" class="live-viewers" title="Real-Time Active Users">👁️ ONLINE: ...</span>
+            <span id="liveViewers" class="live-viewers" title="Real-Time Active Users">👁️ CURRENT ACTIVE USERS: ...</span>
         </div>
         
         <div class="header-controls">
@@ -382,21 +382,19 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-    // --- REAL-TIME LIVE VIEWERS (FIREBASE ENGINE) ---
+    // --- REAL-TIME LIVE VIEWERS (FIREBASE FALLBACK ENGINE) ---
     window.addEventListener('load', () => {
         const viewerElement = document.getElementById('liveViewers');
         let fallbackTriggered = false;
 
-        // Function to handle blocked or failed connections honestly without fake simulations
         const triggerFallback = () => {
             if (fallbackTriggered) return;
             fallbackTriggered = true;
-            viewerElement.innerText = "👁️ ONLINE: --";
+            viewerElement.innerText = "👁️ CURRENT ACTIVE USERS: --";
             viewerElement.title = "Firebase blocked by VPN or Adblocker. Live tracking disabled.";
             viewerElement.style.color = "var(--hl-orange)";
         };
 
-        // Set a strict 3-second timeout. If Firebase doesn't connect by then, show offline state.
         const fallbackTimer = setTimeout(() => {
             triggerFallback();
         }, 3000);
@@ -425,7 +423,6 @@
 
             connectedRef.on('value', (snap) => {
                 if (snap.val() === true) {
-                    // Successful connection! Cancel the 3-second offline fallback timer
                     clearTimeout(fallbackTimer);
                     
                     const listRef = db.ref('viewers');
@@ -435,7 +432,7 @@
 
                     listRef.on('value', (s) => {
                         if (fallbackTriggered) return; 
-                        viewerElement.innerText = `👁️ ONLINE: ${s.numChildren()}`;
+                        viewerElement.innerText = `👁️ CURRENT ACTIVE USERS: ${s.numChildren()}`;
                         viewerElement.style.textShadow = "0 0 10px var(--neon-green)";
                         viewerElement.style.color = "#fff";
                         setTimeout(() => {
