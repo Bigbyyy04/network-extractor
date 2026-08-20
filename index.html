@@ -129,8 +129,49 @@
             --tag-train-border: rgba(252, 211, 77, 0.5);
         }
 
+        /* NEW NOCCAT THEMES ADDED */
+        [data-theme="fab-neko"] {
+            --bg-color: #1a1525; --bg-image: none; --card-bg: rgba(39, 32, 54, 0.85); --border-color: #4a365c; --text-main: #f4e8ed; 
+            --accent-blue: #0bcbd4; --accent-green: #e84393; --neon-green: #ff4785; --accent-purple: #a29bfe; 
+            --accent-red: #ff6b81; --hl-orange: #ff9f43; --code-bg: rgba(20, 16, 29, 0.85); 
+            --logo-text: #ffffff; --logo-accent-text: #ffffff; --input-text: #0bcbd4; 
+            --line-num-bg: rgba(39, 32, 54, 0.5); --line-num-text: #6e5585; --btn-copy-bg: #a29bfe;
+            --tag-prod-text: #ff9f43; --tag-prod-border: rgba(255, 159, 67, 0.5); 
+            --tag-train-text: #0bcbd4; --tag-train-border: rgba(11, 203, 212, 0.5);
+        }
+        [data-theme="summerkat"] {
+            --bg-color: #0b1a2a; --bg-image: none; --card-bg: rgba(10, 35, 55, 0.85); --border-color: #1e5570; --text-main: #e8f4f8; 
+            --accent-blue: #00d4ff; --accent-green: #e63946; --neon-green: #ffca3a; --accent-purple: #f4a261; 
+            --accent-red: #d62828; --hl-orange: #f77f00; --code-bg: rgba(2, 10, 20, 0.75);
+            --logo-text: #ffffff; --logo-accent-text: #111; --input-text: #00d4ff; 
+            --line-num-bg: rgba(10, 35, 55, 0.5); --line-num-text: #496d89; --btn-copy-bg: #00d4ff;
+            --tag-prod-text: #f77f00; --tag-prod-border: rgba(247, 127, 0, 0.5); 
+            --tag-train-text: #ffca3a; --tag-train-border: rgba(255, 202, 58, 0.5);
+        }
+        [data-theme="autumnkat"] {
+            --bg-color: #2c1e16; --bg-image: none; --card-bg: rgba(45, 25, 15, 0.85); --border-color: #8b5a2b; --text-main: #fdf8e1; 
+            --accent-blue: #ff9f1c; --accent-green: #e63946; --neon-green: #ffbf69; --accent-purple: #cb997e; 
+            --accent-red: #d62828; --hl-orange: #f4a261; --code-bg: rgba(25, 15, 10, 0.8);
+            --logo-text: #ffffff; --logo-accent-text: #111; --input-text: #ff9f1c; 
+            --line-num-bg: rgba(45, 25, 15, 0.5); --line-num-text: #7b4b3a; --btn-copy-bg: #ff9f1c;
+            --tag-prod-text: #f4a261; --tag-prod-border: rgba(244, 162, 97, 0.5); 
+            --tag-train-text: #ffbf69; --tag-train-border: rgba(255, 191, 105, 0.5);
+        }
+        [data-theme="springkat"] {
+            --bg-color: #24283b; --bg-image: none; --card-bg: rgba(36, 40, 59, 0.85); --border-color: #414868; --text-main: #c0caf5; 
+            --accent-blue: #7dcfff; --accent-green: #f7768e; --neon-green: #ff9e64; --accent-purple: #bb9af7; 
+            --accent-red: #f7768e; --hl-orange: #ff9e64; --code-bg: rgba(26, 27, 38, 0.8);
+            --logo-text: #ffffff; --logo-accent-text: #111; --input-text: #7dcfff; 
+            --line-num-bg: rgba(36, 40, 59, 0.5); --line-num-text: #565f89; --btn-copy-bg: #7dcfff;
+            --tag-prod-text: #ff9e64; --tag-prod-border: rgba(255, 158, 100, 0.5); 
+            --tag-train-text: #bb9af7; --tag-train-border: rgba(187, 154, 247, 0.5);
+        }
+
         body { font-family: "Segoe UI", Roboto, monospace; margin: 0; padding: 20px; background-color: var(--bg-color); background-image: var(--bg-image); background-attachment: fixed; color: var(--text-main); display: flex; justify-content: center; overflow-x: hidden; transition: background-color 0.4s ease, color 0.4s ease; }
-        #bg-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }
+        
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; transition: opacity 0.5s ease; }
+        #videoBg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -5; opacity: 0; transition: opacity 0.5s ease-in-out; pointer-events: none; }
+        
         .container { max-width: 1200px; width: 100%; position: relative; z-index: 1;}
         
         .app-header { position: sticky; top: 15px; z-index: 1000; display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 25px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: all 0.3s ease; flex-wrap: wrap; gap: 15px; }
@@ -165,9 +206,15 @@
         .ip-highlight { font-weight: bold; text-shadow: 0 0 5px rgba(242, 122, 34, 0.3); transition: color 0.2s; }
         .host-tag.muted { opacity: 0.3; border-color: transparent; background: transparent; }
         .host-tag.active-filter { border-color: var(--neon-green); background: rgba(57, 255, 20, 0.15); box-shadow: 0 0 10px rgba(57, 255, 20, 0.3); transform: scale(1.05); }
+        
         [data-theme="light"] .host-tag.active-filter { background: rgba(242, 122, 34, 0.15); box-shadow: 0 0 10px rgba(242, 122, 34, 0.3); }
         [data-theme="twilight"] .host-tag.active-filter { background: rgba(254, 188, 171, 0.2); box-shadow: 0 0 10px rgba(254, 188, 171, 0.3); border-color: var(--accent-blue); }
         [data-theme="playstation"] .host-tag.active-filter { background: rgba(234, 179, 8, 0.2); box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); }
+        [data-theme="fab-neko"] .host-tag.active-filter { background: rgba(255, 71, 133, 0.2); box-shadow: 0 0 10px rgba(255, 71, 133, 0.3); border-color: var(--neon-green); }
+        [data-theme="summerkat"] .host-tag.active-filter { background: rgba(255, 202, 58, 0.2); box-shadow: 0 0 10px rgba(255, 202, 58, 0.3); border-color: var(--neon-green); }
+        [data-theme="autumnkat"] .host-tag.active-filter { background: rgba(255, 191, 105, 0.2); box-shadow: 0 0 10px rgba(255, 191, 105, 0.3); border-color: var(--neon-green); }
+        [data-theme="springkat"] .host-tag.active-filter { background: rgba(255, 158, 100, 0.2); box-shadow: 0 0 10px rgba(255, 158, 100, 0.3); border-color: var(--neon-green); }
+        
         .host-tag:hover { border-color: var(--accent-blue); transform: translateY(-1px); }
         .readme-wrapper { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.3s, margin 0.3s, border 0.3s; }
         .readme-wrapper.expanded { max-height: 1000px; padding-top: 15px; margin-top: 10px; border-top: 1px dashed var(--border-color); }
@@ -238,6 +285,7 @@
 <body>
 
 <canvas id="bg-canvas"></canvas>
+<video id="videoBg" autoplay loop muted playsinline style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -5; opacity: 0; transition: opacity 0.5s ease-in-out; pointer-events: none;"></video>
 
 <!-- Invalid Ports Modal Shield -->
 <div id="invalidPortsModal" class="modal-overlay">
@@ -263,7 +311,7 @@
         <div class="header-left">
             <h2>
                 <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-                <span class="version-tag">// v10.4 [Automated Port Extractor]</span>
+                <span class="version-tag">// v10.5 [Themed Edition]</span>
             </h2>
         </div>
         
@@ -327,7 +375,10 @@
             <button class="clear-btn" onclick="clearText()">Clear</button>
         </div>
     </div>
+    
+    <!-- ======== END OF PART 1 ======== -->
 
+    <!-- ======== START OF PART 2 ======== -->
     <div class="form-group">
         <div class="header-row" style="margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -461,19 +512,6 @@
     let lastInvalidPorts = [];
     let isHighlightModeActive = false; 
 
-    // Intelligent Smart Fixer for the modal fields
-    function autoFixPort(p) {
-        let fixed = p;
-        fixed = fixed.replace(/^(?:G1|61|6i|G[l\|!]|G(?=\d))/i, 'Gi');
-        fixed = fixed.replace(/\/+$/, '');
-        if (/^(Gi|Te|Fa|Eth)\//i.test(fixed)) fixed = fixed.replace(/^(Gi|Te|Fa|Eth)\//i, '$11/');
-        if (/^(Gi|Te|Fa|Eth)\d+\/\d+$/i.test(fixed)) fixed = fixed.replace(/^((?:Gi|Te|Fa|Eth)\d+)\/(\d+)$/i, '$1/0/$2');
-        if (/^(Gi|Te|Fa|Eth)(\d)(\d)(\d)$/i.test(fixed)) fixed = fixed.replace(/^(Gi|Te|Fa|Eth)(\d)(\d)(\d)$/i, '$1$2/$3/$4');
-        if (/^(Gi|Te|Fa|Eth)0\//i.test(fixed)) fixed = fixed.replace(/^(Gi|Te|Fa|Eth)0\//i, '$11/0/');
-        else if (/^0\//.test(fixed)) fixed = fixed.replace(/^0\//, '1/0/');
-        return fixed;
-    }
-
     function getInvalidPortRegex() {
         return /(^|[^a-zA-Z0-9\/])((?:(?:G1|61|6i|G[l\|!]|G(?=\d))\d*(?:\/\d+)*\/?|(?:Gi|Te|Fa|Eth)\d*\/\d*\/(?!\d)|(?:Gi|Te|Fa|Eth)\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d+\/\d+(?!\/)|(?:Gi|Te|Fa|Eth)?0\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d{3,}))\b/gi;
     }
@@ -526,6 +564,18 @@
         document.getElementById('statusMsg').style.color = 'var(--accent-blue)';
         document.getElementById('configHighlightView').innerHTML = '';
         document.getElementById('configInput').focus();
+    }
+
+    function autoFixPort(p) {
+        let fixed = p;
+        fixed = fixed.replace(/^(?:G1|61|6i|G[l\|!]|G(?=\d))/i, 'Gi');
+        fixed = fixed.replace(/\/+$/, '');
+        if (/^(Gi|Te|Fa|Eth)\//i.test(fixed)) fixed = fixed.replace(/^(Gi|Te|Fa|Eth)\//i, '$11/');
+        if (/^(Gi|Te|Fa|Eth)\d+\/\d+$/i.test(fixed)) fixed = fixed.replace(/^((?:Gi|Te|Fa|Eth)\d+)\/(\d+)$/i, '$1/0/$2');
+        if (/^(Gi|Te|Fa|Eth)(\d)(\d)(\d)$/i.test(fixed)) fixed = fixed.replace(/^(Gi|Te|Fa|Eth)(\d)(\d)(\d)$/i, '$1$2/$3/$4');
+        if (/^(Gi|Te|Fa|Eth)0\//i.test(fixed)) fixed = fixed.replace(/^(Gi|Te|Fa|Eth)0\//i, '$11/0/');
+        else if (/^0\//.test(fixed)) fixed = fixed.replace(/^0\//, '1/0/');
+        return fixed;
     }
 
     function applyInvalidPortFixes() {
@@ -585,6 +635,72 @@
         renderOutput();
     }
 
+    // --- THEME TOGGLE LOGIC ---
+    function updateThemeButton(theme) {
+        const btn = document.getElementById('themeToggleBtn');
+        if (theme === 'dark') btn.innerText = '☀️ LIGHT';
+        else if (theme === 'light') btn.innerText = '🌅 TWILIGHT';
+        else if (theme === 'twilight') btn.innerText = '🎮 PLAYSTATION';
+        else if (theme === 'playstation') btn.innerText = '🐈 FAB NEKO';
+        else if (theme === 'fab-neko') btn.innerText = '🏖️ SUMMERKAT';
+        else if (theme === 'summerkat') btn.innerText = '🍂 AUTUMNKAT';
+        else if (theme === 'autumnkat') btn.innerText = '🌸 SPRINGKAT';
+        else if (theme === 'springkat') btn.innerText = '🌙 DARK';
+    }
+
+    function updateBackground(theme) {
+        const video = document.getElementById('videoBg');
+        const canvas = document.getElementById('bg-canvas');
+        
+        if(theme === 'summerkat' || theme === 'autumnkat' || theme === 'springkat') {
+            if(canvas) canvas.style.opacity = 0;
+            if(video) {
+                let targetSrc = '';
+                if (theme === 'summerkat') targetSrc = 'https://github.com/Bigbyyy04/NOCCAT/releases/download/WALLPAPER/SUMMERKAT.mp4';
+                else if (theme === 'autumnkat') targetSrc = 'https://github.com/Bigbyyy04/NOCCAT/releases/download/WALLPAPER/AUTUMNKAT.mp4';
+                else if (theme === 'springkat') targetSrc = 'https://github.com/Bigbyyy04/NOCCAT/releases/download/WALLPAPER/SPRINGKAT.mp4';
+                
+                if (!video.src.includes(targetSrc.split('/').pop())) {
+                    video.src = targetSrc;
+                    video.load();
+                }
+                video.style.opacity = 1;
+                video.play().catch(e=>console.log(e));
+            }
+        } else {
+            if(video) {
+                video.style.opacity = 0;
+                setTimeout(() => video.pause(), 500); 
+            }
+            if(canvas) canvas.style.opacity = 1;
+        }
+    }
+
+    function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme') || 'dark';
+        let newTheme;
+        
+        if (currentTheme === 'dark') newTheme = 'light';
+        else if (currentTheme === 'light') newTheme = 'twilight';
+        else if (currentTheme === 'twilight') newTheme = 'playstation';
+        else if (currentTheme === 'playstation') newTheme = 'fab-neko';
+        else if (currentTheme === 'fab-neko') newTheme = 'summerkat';
+        else if (currentTheme === 'summerkat') newTheme = 'autumnkat';
+        else if (currentTheme === 'autumnkat') newTheme = 'springkat';
+        else newTheme = 'dark';
+        
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('nocape_theme', newTheme);
+        updateThemeButton(newTheme);
+        updateBackground(newTheme);
+    }
+
+    const savedTheme = localStorage.getItem('nocape_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeButton(savedTheme);
+    window.addEventListener('DOMContentLoaded', () => { updateBackground(savedTheme); });
+
     let psCheatCode = ['p','l','a','y','s','t','a','t','i','o','n'];
     let keyBuffer = [];
     document.addEventListener('keydown', (e) => {
@@ -594,31 +710,11 @@
             document.documentElement.setAttribute('data-theme', 'playstation');
             localStorage.setItem('nocape_theme', 'playstation');
             updateThemeButton('playstation');
+            updateBackground('playstation');
             keyBuffer = [];
             if (typeof triggerExecuteEffect === 'function') triggerExecuteEffect();
         }
     });
-
-    function updateThemeButton(theme) {
-        const btn = document.getElementById('themeToggleBtn');
-        if (theme === 'dark') btn.innerText = '☀️ LIGHT';
-        else if (theme === 'light') btn.innerText = '🌅 TWILIGHT';
-        else if (theme === 'twilight') btn.innerText = '🌙 DARK';
-        else if (theme === 'playstation') btn.innerText = '🎮 PLAYSTATION';
-    }
-
-    function toggleTheme() {
-        const html = document.documentElement;
-        const currentTheme = html.getAttribute('data-theme') || 'dark';
-        let newTheme = currentTheme === 'dark' ? 'light' : currentTheme === 'light' ? 'twilight' : 'dark';
-        html.setAttribute('data-theme', newTheme);
-        localStorage.setItem('nocape_theme', newTheme);
-        updateThemeButton(newTheme);
-    }
-
-    const savedTheme = localStorage.getItem('nocape_theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    updateThemeButton(savedTheme);
 
     const zoomSlider = document.getElementById('zoomSlider');
     const savedZoom = localStorage.getItem('nocape_zoom') || 1;
@@ -696,6 +792,7 @@
         let baseRGB, glowRGB, lineAlpha, polyAlpha;
         if (theme === 'light') { baseRGB = '148, 74, 49'; glowRGB = '242, 122, 34'; lineAlpha = 0.3; polyAlpha = 0.08; } 
         else if (theme === 'twilight') { glowRGB = '245, 158, 11'; lineAlpha = 0.4; polyAlpha = 0.12; } 
+        else if (theme === 'fab-neko') { baseRGB = '11, 203, 212'; glowRGB = '255, 71, 133'; lineAlpha = 0.2; polyAlpha = 0.08; }
         else { baseRGB = '88, 166, 255'; glowRGB = '57, 255, 20'; lineAlpha = 0.25; polyAlpha = 0.08; }
 
         particles.forEach(p => {
@@ -948,6 +1045,33 @@
             deviceHud.innerHTML = 'Waiting for target...';
             deviceHud.classList.remove('visible');
         }
+    }
+
+    function clearText() {
+        if (isHighlightModeActive) { exitHighlightMode(); }
+        const textarea = document.getElementById('configInput');
+        const view = document.getElementById('configHighlightView');
+        
+        textarea.value = '';
+        view.innerHTML = '';
+        textarea.dataset.manualCollapse = ""; 
+        
+        if(textarea.classList.contains('expanded')) {
+             textarea.classList.remove('expanded');
+             view.classList.remove('expanded');
+             document.getElementById('expandBtn').innerText = "[ EXPAND ]";
+        }
+
+        document.getElementById('output').innerHTML = `<div style="font-family: 'Courier New', Courier, monospace; color: var(--line-num-text); font-size: calc(13px * var(--font-scale));">-- system_idle --</div>`;
+        document.getElementById('filterInput').style.display = 'none';
+        document.getElementById('filterInput').value = '';
+        document.getElementById('statusMsg').style.display = 'none';
+        document.getElementById('deviceHud').classList.remove('visible');
+        
+        currentHudFilter = null;
+        globalSwitches = [];
+        globalInterfaces = [];
+        lastInvalidPorts = [];
     }
 
     function processText() {
@@ -1462,6 +1586,6 @@
         outputDiv.innerHTML = htmlOutput;
     }
 </script>
-
 </body>
 </html>
+    <!-- ======== END OF PART 2 ======== -->
