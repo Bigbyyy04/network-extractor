@@ -249,7 +249,21 @@
         .copy-btn { background: var(--btn-copy-bg); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: calc(10px * var(--font-scale)); font-weight: bold; text-transform: uppercase; font-family: "Courier New", Courier, monospace; transition: 0.2s; }
         .copy-btn:hover { filter: brightness(1.2); }
         .output-box { width: 100%; height: calc(400px * Math.min(var(--font-scale), 1.5)); font-family: "Courier New", Courier, monospace; font-size: calc(12px * var(--font-scale)); border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; padding: 10px 0; overflow: auto; background-color: var(--code-bg); backdrop-filter: blur(4px); color: var(--input-text); cursor: text; counter-reset: linenumber; line-height: 1.6; resize: none; transition: all 0.3s; }
-        .line-item { display: block; padding-left: calc(35px * var(--font-scale)); padding-right: 10px; position: relative; white-space: pre; }
+        
+        /* Interactive Selected Output Rows */
+        .line-item { display: block; padding-left: calc(35px * var(--font-scale)); padding-right: 10px; position: relative; white-space: pre; cursor: pointer; transition: all 0.2s; border-left: 2px solid transparent; }
+        .line-item:hover { background-color: rgba(88, 166, 255, 0.1); }
+        .line-item.selected-output-row { background-color: rgba(57, 255, 20, 0.15) !important; border-left: 2px solid var(--neon-green) !important; color: #fff !important; }
+        .line-item.selected-output-row::before { background-color: rgba(57, 255, 20, 0.1) !important; color: var(--neon-green) !important; border-right-color: var(--neon-green) !important; }
+        [data-theme="fab-neko"] .line-item:hover { background-color: rgba(11, 203, 212, 0.15); }
+        [data-theme="fab-neko"] .line-item.selected-output-row { background-color: rgba(255, 71, 133, 0.2) !important; border-left-color: var(--neon-green) !important; }
+        [data-theme="summerkat"] .line-item:hover { background-color: rgba(0, 212, 255, 0.15); }
+        [data-theme="summerkat"] .line-item.selected-output-row { background-color: rgba(255, 202, 58, 0.2) !important; border-left-color: var(--neon-green) !important; }
+        [data-theme="autumnkat"] .line-item:hover { background-color: rgba(255, 159, 28, 0.15); }
+        [data-theme="autumnkat"] .line-item.selected-output-row { background-color: rgba(255, 191, 105, 0.2) !important; border-left-color: var(--neon-green) !important; }
+        [data-theme="springkat"] .line-item:hover { background-color: rgba(247, 118, 142, 0.15); }
+        [data-theme="springkat"] .line-item.selected-output-row { background-color: rgba(255, 158, 100, 0.2) !important; border-left-color: var(--neon-green) !important; }
+
         .line-item::before { counter-increment: linenumber; content: counter(linenumber); position: absolute; left: 0; top: 0; width: calc(20px * var(--font-scale)); text-align: right; color: var(--line-num-text); background-color: var(--line-num-bg); border-right: 1px solid var(--border-color); padding-right: calc(6px * var(--font-scale)); height: 100%; user-select: none; -webkit-user-select: none; transition: all 0.3s; }
         .tag-badge { padding: 2px 5px; border-radius: 4px; font-size: calc(9.5px * var(--font-scale)); font-weight: bold; text-shadow: none; font-family: "Segoe UI", Roboto, sans-serif; letter-spacing: 0.5px; margin-left: 6px; display: inline-block; vertical-align: middle; }
         .tag-prod { background: var(--tag-prod-bg); color: var(--tag-prod-text); border: 1px solid var(--tag-prod-border); }
@@ -311,7 +325,7 @@
         <div class="header-left">
             <h2>
                 <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-                <span class="version-tag">// v10.5 [Themed Edition]</span>
+                <span class="version-tag">// v10.5 [The Interactive Selection Update]</span>
             </h2>
         </div>
         
@@ -375,7 +389,6 @@
             <button class="clear-btn" onclick="clearText()">Clear</button>
         </div>
     </div>
-    
     <!-- ======== END OF PART 1 ======== -->
 
     <!-- ======== START OF PART 2 ======== -->
@@ -383,7 +396,7 @@
         <div class="header-row" style="margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <label style="margin-bottom: 0;">02 // Extracted Data</label>
-                <button class="copy-btn" style="background: var(--accent-blue); padding: 4px 12px; font-size: 11px;" onclick="copyContent('hidden-both-cmds', this)" title="Copy both SH RUN and SH STATUS commands across all switches at once">COPY ALL CMDS</button>
+                <button class="copy-btn" style="background: var(--accent-blue); padding: 4px 12px; font-size: 11px;" onclick="copyContent('hidden-both-cmds', this, ['box-shrun-global', 'box-shint-global'])" title="Copy both SH RUN and SH STATUS commands across all switches at once">COPY ALL CMDS</button>
                 <textarea id="hidden-both-cmds" class="hidden-copy-area"></textarea>
             </div>
             
@@ -511,6 +524,100 @@
     let currentHudFilter = null;
     let lastInvalidPorts = [];
     let isHighlightModeActive = false; 
+    let lastSelectedOutputIndex = -1;
+
+    function toggleOutputRow(index, event) {
+        const rows = document.querySelectorAll(`.line-item[data-row-index="${index}"]`);
+        if (rows.length === 0) return;
+        
+        const isSelected = rows[0].classList.contains('selected-output-row');
+        
+        if (event && event.shiftKey && lastSelectedOutputIndex !== -1) {
+            const start = Math.min(lastSelectedOutputIndex, index);
+            const end = Math.max(lastSelectedOutputIndex, index);
+            for (let i = start; i <= end; i++) {
+                const rangeRows = document.querySelectorAll(`.line-item[data-row-index="${i}"]`);
+                rangeRows.forEach(r => r.classList.add('selected-output-row'));
+            }
+        } else {
+            rows.forEach(r => {
+                if (isSelected) {
+                    r.classList.remove('selected-output-row');
+                } else {
+                    r.classList.add('selected-output-row');
+                }
+            });
+        }
+        lastSelectedOutputIndex = index;
+    }
+
+    function copyContent(hiddenElementId, btnElement, boxIds) {
+        let textToCopy = "";
+        
+        if (boxIds) {
+            let ids = Array.isArray(boxIds) ? boxIds : [boxIds];
+            let hasSelection = false;
+            let combinedLines = [];
+            
+            ids.forEach(id => {
+                const box = document.getElementById(id);
+                if (box) {
+                    const selectedLines = box.querySelectorAll('.selected-output-row');
+                    if (selectedLines.length > 0) {
+                        hasSelection = true;
+                        let boxLines = [];
+                        selectedLines.forEach(span => {
+                            let raw = span.getAttribute('data-copy-text');
+                            if (raw) {
+                                let decoded = decodeURIComponent(raw);
+                                if (decoded.trim() !== "") boxLines.push(decoded);
+                            }
+                        });
+                        if (boxLines.length > 0) combinedLines.push(boxLines.join('\n'));
+                    }
+                }
+            });
+            
+            if (hasSelection) textToCopy = combinedLines.join('\n\n');
+        } else {
+            const allSelected = document.querySelectorAll('.selected-output-row');
+            if (allSelected.length > 0 && hiddenElementId === 'hidden-both-cmds') {
+                let shRunLines = [];
+                let shIntLines = [];
+                document.querySelectorAll('div[id^="box-shrun"] .selected-output-row').forEach(span => {
+                    let raw = span.getAttribute('data-copy-text');
+                    if(raw) { let dec = decodeURIComponent(raw); if(dec.trim()!=="") shRunLines.push(dec); }
+                });
+                document.querySelectorAll('div[id^="box-shint"] .selected-output-row').forEach(span => {
+                    let raw = span.getAttribute('data-copy-text');
+                    if(raw) { let dec = decodeURIComponent(raw); if(dec.trim()!=="") shIntLines.push(dec); }
+                });
+                
+                let combined = [];
+                if (shRunLines.length > 0) combined.push(shRunLines.join('\n'));
+                if (shIntLines.length > 0) combined.push(shIntLines.join('\n'));
+                if (combined.length > 0) textToCopy = combined.join('\n\n');
+            }
+        }
+        
+        if (!textToCopy) {
+            const hiddenElem = document.getElementById(hiddenElementId);
+            if (hiddenElem) textToCopy = hiddenElem.value;
+        }
+        
+        if (!textToCopy) return;
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const originalText = btnElement.innerText;
+            const originalBg = btnElement.style.background;
+            btnElement.innerText = "COPIED";
+            btnElement.style.background = "var(--accent-green)"; 
+            setTimeout(() => {
+                btnElement.innerText = originalText;
+                btnElement.style.background = originalBg; 
+            }, 2000);
+        }).catch(err => alert("Failed to copy text. Please ensure you are running this securely over HTTPS on GitHub Pages."));
+    }
 
     function getInvalidPortRegex() {
         return /(^|[^a-zA-Z0-9\/])((?:(?:G1|61|6i|G[l\|!]|G(?=\d))\d*(?:\/\d+)*\/?|(?:Gi|Te|Fa|Eth)\d*\/\d*\/(?!\d)|(?:Gi|Te|Fa|Eth)\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d+\/\d+(?!\/)|(?:Gi|Te|Fa|Eth)?0\/\d+(?:\/\d+)*|(?:Gi|Te|Fa|Eth)\d{3,}))\b/gi;
@@ -602,20 +709,6 @@
         }
         closeInvalidPortsModal();
         setTimeout(() => { processText(); }, 100);
-    }
-
-    function copyContent(hiddenElementId, btnElement) {
-        const textToCopy = document.getElementById(hiddenElementId).value;
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            const originalText = btnElement.innerText;
-            const originalBg = btnElement.style.background;
-            btnElement.innerText = "COPIED";
-            btnElement.style.background = "var(--accent-green)"; 
-            setTimeout(() => {
-                btnElement.innerText = originalText;
-                btnElement.style.background = originalBg; 
-            }, 2000);
-        }).catch(err => alert("Failed to copy text. Please ensure you are running this securely over HTTPS on GitHub Pages."));
     }
 
     function toggleSummarize() {
@@ -1072,6 +1165,7 @@
         globalSwitches = [];
         globalInterfaces = [];
         lastInvalidPorts = [];
+        lastSelectedOutputIndex = -1;
     }
 
     function processText() {
@@ -1341,6 +1435,8 @@
         document.getElementById('filterInput').value = '';
         document.getElementById('statusMsg').style.display = 'block';
         document.getElementById('statusMsg').style.color = 'var(--accent-blue)';
+        
+        lastSelectedOutputIndex = -1;
         renderOutput();
     }
 
@@ -1399,9 +1495,8 @@
             let processedData = [];
             filteredInterfaces.forEach((item, index) => {
                 const isDup = item.count > 1;
-                const tooltipText = isDup ? `Duplicate: Found ${item.count} times` : ``;
-                const spanOpen = isDup ? `<span class="highlight-dup line-item" title="${tooltipText}">` : `<span class="line-item" title="${tooltipText}">`;
-                const spanClose = `</span>`;
+                const tooltipText = isDup ? `Duplicate: Found ${item.count} times. Click to select.` : `Click to select port for specific copying. Shift+Click to select a range.`;
+                const dupClass = isDup ? 'highlight-dup' : '';
 
                 let tagsHtml = "";
                 if (item.tags && item.tags.length > 0) {
@@ -1417,7 +1512,10 @@
                 }
                 displaySw += tagsHtml;
 
-                let shRunHtmlLine = ""; let shRunTextLine = "";
+                let shRunHtmlLine = ""; 
+                let shRunTextLine = "";
+                let shRunCopyText = "";
+                let groupedStyle = "";
 
                 if (isSummarized) {
                     let match = item.iface.match(/^([a-zA-Z]+)(\d+(?:\/\d+)*\/)(\d+)$/);
@@ -1430,28 +1528,37 @@
                             let fullType = typeMap[type] || type;
                             let portsStr = group.ports.length > 1 ? `(${group.ports.join('|')})` : group.ports[0];
                             shRunTextLine = `show running-config | section interface ${fullType}${prefix}${portsStr}`;
-                            shRunHtmlLine = `${spanOpen}${shRunTextLine}${spanClose}`;
+                            shRunCopyText = shRunTextLine;
+                            shRunHtmlLine = `<span class="line-item ${dupClass}" data-row-index="${index}" data-copy-text="${encodeURIComponent(shRunCopyText)}" onclick="toggleOutputRow(${index}, event)" title="${tooltipText}">${shRunTextLine}</span>`;
                         } else {
-                            shRunHtmlLine = `<span class="line-item" style="color: var(--line-num-text); opacity: 0.5;">// grouped above //</span>`;
+                            shRunHtmlLine = `<span class="line-item ${dupClass}" style="color: var(--line-num-text); opacity: 0.5;" data-row-index="${index}" data-copy-text="" onclick="toggleOutputRow(${index}, event)" title="${tooltipText}">// grouped above //</span>`;
                         }
                     } else {
                         let groupKey = `${item.sw}|${item.iface}`;
                         if (summaryGroups[groupKey].firstIndex === index) {
                             shRunTextLine = `sh run int ${item.iface}`;
-                            shRunHtmlLine = `${spanOpen}${shRunTextLine}${spanClose}`;
+                            shRunCopyText = shRunTextLine;
+                            shRunHtmlLine = `<span class="line-item ${dupClass}" data-row-index="${index}" data-copy-text="${encodeURIComponent(shRunCopyText)}" onclick="toggleOutputRow(${index}, event)" title="${tooltipText}">${shRunTextLine}</span>`;
                         } else {
-                            shRunHtmlLine = `<span class="line-item" style="color: var(--line-num-text); opacity: 0.5;">// grouped above //</span>`;
+                            shRunHtmlLine = `<span class="line-item ${dupClass}" style="color: var(--line-num-text); opacity: 0.5;" data-row-index="${index}" data-copy-text="" onclick="toggleOutputRow(${index}, event)" title="${tooltipText}">// grouped above //</span>`;
                         }
                     }
                 } else {
                     shRunTextLine = `sh run int ${item.iface}`;
-                    shRunHtmlLine = `${spanOpen}${shRunTextLine}${spanClose}`;
+                    shRunCopyText = shRunTextLine;
+                    shRunHtmlLine = `<span class="line-item ${dupClass}" data-row-index="${index}" data-copy-text="${encodeURIComponent(shRunCopyText)}" onclick="toggleOutputRow(${index}, event)" title="${tooltipText}">${shRunTextLine}</span>`;
                 }
 
                 processedData.push({
-                    sw: item.sw, switchesHtmlLine: `${spanOpen}${displaySw}${spanClose}`, rawInterfacesHtmlLine: `${spanOpen}${item.iface}${spanClose}`,
-                    shRunHtmlLine: shRunHtmlLine, shIntStatusHtmlLine: `${spanOpen}sh int ${item.iface} status${spanClose}`,
-                    switchesTextLine: item.sw, rawInterfacesTextLine: item.iface, shRunTextLine: shRunTextLine, shIntStatusTextLine: `sh int ${item.iface} status`
+                    sw: item.sw, 
+                    switchesHtmlLine: `<span class="line-item ${dupClass}" data-row-index="${index}" data-copy-text="${encodeURIComponent(item.sw)}" onclick="toggleOutputRow(${index}, event)" title="${tooltipText}">${displaySw}</span>`, 
+                    rawInterfacesHtmlLine: `<span class="line-item ${dupClass}" data-row-index="${index}" data-copy-text="${encodeURIComponent(item.iface)}" onclick="toggleOutputRow(${index}, event)" title="${tooltipText}">${item.iface}</span>`,
+                    shRunHtmlLine: shRunHtmlLine, 
+                    shIntStatusHtmlLine: `<span class="line-item ${dupClass}" data-row-index="${index}" data-copy-text="${encodeURIComponent('sh int ' + item.iface + ' status')}" onclick="toggleOutputRow(${index}, event)" title="${tooltipText}">sh int ${item.iface} status</span>`,
+                    switchesTextLine: item.sw, 
+                    rawInterfacesTextLine: item.iface, 
+                    shRunTextLine: shRunTextLine, 
+                    shIntStatusTextLine: `sh int ${item.iface} status`
                 });
             });
 
@@ -1485,25 +1592,25 @@
                                 <h3 style="margin: 0; color: var(--accent-blue); font-size: 14px; font-family: monospace;">> TARGET_SW: <span style="color: var(--text-main);">${sw}</span> <span style="opacity: 0.5;">[${ip || 'NO_IP'}]</span></h3>
                             </div>
                             <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                                <button class="copy-btn" style="background: var(--btn-copy-bg);" onclick="copyContent('hidden-both-cmds-${swIdx}', this)" title="Copy Both Cmds">COPY BOTH CMDS</button>
+                                <button class="copy-btn" style="background: var(--btn-copy-bg);" onclick="copyContent('hidden-both-cmds-${swIdx}', this, ['box-shrun-${swIdx}', 'box-shint-${swIdx}'])" title="Copy Both Cmds">COPY BOTH CMDS</button>
                                 <button class="copy-btn" style="background: var(--accent-purple); color: #000;" onclick="copyContent('hidden-host-ip-${swIdx}', this)" title="Copy Host + IP">H+IP</button>
-                                <button class="copy-btn" style="background: var(--accent-green); color: #fff;" onclick="copyContent('hidden-all-${swIdx}', this)" title="Copy Host + IP + Ports">ALL</button>
+                                <button class="copy-btn" style="background: var(--accent-green); color: #fff;" onclick="copyContent('hidden-all-${swIdx}', this, ['box-interfaces-${swIdx}', 'box-shrun-${swIdx}'])" title="Copy Host + IP + Ports">ALL</button>
                             </div>
                         </div>
                         <div class="results-container" style="padding: 15px; background: transparent;">
                             <div class="result-column">
-                                <div class="script-header"><label style="margin-bottom:0;">> PORT_ID</label><button class="copy-btn" onclick="copyContent('hidden-interfaces-${swIdx}', this)">COPY</button></div>
-                                <div class="output-box">${rawInterfacesHtml}</div>
+                                <div class="script-header"><label style="margin-bottom:0;">> PORT_ID</label><button class="copy-btn" onclick="copyContent('hidden-interfaces-${swIdx}', this, 'box-interfaces-${swIdx}')">COPY</button></div>
+                                <div class="output-box" id="box-interfaces-${swIdx}">${rawInterfacesHtml}</div>
                                 <textarea id="hidden-interfaces-${swIdx}" class="hidden-copy-area">${rawInterfacesText}</textarea>
                             </div>
                             <div class="result-column">
-                                <div class="script-header"><label style="margin-bottom:0;">> SH_RUN_CMD</label><button class="copy-btn" onclick="copyContent('hidden-shrun-${swIdx}', this)">COPY</button></div>
-                                <div class="output-box">${shRunHtml}</div>
+                                <div class="script-header"><label style="margin-bottom:0;">> SH_RUN_CMD</label><button class="copy-btn" onclick="copyContent('hidden-shrun-${swIdx}', this, 'box-shrun-${swIdx}')">COPY</button></div>
+                                <div class="output-box" id="box-shrun-${swIdx}">${shRunHtml}</div>
                                 <textarea id="hidden-shrun-${swIdx}" class="hidden-copy-area">${shRunText}</textarea>
                             </div>
                             <div class="result-column">
-                                <div class="script-header"><label style="margin-bottom:0;">> SH_STATUS_CMD</label><button class="copy-btn" onclick="copyContent('hidden-shint-${swIdx}', this)">COPY</button></div>
-                                <div class="output-box">${shIntStatusHtml}</div>
+                                <div class="script-header"><label style="margin-bottom:0;">> SH_STATUS_CMD</label><button class="copy-btn" onclick="copyContent('hidden-shint-${swIdx}', this, 'box-shint-${swIdx}')">COPY</button></div>
+                                <div class="output-box" id="box-shint-${swIdx}">${shIntStatusHtml}</div>
                                 <textarea id="hidden-shint-${swIdx}" class="hidden-copy-area">${shIntStatusText}</textarea>
                                 <textarea id="hidden-both-cmds-${swIdx}" class="hidden-copy-area">${copyBothCmdsText}</textarea>
                                 <textarea id="hidden-host-ip-${swIdx}" class="hidden-copy-area">${copyHostIpText}</textarea>
@@ -1551,10 +1658,10 @@
                             <button class="copy-btn" style="padding: 4px 6px;" onclick="copyContent('hidden-host-only', this)" title="Copy Hostnames (Line-by-Line)">HOST</button>
                             <button class="copy-btn" style="padding: 4px 6px;" onclick="copyContent('hidden-ip-only', this)" title="Copy IPs (Line-by-Line)">IP</button>
                             <button class="copy-btn" style="padding: 4px 6px; background: var(--accent-purple); color: #000;" onclick="copyContent('hidden-host-ip', this)" title="Copy Ticket Format: Host + IP">H+IP</button>
-                            <button class="copy-btn" style="padding: 4px 6px; background: var(--accent-green); color: #fff;" onclick="copyContent('hidden-all', this)" title="Copy Ticket Format: Host + IP + Ports">ALL</button>
+                            <button class="copy-btn" style="padding: 4px 6px; background: var(--accent-green); color: #fff;" onclick="copyContent('hidden-all', this, ['box-interfaces-global', 'box-shrun-global'])" title="Copy Ticket Format: Host + IP + Ports">ALL</button>
                         </div>
                     </div>
-                    <div class="output-box">${switchesHtml}</div>
+                    <div class="output-box" id="box-switches-global">${switchesHtml}</div>
                     <textarea id="hidden-host-only" class="hidden-copy-area">${copyHostText}</textarea>
                     <textarea id="hidden-ip-only" class="hidden-copy-area">${copyIpText}</textarea>
                     <textarea id="hidden-host-ip" class="hidden-copy-area">${copyHostIpText}</textarea>
@@ -1562,18 +1669,18 @@
                     <textarea id="hidden-switches" class="hidden-copy-area">${switchesText}</textarea>
                 </div>
                 <div class="result-column">
-                    <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> PORT_ID</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-interfaces', this)">COPY</button></div>
-                    <div class="output-box">${rawInterfacesHtml}</div>
+                    <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> PORT_ID</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-interfaces', this, 'box-interfaces-global')">COPY</button></div>
+                    <div class="output-box" id="box-interfaces-global">${rawInterfacesHtml}</div>
                     <textarea id="hidden-interfaces" class="hidden-copy-area">${rawInterfacesText}</textarea>
                 </div>
                 <div class="result-column">
-                    <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> SH_RUN_CMD</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-shrun', this)">COPY</button></div>
-                    <div class="output-box">${shRunHtml}</div>
+                    <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> SH_RUN_CMD</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-shrun', this, 'box-shrun-global')">COPY</button></div>
+                    <div class="output-box" id="box-shrun-global">${shRunHtml}</div>
                     <textarea id="hidden-shrun" class="hidden-copy-area">${shRunText}</textarea>
                 </div>
                 <div class="result-column">
-                    <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> SH_STATUS_CMD</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-shint', this)">COPY</button></div>
-                    <div class="output-box">${shIntStatusHtml}</div>
+                    <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> SH_STATUS_CMD</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-shint', this, 'box-shint-global')">COPY</button></div>
+                    <div class="output-box" id="box-shint-global">${shIntStatusHtml}</div>
                     <textarea id="hidden-shint" class="hidden-copy-area">${shIntStatusText}</textarea>
                 </div></div>`; 
             }
@@ -1586,6 +1693,7 @@
         outputDiv.innerHTML = htmlOutput;
     }
 </script>
+
 </body>
 </html>
     <!-- ======== END OF PART 2 ======== -->
