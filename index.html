@@ -245,7 +245,7 @@
         .clear-btn:hover { opacity: 1; border-color: var(--accent-purple); color: var(--accent-purple); background: rgba(148, 74, 49, 0.05); }
         .results-container { display: flex; gap: 12px; }
         .result-column { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        .script-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .script-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5px; min-height: 48px; }
         .copy-btn { background: var(--btn-copy-bg); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: calc(10px * var(--font-scale)); font-weight: bold; text-transform: uppercase; font-family: "Courier New", Courier, monospace; transition: 0.2s; }
         .copy-btn:hover { filter: brightness(1.2); }
         .output-box { width: 100%; height: calc(400px * Math.min(var(--font-scale), 1.5)); font-family: "Courier New", Courier, monospace; font-size: calc(12px * var(--font-scale)); border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; padding: 10px 0; overflow: auto; background-color: var(--code-bg); backdrop-filter: blur(4px); color: var(--input-text); cursor: text; counter-reset: linenumber; line-height: 1.6; resize: none; transition: all 0.3s; }
@@ -325,7 +325,7 @@
         <div class="header-left">
             <h2>
                 <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-                <span class="version-tag">// v10.5 [The Interactive Selection Update]</span>
+                <span class="version-tag">// v10.6 [Bulk Selector Engine]</span>
             </h2>
         </div>
         
@@ -396,7 +396,8 @@
         <div class="header-row" style="margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <label style="margin-bottom: 0;">02 // Extracted Data</label>
-                <button class="copy-btn" style="background: var(--accent-blue); padding: 4px 12px; font-size: 11px;" onclick="copyContent('hidden-both-cmds', this, ['box-shrun-global', 'box-shint-global'])" title="Copy both SH RUN and SH STATUS commands across all switches at once">COPY ALL CMDS</button>
+                <button id="masterCopyBtn" class="copy-btn" style="background: var(--accent-blue); padding: 4px 12px; font-size: 11px; transition: all 0.3s ease;" onclick="copyContent('hidden-both-cmds', this, 'master')" title="Copy both SH RUN and SH STATUS commands across all switches at once">COPY ALL CMDS</button>
+                <span id="escHint" style="display:none; font-size: 10px; color: var(--hl-orange); font-family: monospace; cursor: pointer;" onclick="unselectOutputRows()" title="Clear bulk selection">[ESC to clear selection]</span>
                 <textarea id="hidden-both-cmds" class="hidden-copy-area"></textarea>
             </div>
             
@@ -526,6 +527,19 @@
     let isHighlightModeActive = false; 
     let lastSelectedOutputIndex = -1;
 
+    // --- INTERACTIVE ROW SELECTION ENGINE ---
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            unselectOutputRows();
+        }
+    });
+
+    function unselectOutputRows() {
+        document.querySelectorAll('.selected-output-row').forEach(r => r.classList.remove('selected-output-row'));
+        lastSelectedOutputIndex = -1;
+        updateMasterCopyBtn();
+    }
+
     function toggleOutputRow(index, event) {
         const rows = document.querySelectorAll(`.line-item[data-row-index="${index}"]`);
         if (rows.length === 0) return;
@@ -549,54 +563,67 @@
             });
         }
         lastSelectedOutputIndex = index;
+        updateMasterCopyBtn();
     }
 
-    function copyContent(hiddenElementId, btnElement, boxIds) {
-        let textToCopy = "";
+    function updateMasterCopyBtn() {
+        const selectedSet = new Set();
+        document.querySelectorAll('.selected-output-row').forEach(r => selectedSet.add(r.getAttribute('data-row-index')));
+        const count = selectedSet.size;
+
+        const masterBtn = document.getElementById('masterCopyBtn');
+        const escHint = document.getElementById('escHint');
         
-        if (boxIds) {
-            let ids = Array.isArray(boxIds) ? boxIds : [boxIds];
-            let hasSelection = false;
+        if (masterBtn) {
+            if (count > 0) {
+                masterBtn.innerText = `COPY ALL CMDS (${count} SELECTED)`;
+                masterBtn.style.boxShadow = "0 0 10px rgba(57, 255, 20, 0.5)";
+                masterBtn.style.border = "1px solid var(--neon-green)";
+                if (escHint) escHint.style.display = 'inline';
+            } else {
+                masterBtn.innerText = "COPY ALL CMDS";
+                masterBtn.style.boxShadow = "none";
+                masterBtn.style.border = "none";
+                if (escHint) escHint.style.display = 'none';
+            }
+        }
+    }
+
+    function copyContent(hiddenElementId, btnElement, colType) {
+        let textToCopy = "";
+        const selectedLines = document.querySelectorAll('.selected-output-row');
+        
+        if (selectedLines.length > 0 && colType) {
             let combinedLines = [];
             
-            ids.forEach(id => {
-                const box = document.getElementById(id);
-                if (box) {
-                    const selectedLines = box.querySelectorAll('.selected-output-row');
-                    if (selectedLines.length > 0) {
-                        hasSelection = true;
-                        let boxLines = [];
-                        selectedLines.forEach(span => {
-                            let raw = span.getAttribute('data-copy-text');
-                            if (raw) {
-                                let decoded = decodeURIComponent(raw);
-                                if (decoded.trim() !== "") boxLines.push(decoded);
-                            }
-                        });
-                        if (boxLines.length > 0) combinedLines.push(boxLines.join('\n'));
-                    }
-                }
-            });
-            
-            if (hasSelection) textToCopy = combinedLines.join('\n\n');
-        } else {
-            const allSelected = document.querySelectorAll('.selected-output-row');
-            if (allSelected.length > 0 && hiddenElementId === 'hidden-both-cmds') {
-                let shRunLines = [];
-                let shIntLines = [];
+            if (colType === 'master') {
+                let runLines = [];
+                let statLines = [];
                 document.querySelectorAll('div[id^="box-shrun"] .selected-output-row').forEach(span => {
                     let raw = span.getAttribute('data-copy-text');
-                    if(raw) { let dec = decodeURIComponent(raw); if(dec.trim()!=="") shRunLines.push(dec); }
+                    if (raw) runLines.push(decodeURIComponent(raw));
                 });
                 document.querySelectorAll('div[id^="box-shint"] .selected-output-row').forEach(span => {
                     let raw = span.getAttribute('data-copy-text');
-                    if(raw) { let dec = decodeURIComponent(raw); if(dec.trim()!=="") shIntLines.push(dec); }
+                    if (raw) statLines.push(decodeURIComponent(raw));
                 });
-                
-                let combined = [];
-                if (shRunLines.length > 0) combined.push(shRunLines.join('\n'));
-                if (shIntLines.length > 0) combined.push(shIntLines.join('\n'));
-                if (combined.length > 0) textToCopy = combined.join('\n\n');
+                if (runLines.length) combinedLines.push(runLines.join('\n'));
+                if (statLines.length) combinedLines.push(statLines.join('\n'));
+            } else {
+                let types = Array.isArray(colType) ? colType : [colType];
+                types.forEach(prefix => {
+                    let box = document.getElementById(prefix);
+                    if (box) {
+                        box.querySelectorAll('.selected-output-row').forEach(span => {
+                            let raw = span.getAttribute('data-copy-text');
+                            if (raw) combinedLines.push(decodeURIComponent(raw));
+                        });
+                    }
+                });
+            }
+            
+            if (combinedLines.length > 0) {
+                textToCopy = combinedLines.join('\n\n');
             }
         }
         
@@ -728,7 +755,21 @@
         renderOutput();
     }
 
-    // --- THEME TOGGLE LOGIC ---
+    let psCheatCode = ['p','l','a','y','s','t','a','t','i','o','n'];
+    let keyBuffer = [];
+    document.addEventListener('keydown', (e) => {
+        keyBuffer.push(e.key.toLowerCase());
+        if (keyBuffer.length > psCheatCode.length) keyBuffer.shift();
+        if (keyBuffer.join('') === psCheatCode.join('')) {
+            document.documentElement.setAttribute('data-theme', 'playstation');
+            localStorage.setItem('nocape_theme', 'playstation');
+            updateThemeButton('playstation');
+            updateBackground('playstation');
+            keyBuffer = [];
+            if (typeof triggerExecuteEffect === 'function') triggerExecuteEffect();
+        }
+    });
+
     function updateThemeButton(theme) {
         const btn = document.getElementById('themeToggleBtn');
         if (theme === 'dark') btn.innerText = '☀️ LIGHT';
@@ -772,42 +813,16 @@
     function toggleTheme() {
         const html = document.documentElement;
         const currentTheme = html.getAttribute('data-theme') || 'dark';
-        let newTheme;
-        
-        if (currentTheme === 'dark') newTheme = 'light';
-        else if (currentTheme === 'light') newTheme = 'twilight';
-        else if (currentTheme === 'twilight') newTheme = 'playstation';
-        else if (currentTheme === 'playstation') newTheme = 'fab-neko';
-        else if (currentTheme === 'fab-neko') newTheme = 'summerkat';
-        else if (currentTheme === 'summerkat') newTheme = 'autumnkat';
-        else if (currentTheme === 'autumnkat') newTheme = 'springkat';
-        else newTheme = 'dark';
-        
+        let newTheme = currentTheme === 'dark' ? 'light' : currentTheme === 'light' ? 'twilight' : 'dark';
         html.setAttribute('data-theme', newTheme);
         localStorage.setItem('nocape_theme', newTheme);
         updateThemeButton(newTheme);
-        updateBackground(newTheme);
     }
 
     const savedTheme = localStorage.getItem('nocape_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeButton(savedTheme);
     window.addEventListener('DOMContentLoaded', () => { updateBackground(savedTheme); });
-
-    let psCheatCode = ['p','l','a','y','s','t','a','t','i','o','n'];
-    let keyBuffer = [];
-    document.addEventListener('keydown', (e) => {
-        keyBuffer.push(e.key.toLowerCase());
-        if (keyBuffer.length > psCheatCode.length) keyBuffer.shift();
-        if (keyBuffer.join('') === psCheatCode.join('')) {
-            document.documentElement.setAttribute('data-theme', 'playstation');
-            localStorage.setItem('nocape_theme', 'playstation');
-            updateThemeButton('playstation');
-            updateBackground('playstation');
-            keyBuffer = [];
-            if (typeof triggerExecuteEffect === 'function') triggerExecuteEffect();
-        }
-    });
 
     const zoomSlider = document.getElementById('zoomSlider');
     const savedZoom = localStorage.getItem('nocape_zoom') || 1;
@@ -1165,7 +1180,8 @@
         globalSwitches = [];
         globalInterfaces = [];
         lastInvalidPorts = [];
-        lastSelectedOutputIndex = -1;
+        
+        unselectOutputRows();
     }
 
     function processText() {
@@ -1515,7 +1531,6 @@
                 let shRunHtmlLine = ""; 
                 let shRunTextLine = "";
                 let shRunCopyText = "";
-                let groupedStyle = "";
 
                 if (isSummarized) {
                     let match = item.iface.match(/^([a-zA-Z]+)(\d+(?:\/\d+)*\/)(\d+)$/);
@@ -1599,17 +1614,26 @@
                         </div>
                         <div class="results-container" style="padding: 15px; background: transparent;">
                             <div class="result-column">
-                                <div class="script-header"><label style="margin-bottom:0;">> PORT_ID</label><button class="copy-btn" onclick="copyContent('hidden-interfaces-${swIdx}', this, 'box-interfaces-${swIdx}')">COPY</button></div>
+                                <div class="script-header" style="display: flex; align-items: flex-end; justify-content: space-between; height: 48px; padding-bottom: 2px;">
+                                    <label style="margin-bottom:0;">> PORT_ID</label>
+                                    <button class="copy-btn" onclick="copyContent('hidden-interfaces-${swIdx}', this, 'box-interfaces-${swIdx}')">COPY</button>
+                                </div>
                                 <div class="output-box" id="box-interfaces-${swIdx}">${rawInterfacesHtml}</div>
                                 <textarea id="hidden-interfaces-${swIdx}" class="hidden-copy-area">${rawInterfacesText}</textarea>
                             </div>
                             <div class="result-column">
-                                <div class="script-header"><label style="margin-bottom:0;">> SH_RUN_CMD</label><button class="copy-btn" onclick="copyContent('hidden-shrun-${swIdx}', this, 'box-shrun-${swIdx}')">COPY</button></div>
+                                <div class="script-header" style="display: flex; align-items: flex-end; justify-content: space-between; height: 48px; padding-bottom: 2px;">
+                                    <label style="margin-bottom:0;">> SH_RUN_CMD</label>
+                                    <button class="copy-btn" onclick="copyContent('hidden-shrun-${swIdx}', this, 'box-shrun-${swIdx}')">COPY</button>
+                                </div>
                                 <div class="output-box" id="box-shrun-${swIdx}">${shRunHtml}</div>
                                 <textarea id="hidden-shrun-${swIdx}" class="hidden-copy-area">${shRunText}</textarea>
                             </div>
                             <div class="result-column">
-                                <div class="script-header"><label style="margin-bottom:0;">> SH_STATUS_CMD</label><button class="copy-btn" onclick="copyContent('hidden-shint-${swIdx}', this, 'box-shint-${swIdx}')">COPY</button></div>
+                                <div class="script-header" style="display: flex; align-items: flex-end; justify-content: space-between; height: 48px; padding-bottom: 2px;">
+                                    <label style="margin-bottom:0;">> SH_STATUS_CMD</label>
+                                    <button class="copy-btn" onclick="copyContent('hidden-shint-${swIdx}', this, 'box-shint-${swIdx}')">COPY</button>
+                                </div>
                                 <div class="output-box" id="box-shint-${swIdx}">${shIntStatusHtml}</div>
                                 <textarea id="hidden-shint-${swIdx}" class="hidden-copy-area">${shIntStatusText}</textarea>
                                 <textarea id="hidden-both-cmds-${swIdx}" class="hidden-copy-area">${copyBothCmdsText}</textarea>
@@ -1652,8 +1676,8 @@
 
                 htmlOutput += `<div class="results-container">
                 <div class="result-column">
-                    <div class="script-header" style="flex-direction: column; align-items: flex-start; gap: 6px;">
-                        <label>> TARGET_SW</label>
+                    <div class="script-header" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 6px; height: 48px; padding-bottom: 2px;">
+                        <label style="margin-bottom:0;">> TARGET_SW</label>
                         <div style="display: flex; gap: 4px; flex-wrap: wrap;">
                             <button class="copy-btn" style="padding: 4px 6px;" onclick="copyContent('hidden-host-only', this)" title="Copy Hostnames (Line-by-Line)">HOST</button>
                             <button class="copy-btn" style="padding: 4px 6px;" onclick="copyContent('hidden-ip-only', this)" title="Copy IPs (Line-by-Line)">IP</button>
@@ -1669,17 +1693,26 @@
                     <textarea id="hidden-switches" class="hidden-copy-area">${switchesText}</textarea>
                 </div>
                 <div class="result-column">
-                    <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> PORT_ID</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-interfaces', this, 'box-interfaces-global')">COPY</button></div>
+                    <div class="script-header" style="display: flex; align-items: flex-end; justify-content: space-between; height: 48px; padding-bottom: 2px;">
+                        <label style="margin-bottom:0;">> PORT_ID</label>
+                        <button class="copy-btn" onclick="copyContent('hidden-interfaces', this, 'box-interfaces-global')">COPY</button>
+                    </div>
                     <div class="output-box" id="box-interfaces-global">${rawInterfacesHtml}</div>
                     <textarea id="hidden-interfaces" class="hidden-copy-area">${rawInterfacesText}</textarea>
                 </div>
                 <div class="result-column">
-                    <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> SH_RUN_CMD</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-shrun', this, 'box-shrun-global')">COPY</button></div>
+                    <div class="script-header" style="display: flex; align-items: flex-end; justify-content: space-between; height: 48px; padding-bottom: 2px;">
+                        <label style="margin-bottom:0;">> SH_RUN_CMD</label>
+                        <button class="copy-btn" onclick="copyContent('hidden-shrun', this, 'box-shrun-global')">COPY</button>
+                    </div>
                     <div class="output-box" id="box-shrun-global">${shRunHtml}</div>
                     <textarea id="hidden-shrun" class="hidden-copy-area">${shRunText}</textarea>
                 </div>
                 <div class="result-column">
-                    <div class="script-header"><label style="margin-bottom:0; margin-top:23px;">> SH_STATUS_CMD</label><button class="copy-btn" style="margin-top:23px;" onclick="copyContent('hidden-shint', this, 'box-shint-global')">COPY</button></div>
+                    <div class="script-header" style="display: flex; align-items: flex-end; justify-content: space-between; height: 48px; padding-bottom: 2px;">
+                        <label style="margin-bottom:0;">> SH_STATUS_CMD</label>
+                        <button class="copy-btn" onclick="copyContent('hidden-shint', this, 'box-shint-global')">COPY</button>
+                    </div>
                     <div class="output-box" id="box-shint-global">${shIntStatusHtml}</div>
                     <textarea id="hidden-shint" class="hidden-copy-area">${shIntStatusText}</textarea>
                 </div></div>`; 
