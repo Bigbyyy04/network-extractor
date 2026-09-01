@@ -325,7 +325,7 @@
         <div class="header-left">
             <h2>
                 <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-                <span class="version-tag">// v10.6 [Bulk Selector Engine]</span>
+                <span class="version-tag">// v10.7 [The Interactive Selection Update]</span>
             </h2>
         </div>
         
@@ -755,21 +755,7 @@
         renderOutput();
     }
 
-    let psCheatCode = ['p','l','a','y','s','t','a','t','i','o','n'];
-    let keyBuffer = [];
-    document.addEventListener('keydown', (e) => {
-        keyBuffer.push(e.key.toLowerCase());
-        if (keyBuffer.length > psCheatCode.length) keyBuffer.shift();
-        if (keyBuffer.join('') === psCheatCode.join('')) {
-            document.documentElement.setAttribute('data-theme', 'playstation');
-            localStorage.setItem('nocape_theme', 'playstation');
-            updateThemeButton('playstation');
-            updateBackground('playstation');
-            keyBuffer = [];
-            if (typeof triggerExecuteEffect === 'function') triggerExecuteEffect();
-        }
-    });
-
+    // --- THEME TOGGLE LOGIC ---
     function updateThemeButton(theme) {
         const btn = document.getElementById('themeToggleBtn');
         if (theme === 'dark') btn.innerText = '☀️ LIGHT';
@@ -813,16 +799,42 @@
     function toggleTheme() {
         const html = document.documentElement;
         const currentTheme = html.getAttribute('data-theme') || 'dark';
-        let newTheme = currentTheme === 'dark' ? 'light' : currentTheme === 'light' ? 'twilight' : 'dark';
+        let newTheme;
+        
+        if (currentTheme === 'dark') newTheme = 'light';
+        else if (currentTheme === 'light') newTheme = 'twilight';
+        else if (currentTheme === 'twilight') newTheme = 'playstation';
+        else if (currentTheme === 'playstation') newTheme = 'fab-neko';
+        else if (currentTheme === 'fab-neko') newTheme = 'summerkat';
+        else if (currentTheme === 'summerkat') newTheme = 'autumnkat';
+        else if (currentTheme === 'autumnkat') newTheme = 'springkat';
+        else newTheme = 'dark';
+        
         html.setAttribute('data-theme', newTheme);
         localStorage.setItem('nocape_theme', newTheme);
         updateThemeButton(newTheme);
+        updateBackground(newTheme);
     }
 
     const savedTheme = localStorage.getItem('nocape_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeButton(savedTheme);
     window.addEventListener('DOMContentLoaded', () => { updateBackground(savedTheme); });
+
+    let psCheatCode = ['p','l','a','y','s','t','a','t','i','o','n'];
+    let keyBuffer = [];
+    document.addEventListener('keydown', (e) => {
+        keyBuffer.push(e.key.toLowerCase());
+        if (keyBuffer.length > psCheatCode.length) keyBuffer.shift();
+        if (keyBuffer.join('') === psCheatCode.join('')) {
+            document.documentElement.setAttribute('data-theme', 'playstation');
+            localStorage.setItem('nocape_theme', 'playstation');
+            updateThemeButton('playstation');
+            updateBackground('playstation');
+            keyBuffer = [];
+            if (typeof triggerExecuteEffect === 'function') triggerExecuteEffect();
+        }
+    });
 
     const zoomSlider = document.getElementById('zoomSlider');
     const savedZoom = localStorage.getItem('nocape_zoom') || 1;
@@ -1155,35 +1167,6 @@
         }
     }
 
-    function clearText() {
-        if (isHighlightModeActive) { exitHighlightMode(); }
-        const textarea = document.getElementById('configInput');
-        const view = document.getElementById('configHighlightView');
-        
-        textarea.value = '';
-        view.innerHTML = '';
-        textarea.dataset.manualCollapse = ""; 
-        
-        if(textarea.classList.contains('expanded')) {
-             textarea.classList.remove('expanded');
-             view.classList.remove('expanded');
-             document.getElementById('expandBtn').innerText = "[ EXPAND ]";
-        }
-
-        document.getElementById('output').innerHTML = `<div style="font-family: 'Courier New', Courier, monospace; color: var(--line-num-text); font-size: calc(13px * var(--font-scale));">-- system_idle --</div>`;
-        document.getElementById('filterInput').style.display = 'none';
-        document.getElementById('filterInput').value = '';
-        document.getElementById('statusMsg').style.display = 'none';
-        document.getElementById('deviceHud').classList.remove('visible');
-        
-        currentHudFilter = null;
-        globalSwitches = [];
-        globalInterfaces = [];
-        lastInvalidPorts = [];
-        
-        unselectOutputRows();
-    }
-
     function processText() {
         if (typeof triggerExecuteEffect === 'function') triggerExecuteEffect();
 
@@ -1452,7 +1435,7 @@
         document.getElementById('statusMsg').style.display = 'block';
         document.getElementById('statusMsg').style.color = 'var(--accent-blue)';
         
-        lastSelectedOutputIndex = -1;
+        unselectOutputRows();
         renderOutput();
     }
 
@@ -1724,9 +1707,9 @@
             htmlOutput += `<div style="font-family: 'Courier New', Courier, monospace; color: var(--line-num-text); font-size: calc(13px * var(--font-scale));">No interfaces match your filter.</div>`;
         }
         outputDiv.innerHTML = htmlOutput;
+        unselectOutputRows(); 
     }
 </script>
-
 </body>
 </html>
     <!-- ======== END OF PART 2 ======== -->
