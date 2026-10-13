@@ -280,6 +280,7 @@
         textarea#configInput::-webkit-scrollbar-track { background: transparent; }
         textarea#configInput::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
         textarea#configInput::selection { background: rgba(148, 74, 49, 0.2); }
+        
         .backdrop-highlighter { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; color: transparent; background: var(--code-bg); border: 1px solid transparent; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
         .backdrop-highlighter::-webkit-scrollbar { display: none; }
         .backdrop-highlighter.expanded { height: calc(400px * var(--font-scale)); }
@@ -386,7 +387,7 @@
         <div class="header-left">
             <h2>
                 <span class="logo-text">N0C<span class="logo-accent">A</span>PE</span>
-                <span class="version-tag">// v10.9 [Interactive Selection Update]</span>
+                <span class="version-tag">// v10.10 [The UI Polish Update]</span>
             </h2>
         </div>
         
@@ -450,8 +451,9 @@
             <button class="clear-btn" onclick="clearText()">Clear</button>
         </div>
     </div>
-  
-<!-- ======== START OF PART 2 ======== -->
+
+
+    <!-- ======== START OF PART 2 ======== -->
     <div class="form-group">
         <div class="header-row" style="margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -1083,7 +1085,7 @@
     }
 
     function saveDB() {
-        switchDB = {}; // Clear memory to allow true edits and deletions
+        switchDB = {}; 
         parseToDB(document.getElementById('dbInput').value);
         const mergedString = generateDBString();
         localStorage.setItem('noccat_db', mergedString);
@@ -1119,8 +1121,10 @@
         textarea.classList.toggle('expanded');
         btn.innerText = textarea.classList.contains('expanded') ? "[ COLLAPSE ]" : "[ EXPAND ]";
         
-        if (highlightView.style.display === 'block' || textarea.classList.contains('expanded')) {
-            highlightView.classList.toggle('expanded', textarea.classList.contains('expanded'));
+        if (textarea.classList.contains('expanded')) {
+            highlightView.classList.add('expanded');
+        } else {
+            highlightView.classList.remove('expanded');
         }
 
         if (!textarea.classList.contains('expanded') && textarea.value.split('\n').length > 8) {
@@ -1259,10 +1263,7 @@
         globalSwitches = [];
         globalInterfaces = [];
         lastInvalidPorts = [];
-        
-        unselectOutputRows();
-        
-        document.getElementById('hidden-both-cmds').value = '';
+        lastSelectedOutputIndex = -1;
     }
 
     function processText() {
